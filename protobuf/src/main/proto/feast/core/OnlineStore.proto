@@ -1,0 +1,36 @@
+syntax = "proto3";
+package feast.core;
+
+option java_package = "dev.caraml.store.protobuf.core";
+option java_outer_classname = "OnlineStoreProto";
+
+import "google/protobuf/duration.proto";
+
+// OnlineStore provides a location where Feast reads and writes feature values.
+// Feature values will be written to the Store in the form of FeatureRow elements.
+// The way FeatureRow is encoded and decoded when it is written to and read from
+// the Store depends on the type of the Store.
+//
+message OnlineStore {
+
+  // Name of the store.
+  string name = 1;
+
+  // Type of store.
+  StoreType type = 2;
+
+  // Description.
+  string description = 3;
+
+}
+
+enum StoreType {
+  // Unset
+  UNSET = 0;
+
+  // google cloud NOSQL database service
+  BIGTABLE = 1;
+
+  // redis in-memory database
+  REDIS = 2;
+}

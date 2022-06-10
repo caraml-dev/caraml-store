@@ -1,0 +1,5 @@
+plugins {
+    id 'caraml.java-common'
+    id 'caraml.test-suite'
+    id 'java-library'
+}
