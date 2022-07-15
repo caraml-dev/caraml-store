@@ -1,0 +1,29 @@
+name: CaraML Store CI
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'openjdk'
+      - name: Linting
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: spotlessCheck
+      - name: Test
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: test
