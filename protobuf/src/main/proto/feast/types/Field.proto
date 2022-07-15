@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "feast/types/Value.proto";
+
+package feast.types;
+
+option java_package = "dev.caraml.store.protobuf.types";
+option java_outer_classname = "FieldProto";
+
+message Field {
+  string name = 1;
+  feast.types.Value value = 2;
+}

@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package feast.core;
+option java_package = "dev.caraml.store.protobuf.core";
+option java_outer_classname = "EntityProto";
+
+import "feast/types/Value.proto";
+import "google/protobuf/timestamp.proto";
+
+message Entity {
+    // User-specified specifications of this entity.
+    EntitySpec spec = 1;
+    // System-populated metadata for this entity.
+    EntityMeta meta = 2;
+}
+
+message EntitySpec {
+    // Name of the entity.
+    string name = 1;
+
+    // Type of the entity.
+    feast.types.ValueType.Enum value_type = 2;
+
+    // Description of the entity.
+    string description = 3;
+
+    // User defined metadata
+    map<string,string> labels = 8;
+}
+
+message EntityMeta {
+    google.protobuf.Timestamp created_timestamp = 1;
+    google.protobuf.Timestamp last_updated_timestamp = 2;
+}

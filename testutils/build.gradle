@@ -1,0 +1,9 @@
+plugins {
+    id 'caraml.library'
+}
+
+dependencies {
+    implementation project(':protobuf')
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+}
