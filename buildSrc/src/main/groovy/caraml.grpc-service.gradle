@@ -3,6 +3,7 @@ plugins {
     id 'caraml.test-suite'
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
+    id 'com.google.cloud.tools.jib'
     id 'application'
 }
 
@@ -34,4 +35,15 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+def containerRegistry = System.getenv('DOCKER_REGISTRY')
+
+jib {
+    from {
+        image = 'amazoncorretto:18-alpine@sha256:a7a3987a45a4f6666971953b3839d00cda354eb703711f25f8217c3a2d895704'
+    }
+    to {
+        image = "${containerRegistry == null ? "" : containerRegistry + "/"}caraml-store-${project.name}:${version}"
+    }
 }

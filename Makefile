@@ -10,5 +10,5 @@ compile:
 test-all:
 	./gradlew test
 
-dist:
-	./gradlew core:clean core:bootJar
+image:
+	./gradlew jib

@@ -3,3 +3,8 @@ plugins {
     id 'caraml.test-suite'
     id 'java-library'
 }
+
+jar {
+    preserveFileTimestamps false
+    reproducibleFileOrder true
+}
