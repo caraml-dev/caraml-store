@@ -73,6 +73,7 @@ public class SpecServiceIT extends BaseIT {
             .toBuilder()
             .setBatchSource(
                 DataGenerator.createFileDataSourceSpec("file:///path/to/file", "ts_col", ""))
+            .setOnlineStore(DataGenerator.createOnlineStore("default"))
             .build();
 
     example2 =
@@ -90,7 +91,6 @@ public class SpecServiceIT extends BaseIT {
             .toBuilder()
             .setBatchSource(
                 DataGenerator.createFileDataSourceSpec("file:///path/to/file", "ts_col", ""))
-            .setOnlineStore(DataGenerator.createOnlineStore("default"))
             .build();
 
     apiClient.registerOnlineStore(DataGenerator.createOnlineStore("unset"));

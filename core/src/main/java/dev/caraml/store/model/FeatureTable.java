@@ -353,6 +353,7 @@ public class FeatureTable extends AbstractTimestampEntity {
             .addAllFeatures(sortedFeatureSpecs)
             .setBatchSource(getBatchSource().toProto())
             .setStreamSource(streamSource)
+            .setOnlineStore(getOnlineStore().toProto())
             .setMaxAge(Duration.newBuilder().setSeconds(getMaxAgeSecs()).build())
             .build();
     return Hashing.murmur3_32().hashBytes(featureTableSpec.toByteArray()).toString();
