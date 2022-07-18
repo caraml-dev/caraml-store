@@ -27,7 +27,7 @@ jobs:
           arguments: test
       - name: Build Image
         uses: gradle/gradle-build-action@v2
+        env:
+          DOCKER_REGISTRY: ghcr.io/${{ github.repository_owner }}
         with:
-          environment:
-            DOCKER_REGISTRY: ghcr.io/${{ github.repository_owner }}
           arguments: jib
