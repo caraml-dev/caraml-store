@@ -41,7 +41,7 @@ def containerRegistry = System.getenv('DOCKER_REGISTRY')
 
 jib {
     from {
-        image = 'amazoncorretto:18-alpine@sha256:a7a3987a45a4f6666971953b3839d00cda354eb703711f25f8217c3a2d895704'
+        image = 'amazoncorretto:17-alpine'
     }
     to {
         image = "${containerRegistry == null ? "" : containerRegistry + "/"}caraml-store-${project.name}:${version}"
