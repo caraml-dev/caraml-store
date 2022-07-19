@@ -7,7 +7,14 @@ import dev.caraml.store.protobuf.core.EntityProto.EntitySpec;
 import dev.caraml.store.protobuf.types.ValueProto.ValueType;
 import dev.caraml.store.util.TypeConversion;
 import java.util.Map;
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
 
