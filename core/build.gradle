@@ -7,6 +7,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:'
 	implementation 'org.flywaydb:flyway-core'
 	implementation 'com.google.code.gson:gson:2.9.0'
+	implementation 'io.kubernetes:client-java:16.0.0'
 	runtimeOnly    'org.postgresql:postgresql'
 	testImplementation project(':testutils')
 	testImplementation 'com.jayway.jsonpath:json-path-assert:2.7.0'

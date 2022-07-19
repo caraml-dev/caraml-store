@@ -1,3 +1,48 @@
+caraml:
+  coreService:
+    # Whether to create/update streaming ingestion jobs on feature table creation/update
+    syncIngestionJobOnSpecUpdate: true
+
+  kubernetes:
+    # Whether to use in-cluster Kubernetes configuration or default kube config.
+    inCluster: false
+
+  jobService:
+    streamingJobs:
+      - store: store-name
+        namespace: spark-operator
+        # Sparkapplication CRD specs. Refer to official documentation for the full range of options supported.
+        # Feature schema and source information will be added as flag arguments to the existing list of arguments.
+        sparkApplicationSpec:
+          driver:
+            cores: 2
+            memory: 4g
+            serviceAccount: spark
+            javaOptions: -Dio.netty.tryReflectionSetAccessible=true
+          executor:
+            cores: 2
+            instances: 1
+            memory: 6g
+            javaOptions: -Dio.netty.tryReflectionSetAccessible=true
+          image: "gcr.io/kf-feast/feast-spark:<VERSION>"
+          mainApplicationFile: local:///opt/spark/jars/feast-ingestion-spark-v<VERSION>.jar
+          mainClass: feast.ingestion.IngestionJob
+          mode: cluster
+          arguments:
+            - --redis
+            - '{"host": "localhost", "port": 6379, "password": "<password>", "ssl": false}'
+            - --statsd
+            - '{"host": "localhost", "port": 8125}'
+            - --deadletter-path
+            - gs://<gcs-bucket>
+            - --stencil-url
+            - http://stencil-url
+            - --drop-invalid
+            - --mode
+            - online
+            - --checkpoint-path
+            - gs://<gcs-bucket>/checkpoints
+
 grpc:
   server:
     port: 6565

@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Facilitates management of specs within the Feast registry. This includes getting existing specs
+ * Facilitates management of specs within the feature registry. This includes getting existing specs
  * and registering new specs.
  */
 @Slf4j

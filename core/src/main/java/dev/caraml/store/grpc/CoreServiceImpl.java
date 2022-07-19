@@ -1,7 +1,9 @@
 package dev.caraml.store.grpc;
 
+import dev.caraml.store.config.CoreServiceConfig;
 import dev.caraml.store.exception.RetrievalException;
 import dev.caraml.store.grpc.interceptors.MonitoringInterceptor;
+import dev.caraml.store.kubernetes.api.SparkOperatorApiException;
 import dev.caraml.store.model.Project;
 import dev.caraml.store.protobuf.core.CoreServiceGrpc;
 import dev.caraml.store.protobuf.core.CoreServiceProto.ApplyEntityRequest;
@@ -37,6 +39,7 @@ import dev.caraml.store.protobuf.core.CoreServiceProto.ListProjectsResponse;
 import dev.caraml.store.protobuf.core.CoreServiceProto.RegisterOnlineStoreRequest;
 import dev.caraml.store.protobuf.core.CoreServiceProto.RegisterOnlineStoreResponse;
 import dev.caraml.store.protobuf.core.EntityProto.EntitySpec;
+import dev.caraml.store.service.JobService;
 import dev.caraml.store.service.ProjectService;
 import dev.caraml.store.service.SpecService;
 import io.grpc.Status;
@@ -57,13 +60,21 @@ public class CoreServiceImpl extends CoreServiceGrpc.CoreServiceImplBase {
   private final String version;
   private final SpecService specService;
   private final ProjectService projectService;
+  private final JobService jobService;
+  private final CoreServiceConfig config;
 
   @Autowired
   public CoreServiceImpl(
-      SpecService specService, ProjectService projectService, BuildProperties buildProperties) {
+      SpecService specService,
+      ProjectService projectService,
+      JobService jobService,
+      CoreServiceConfig config,
+      BuildProperties buildProperties) {
     this.specService = specService;
     this.projectService = projectService;
+    this.jobService = jobService;
     this.version = buildProperties.getVersion();
+    this.config = config;
   }
 
   @Override
@@ -76,7 +87,7 @@ public class CoreServiceImpl extends CoreServiceGrpc.CoreServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (RetrievalException | StatusRuntimeException e) {
-      log.error("Could not determine Feast Core version: ", e);
+      log.error("Could not determine version: ", e);
       responseObserver.onError(
           Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
     }
@@ -159,7 +170,7 @@ public class CoreServiceImpl extends CoreServiceGrpc.CoreServiceImplBase {
     }
   }
 
-  /* Registers an entity to Feast Core */
+  /* Registers an entity */
   @Override
   public void applyEntity(
       ApplyEntityRequest request, StreamObserver<ApplyEntityResponse> responseObserver) {
@@ -253,6 +264,10 @@ public class CoreServiceImpl extends CoreServiceGrpc.CoreServiceImplBase {
     String tableName = request.getTableSpec().getName();
     try {
       ApplyFeatureTableResponse response = specService.applyFeatureTable(request);
+      if (request.getTableSpec().hasStreamSource() && config.syncIngestionJobOnSpecUpdate()) {
+        jobService.createOrUpdateStreamingIngestionJob(
+            request.getProject(), request.getTableSpec());
+      }
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (org.hibernate.exception.ConstraintViolationException e) {
@@ -280,6 +295,13 @@ public class CoreServiceImpl extends CoreServiceGrpc.CoreServiceImplBase {
               tableName, projectName));
       responseObserver.onError(
           Status.UNIMPLEMENTED.withDescription(e.getMessage()).withCause(e).asRuntimeException());
+    } catch (SparkOperatorApiException e) {
+      log.error(
+          String.format(
+              "ApplyFeatureTable: feature spec was applied but streaming job creation failed: (name: %s, project: %s)",
+              tableName, projectName));
+      responseObserver.onError(
+          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
     } catch (Exception e) {
       log.error("ApplyFeatureTable Exception has occurred:", e);
       responseObserver.onError(
