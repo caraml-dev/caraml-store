@@ -2,7 +2,6 @@ package dev.caraml.store.grpc;
 
 import dev.caraml.store.config.RegistryServiceConfig;
 import dev.caraml.store.exception.RetrievalException;
-import dev.caraml.store.grpc.interceptors.MonitoringInterceptor;
 import dev.caraml.store.kubernetes.api.SparkOperatorApiException;
 import dev.caraml.store.model.Project;
 import dev.caraml.store.protobuf.core.CoreServiceGrpc;
@@ -54,7 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 
 @Slf4j
-@GrpcService(interceptors = {MonitoringInterceptor.class})
+@GrpcService
 public class CoreServiceImpl extends CoreServiceGrpc.CoreServiceImplBase {
 
   private final String version;
