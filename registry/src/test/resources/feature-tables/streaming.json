@@ -1,0 +1,25 @@
+{
+  "entities": [
+    "entity1"
+  ],
+  "features": [
+    {
+      "name": "feature1",
+      "valueType": "FLOAT"
+    }
+  ],
+  "name": "streaming_feature_table",
+  "streamSource": {
+    "type": "STREAM_KAFKA",
+    "eventTimestampColumn": "event_timestamp",
+    "kafkaOptions": {
+      "bootstrapServers": "kafka:9102",
+      "topic": "topic",
+      "messageFormat": {
+        "protoFormat": {
+          "classPath": "com.example.FeastFeature"
+        }
+      }
+    }
+  }
+}

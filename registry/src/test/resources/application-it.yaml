@@ -1,0 +1,3 @@
+caraml:
+  registryService:
+    syncIngestionJobOnSpecUpdate: false
