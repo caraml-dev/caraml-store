@@ -1,6 +1,6 @@
 package dev.caraml.store.grpc;
 
-import dev.caraml.store.config.CoreServiceConfig;
+import dev.caraml.store.config.RegistryServiceConfig;
 import dev.caraml.store.exception.RetrievalException;
 import dev.caraml.store.grpc.interceptors.MonitoringInterceptor;
 import dev.caraml.store.kubernetes.api.SparkOperatorApiException;
@@ -61,14 +61,14 @@ public class CoreServiceImpl extends CoreServiceGrpc.CoreServiceImplBase {
   private final SpecService specService;
   private final ProjectService projectService;
   private final JobService jobService;
-  private final CoreServiceConfig config;
+  private final RegistryServiceConfig config;
 
   @Autowired
   public CoreServiceImpl(
       SpecService specService,
       ProjectService projectService,
       JobService jobService,
-      CoreServiceConfig config,
+      RegistryServiceConfig config,
       BuildProperties buildProperties) {
     this.specService = specService;
     this.projectService = projectService;

@@ -31,10 +31,10 @@ public class StoreConfig {
     return kubernetes;
   }
 
-  private CoreServiceConfig coreService;
+  private RegistryServiceConfig registryService;
 
   @Bean
-  CoreServiceConfig getCoreServiceConfig() {
-    return coreService;
+  RegistryServiceConfig getCoreServiceConfig() {
+    return registryService;
   }
 }

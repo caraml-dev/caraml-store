@@ -1,5 +1,5 @@
 caraml:
-  coreService:
+  registryService:
     # Whether to create/update streaming ingestion jobs on feature table creation/update
     syncIngestionJobOnSpecUpdate: true
 
