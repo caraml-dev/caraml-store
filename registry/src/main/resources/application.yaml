@@ -7,6 +7,19 @@ caraml:
     # Whether to use in-cluster Kubernetes configuration or default kube config.
     inCluster: false
 
+  monitoring:
+    # Configure the behaviour of the timer metrics
+    timer:
+      # Published percentiles
+      percentiles:
+        - 0.5
+        - 0.95
+        - 0.99
+      # Minimum expected latency
+      minBucketMs: 1
+      # Maximum expected latency
+      maxBucketMs: 200
+
   jobService:
     streamingJobs:
       - store: store-name
@@ -63,3 +76,11 @@ spring:
     password: ${DB_PASSWORD:password}
   flyway:
     baseline-on-migrate: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,health
+    metrics:
+      enabled: true
