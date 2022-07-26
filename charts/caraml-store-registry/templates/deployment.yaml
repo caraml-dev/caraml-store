@@ -96,7 +96,7 @@ spec:
         command:
         - java
         - -cp
-        - @/app/jib-classpath-file
+        - "@/app/jib-classpath-file"
         - dev.caraml.store.CaraMLRegistry
         - --spring.config.location=
           {{- if index .Values "application.yaml" "enabled" -}}
