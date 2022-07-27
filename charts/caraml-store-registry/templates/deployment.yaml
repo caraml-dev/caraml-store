@@ -143,3 +143,8 @@ spec:
 
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
+
+      {{- if .Values.containerRegistrySecret }}
+      imagePullSecrets:
+        - name: {{ .Values.containerRegistrySecret }}
+      {{- end -}}

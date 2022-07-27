@@ -103,3 +103,6 @@ secrets: []
 
 # podLabels -- Labels to be added to CaraML store registry pods
 podLabels: {}
+
+# private container registry credentials secret name
+containerRegistrySecret: ""
