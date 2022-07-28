@@ -44,6 +44,6 @@ jib {
         image = 'amazoncorretto:17-alpine'
     }
     to {
-        image = "${containerRegistry == null ? "" : containerRegistry + "/"}caraml-store-${project.name}:${version}"
+        image = "${containerRegistry == null ? "" : containerRegistry + "/"}${project.name}:${version}"
     }
 }
