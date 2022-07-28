@@ -23,3 +23,20 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Common labels
+*/}}
+{{- define "caraml-store-registry.labels" -}}
+app: {{ template "caraml-store-registry.name" . }}
+chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+release: {{ .Release.Name }}
+heritage: {{ .Release.Service }}
+app.kubernetes.io/name: {{ include "caraml-store-registry.name" . }}
+helm.sh/chart: {{ include "caraml-store-registry.chart" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
