@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          # This is required because our versioning strategy depends on parent tags
+          fetch-depth: 0
       - name: Log in to the Container registry
         uses: docker/login-action@v1
         with:
