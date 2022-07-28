@@ -4,7 +4,7 @@ metadata:
   name: {{ template "caraml-store-registry.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{ include "caraml-store-registry.labels" . | indent 4 }}
+{{ include "caraml-store-registry.labels" . | indent 4 }}
   {{- with .Values.service.annotations }}
   annotations:
     {{ toYaml . | nindent 4 }}

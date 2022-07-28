@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     component: registry
-    {{ include "caraml-store-registry.labels" . | indent 4 }}
+{{ include "caraml-store-registry.labels" . | indent 4 }}
 data:
   application-generated.yaml: |
 {{- if index .Values "application-generated.yaml" "enabled" }}
