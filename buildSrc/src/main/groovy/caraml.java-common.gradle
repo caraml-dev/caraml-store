@@ -24,15 +24,16 @@ spotless {
 version = '0.0.0-SNAPSHOT'
 gitVersioning.apply {
     refs {
-        considerTagsOnBranches = true
+        describeTagPattern = "v(?<version>.*)"
+        branch('main') {
+            version = '${describe.tag.version}-build.${describe.distance}-${commit.short}'
+        }
+        branch('.+') {
+            version = '${ref}-snapshot'
+        }
         tag('v(?<version>.*)') {
             version = '${ref.version}'
         }
-    }
-
-    // optional fallback configuration in case of no matching ref configuration
-    rev {
-        version = '${commit.short}'
     }
 }
 
