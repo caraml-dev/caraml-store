@@ -24,7 +24,6 @@ import dev.caraml.store.protobuf.core.FeatureTableProto.FeatureTableSpec;
 import dev.caraml.store.protobuf.core.OnlineStoreProto;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -79,7 +78,7 @@ public class RegistryService {
     Entity entity = entityRepository.findEntityByNameAndProject_Name(entityName, projectName);
 
     if (entity == null) {
-      throw new RetrievalException(
+      throw new SpecNotFoundException(
           String.format("Entity with name \"%s\" could not be found.", entityName));
     }
 
@@ -250,7 +249,7 @@ public class RegistryService {
    *
    * @param request Contains FeatureTable spec and project parameters used to create or update a
    *     FeatureTable.
-   * @throws NoSuchElementException projects and entities referenced in request do not exist.
+   * @throws SpecNotFoundException projects and entities referenced in request do not exist.
    * @return response containing the applied FeatureTable spec.
    */
   @Transactional
@@ -342,7 +341,7 @@ public class RegistryService {
    * project if specified, otherwise in default project.
    *
    * @param request containing the retrieval parameters.
-   * @throws NoSuchElementException if no FeatureTable matches given request.
+   * @throws SpecNotFoundException if no FeatureTable matches given request.
    * @return response containing the requested FeatureTable.
    */
   @Transactional
@@ -353,13 +352,13 @@ public class RegistryService {
     Optional<FeatureTable> retrieveTable =
         tableRepository.findFeatureTableByNameAndProject_Name(featureTableName, projectName);
     if (retrieveTable.isEmpty()) {
-      throw new NoSuchElementException(
+      throw new SpecNotFoundException(
           String.format(
               "No such Feature Table: (project: %s, name: %s)", projectName, featureTableName));
     }
 
     if (retrieveTable.get().isDeleted()) {
-      throw new NoSuchElementException(
+      throw new SpecNotFoundException(
           String.format(
               "Feature Table has been deleted: (project: %s, name: %s)",
               projectName, featureTableName));
@@ -376,7 +375,7 @@ public class RegistryService {
     Optional<FeatureTable> existingTable =
         tableRepository.findFeatureTableByNameAndProject_Name(featureTableName, projectName);
     if (existingTable.isEmpty()) {
-      throw new NoSuchElementException(
+      throw new SpecNotFoundException(
           String.format(
               "No such Feature Table: (project: %s, name: %s)", projectName, featureTableName));
     }
@@ -410,7 +409,7 @@ public class RegistryService {
             .findById(name)
             .orElseThrow(
                 () ->
-                    new NoSuchElementException(
+                    new SpecNotFoundException(
                         String.format("Online store with name '%s' not found", name)));
 
     GetOnlineStoreResponse.Status status = GetOnlineStoreResponse.Status.ACTIVE;
@@ -473,7 +472,7 @@ public class RegistryService {
             .findById(name)
             .orElseThrow(
                 () ->
-                    new NoSuchElementException(
+                    new SpecNotFoundException(
                         String.format("Online store with name '%s' not found", name)));
 
     onlineStore.setArchived(true);

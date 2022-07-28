@@ -1,5 +1,6 @@
 package dev.caraml.store.feature;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import dev.caraml.store.protobuf.core.CoreServiceGrpc;
 import dev.caraml.store.protobuf.core.CoreServiceProto.ApplyEntityRequest;
 import dev.caraml.store.protobuf.core.CoreServiceProto.ApplyEntityResponse;
@@ -37,10 +38,8 @@ import dev.caraml.store.protobuf.core.EntityProto.EntitySpec;
 import dev.caraml.store.sparkjob.JobService;
 import dev.caraml.store.sparkjob.SparkOperatorApiException;
 import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -72,93 +71,36 @@ public class RegistryGrpcServiceImpl extends CoreServiceGrpc.CoreServiceImplBase
   public void getFeastCoreVersion(
       GetFeastCoreVersionRequest request,
       StreamObserver<GetFeastCoreVersionResponse> responseObserver) {
-    try {
-      GetFeastCoreVersionResponse response =
-          GetFeastCoreVersionResponse.newBuilder().setVersion(getVersion()).build();
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (RetrievalException | StatusRuntimeException e) {
-      log.error("Could not determine version: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    GetFeastCoreVersionResponse response =
+        GetFeastCoreVersionResponse.newBuilder().setVersion(getVersion()).build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
   }
 
   @Override
   public void getEntity(
       GetEntityRequest request, StreamObserver<GetEntityResponse> responseObserver) {
-    try {
-      GetEntityResponse response = registryService.getEntity(request);
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (RetrievalException e) {
-      log.error("Unable to fetch entity requested in GetEntity method: ", e);
-      responseObserver.onError(
-          Status.NOT_FOUND.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    } catch (IllegalArgumentException e) {
-      log.error("Illegal arguments provided to GetEntity method: ", e);
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT
-              .withDescription(e.getMessage())
-              .withCause(e)
-              .asRuntimeException());
-    } catch (Exception e) {
-      log.error("Exception has occurred in GetEntity method: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    GetEntityResponse response = registryService.getEntity(request);
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
   }
 
   /** Retrieve a list of features */
   @Override
   public void listFeatures(
       ListFeaturesRequest request, StreamObserver<ListFeaturesResponse> responseObserver) {
-    try {
-      ListFeaturesResponse response = registryService.listFeatures(request.getFilter());
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (IllegalArgumentException e) {
-      log.error("Illegal arguments provided to ListFeatures method: ", e);
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT
-              .withDescription(e.getMessage())
-              .withCause(e)
-              .asRuntimeException());
-    } catch (RetrievalException e) {
-      log.error("Unable to fetch entities requested in ListFeatures method: ", e);
-      responseObserver.onError(
-          Status.NOT_FOUND.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Exception has occurred in ListFeatures method: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    ListFeaturesResponse response = registryService.listFeatures(request.getFilter());
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
   }
 
   /** Retrieve a list of entities */
   @Override
   public void listEntities(
       ListEntitiesRequest request, StreamObserver<ListEntitiesResponse> responseObserver) {
-    try {
-      ListEntitiesResponse response = registryService.listEntities(request.getFilter());
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (IllegalArgumentException e) {
-      log.error("Illegal arguments provided to ListEntities method: ", e);
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT
-              .withDescription(e.getMessage())
-              .withCause(e)
-              .asRuntimeException());
-    } catch (RetrievalException e) {
-      log.error("Unable to fetch entities requested in ListEntities method: ", e);
-      responseObserver.onError(
-          Status.NOT_FOUND.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Exception has occurred in ListEntities method: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    ListEntitiesResponse response = registryService.listEntities(request.getFilter());
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
   }
 
   /* Registers an entity */
@@ -181,69 +123,37 @@ public class RegistryGrpcServiceImpl extends CoreServiceGrpc.CoreServiceImplBase
           e);
       responseObserver.onError(
           Status.ALREADY_EXISTS.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Exception has occurred in ApplyEntity method: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
     }
   }
 
   @Override
   public void createProject(
       CreateProjectRequest request, StreamObserver<CreateProjectResponse> responseObserver) {
-    try {
-      registryService.createProject(request.getName());
-      responseObserver.onNext(CreateProjectResponse.getDefaultInstance());
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      log.error("Exception has occurred in the createProject method: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    registryService.createProject(request.getName());
+    responseObserver.onNext(CreateProjectResponse.getDefaultInstance());
+    responseObserver.onCompleted();
+
   }
 
   @Override
   public void archiveProject(
       ArchiveProjectRequest request, StreamObserver<ArchiveProjectResponse> responseObserver) {
     String projectId;
-    try {
-      projectId = request.getName();
-      registryService.archiveProject(projectId);
-      responseObserver.onNext(ArchiveProjectResponse.getDefaultInstance());
-      responseObserver.onCompleted();
-    } catch (IllegalArgumentException e) {
-      log.error("Recieved an invalid request on calling archiveProject method:", e);
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT
-              .withDescription(e.getMessage())
-              .withCause(e)
-              .asRuntimeException());
-    } catch (UnsupportedOperationException e) {
-      log.error("Attempted to archive an unsupported project:", e);
-      responseObserver.onError(
-          Status.UNIMPLEMENTED.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Exception has occurred in the createProject method: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    projectId = request.getName();
+    registryService.archiveProject(projectId);
+    responseObserver.onNext(ArchiveProjectResponse.getDefaultInstance());
+    responseObserver.onCompleted();
   }
 
   @Override
   public void listProjects(
       ListProjectsRequest request, StreamObserver<ListProjectsResponse> responseObserver) {
-    try {
-      List<Project> projects = registryService.listProjects();
-      responseObserver.onNext(
-          ListProjectsResponse.newBuilder()
-              .addAllProjects(projects.stream().map(Project::getName).collect(Collectors.toList()))
-              .build());
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      log.error("Exception has occurred in the listProjects method: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    List<Project> projects = registryService.listProjects();
+    responseObserver.onNext(
+        ListProjectsResponse.newBuilder()
+            .addAllProjects(projects.stream().map(Project::getName).collect(Collectors.toList()))
+            .build());
+    responseObserver.onCompleted();
   }
 
   @Override
@@ -269,32 +179,11 @@ public class RegistryGrpcServiceImpl extends CoreServiceGrpc.CoreServiceImplBase
               tableName, projectName));
       responseObserver.onError(
           Status.ALREADY_EXISTS.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    } catch (IllegalArgumentException e) {
-      log.error(
-          String.format(
-              "ApplyFeatureTable: Invalid apply Feature Table Request: (name: %s, project: %s)",
-              tableName, projectName));
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT
-              .withDescription(e.getMessage())
-              .withCause(e)
-              .asRuntimeException());
-    } catch (UnsupportedOperationException e) {
-      log.error(
-          String.format(
-              "ApplyFeatureTable: Unsupported apply Feature Table Request: (name: %s, project: %s)",
-              tableName, projectName));
-      responseObserver.onError(
-          Status.UNIMPLEMENTED.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    } catch (SparkOperatorApiException e) {
+    } catch (SparkOperatorApiException | InvalidProtocolBufferException e) {
       log.error(
           String.format(
               "ApplyFeatureTable: feature spec was applied but streaming job creation failed: (name: %s, project: %s)",
               tableName, projectName));
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    } catch (Exception e) {
-      log.error("ApplyFeatureTable Exception has occurred:", e);
       responseObserver.onError(
           Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
     }
@@ -305,133 +194,63 @@ public class RegistryGrpcServiceImpl extends CoreServiceGrpc.CoreServiceImplBase
       ListFeatureTablesRequest request,
       StreamObserver<ListFeatureTablesResponse> responseObserver) {
 
-    try {
-      ListFeatureTablesResponse response = registryService.listFeatureTables(request.getFilter());
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (IllegalArgumentException e) {
-      log.error("ListFeatureTable: Invalid list Feature Table Request");
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT
-              .withDescription(e.getMessage())
-              .withCause(e)
-              .asRuntimeException());
-    } catch (Exception e) {
-      log.error("ListFeatureTable: Exception has occurred: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    ListFeatureTablesResponse response = registryService.listFeatureTables(request.getFilter());
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+
   }
 
   @Override
   public void getFeatureTable(
       GetFeatureTableRequest request, StreamObserver<GetFeatureTableResponse> responseObserver) {
-    try {
-      GetFeatureTableResponse response = registryService.getFeatureTable(request);
+    GetFeatureTableResponse response = registryService.getFeatureTable(request);
 
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (NoSuchElementException e) {
-      log.error(
-          String.format(
-              "GetFeatureTable: No such Feature Table: (project: %s, name: %s)",
-              request.getProject(), request.getName()));
-      responseObserver.onError(
-          Status.NOT_FOUND.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    } catch (Exception e) {
-      log.error("GetFeatureTable: Exception has occurred: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
   }
 
   @Override
   public void deleteFeatureTable(
       DeleteFeatureTableRequest request,
       StreamObserver<DeleteFeatureTableResponse> responseObserver) {
-    try {
-      registryService.deleteFeatureTable(request);
+    registryService.deleteFeatureTable(request);
 
-      responseObserver.onNext(DeleteFeatureTableResponse.getDefaultInstance());
-      responseObserver.onCompleted();
-    } catch (NoSuchElementException e) {
-      log.error(
-          String.format(
-              "DeleteFeatureTable: No such Feature Table: (project: %s, name: %s)",
-              request.getProject(), request.getName()));
-      responseObserver.onError(
-          Status.NOT_FOUND.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    } catch (Exception e) {
-      log.error("DeleteFeatureTable: Exception has occurred: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    responseObserver.onNext(DeleteFeatureTableResponse.getDefaultInstance());
+    responseObserver.onCompleted();
   }
 
   @Override
   public void listOnlineStores(
       ListOnlineStoresRequest request, StreamObserver<ListOnlineStoresResponse> responseObserver) {
-    try {
-      ListOnlineStoresResponse response = registryService.listOnlineStores();
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      log.error("Exception has occurred in ListOnlineStores method: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    ListOnlineStoresResponse response = registryService.listOnlineStores();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
   }
 
   @Override
   public void getOnlineStore(
       GetOnlineStoreRequest request, StreamObserver<GetOnlineStoreResponse> responseObserver) {
-    try {
-      GetOnlineStoreResponse response = registryService.getOnlineStore(request.getName());
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (NoSuchElementException e) {
-      log.error(String.format("GetOnlineStore: No such online store: %s", request.getName()));
-      responseObserver.onError(
-          Status.NOT_FOUND.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Exception has occurred in getOnlineStore method: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    GetOnlineStoreResponse response = registryService.getOnlineStore(request.getName());
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
   }
 
   @Override
   public void registerOnlineStore(
       RegisterOnlineStoreRequest request,
       StreamObserver<RegisterOnlineStoreResponse> responseObserver) {
-    try {
-      RegisterOnlineStoreResponse response = registryService.registerOnlineStore(request);
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (Exception e) {
-      log.error("Exception has occurred in registerOnlineStore method: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    RegisterOnlineStoreResponse response = registryService.registerOnlineStore(request);
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
   }
 
   @Override
   public void archiveOnlineStore(
       ArchiveOnlineStoreRequest request,
       StreamObserver<ArchiveOnlineStoreResponse> responseObserver) {
-    try {
-      ArchiveOnlineStoreResponse response = registryService.archiveOnlineStore(request.getName());
-      responseObserver.onNext(response);
-      responseObserver.onCompleted();
-    } catch (NoSuchElementException e) {
-      log.error(String.format("ArchiveOnlineStore: No such online store: %s", request.getName()));
-      responseObserver.onError(
-          Status.NOT_FOUND.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    } catch (Exception e) {
-      log.error("Exception has occurred in archiveOnlineStore method: ", e);
-      responseObserver.onError(
-          Status.INTERNAL.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    }
+    ArchiveOnlineStoreResponse response = registryService.archiveOnlineStore(request.getName());
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
   }
 
   public String getVersion() {

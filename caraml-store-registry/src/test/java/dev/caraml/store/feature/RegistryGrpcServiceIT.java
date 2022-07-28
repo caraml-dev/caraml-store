@@ -201,7 +201,7 @@ public class RegistryGrpcServiceIT extends BaseIT {
           exc.getMessage(),
           equalTo(
               String.format(
-                  "INTERNAL: invalid value for %s resource, %s: %s",
+                  "INVALID_ARGUMENT: invalid value for %s resource, %s: %s",
                   "entity",
                   "dash-entity",
                   "argument must only contain alphanumeric characters and underscores.")));
@@ -223,7 +223,7 @@ public class RegistryGrpcServiceIT extends BaseIT {
           exc.getMessage(),
           equalTo(
               String.format(
-                  "INTERNAL: You are attempting to change the type of this entity in %s project from %s to %s. This isn't allowed. Please create a new entity.",
+                  "INVALID_ARGUMENT: You are attempting to change the type of this entity in %s project from %s to %s. This isn't allowed. Please create a new entity.",
                   "default", "STRING", spec.getValueType())));
     }
 
@@ -284,7 +284,7 @@ public class RegistryGrpcServiceIT extends BaseIT {
                       "archived",
                       DataGenerator.createEntitySpec(
                           "new_entity3", "Entity description", STRING, Map.of("key1", "val1"))));
-      assertThat(exc.getMessage(), equalTo("INTERNAL: Project is archived: archived"));
+      assertThat(exc.getMessage(), equalTo("INVALID_ARGUMENT: Project is archived: archived"));
     }
 
     @Test
@@ -840,7 +840,7 @@ public class RegistryGrpcServiceIT extends BaseIT {
     }
 
     @Test
-    public void shouldThrowNoSuchElementExceptionIfOnlineStoreNotFound() {
+    public void shouldThrowNoFoundExceptionIfOnlineStoreNotFound() {
       StatusRuntimeException exc =
           assertThrows(StatusRuntimeException.class, () -> apiClient.getOnlineStore("made-up"));
       assertThat(
@@ -865,7 +865,7 @@ public class RegistryGrpcServiceIT extends BaseIT {
     }
 
     @Test
-    public void shouldThrowNoSuchElementExceptionIfOnlineStoresNotFound() {
+    public void shouldThrowNoSuchFoundExceptionIfOnlineStoresNotFound() {
       StatusRuntimeException exc =
           assertThrows(StatusRuntimeException.class, () -> apiClient.archiveOnlineStore("made-up"));
 

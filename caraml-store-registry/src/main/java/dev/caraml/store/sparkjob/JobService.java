@@ -134,13 +134,13 @@ public class JobService {
     Map<String, JobServiceConfig.SparkJobProperties> jobConfigByStoreName =
         jobConfigByTypeAndStoreName.get(jobType);
     if (jobConfigByStoreName == null) {
-      throw new SparkOperatorApiException(
+      throw new IllegalArgumentException(
           String.format("Job properties not found for job type: %s", jobType.toString()));
     }
     JobServiceConfig.SparkJobProperties jobProperties =
         jobConfigByStoreName.get(spec.getOnlineStore().getName());
     if (jobProperties == null) {
-      throw new SparkOperatorApiException(
+      throw new IllegalArgumentException(
           String.format(
               "Job properties not found for store name: %s", spec.getOnlineStore().getName()));
     }
