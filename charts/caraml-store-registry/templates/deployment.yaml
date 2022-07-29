@@ -96,7 +96,7 @@ spec:
         - dev.caraml.store.CaraMLRegistry
         - --spring.config.location=
           {{- if index .Values "application.yaml" "enabled" -}}
-          classpath:/application.yml
+          classpath:/application.yaml
           {{- end }}
           {{- if index .Values "application-generated.yaml" "enabled" -}}
           ,file:/etc/caraml-store/application-generated.yaml
