@@ -14,7 +14,7 @@ public class SparkApplicationSpec {
   private Map<String, String> hadoopConf;
   private Map<String, String> sparkConf;
   private String image;
-  private String mode = "cluster";
+  private DeployMode mode = DeployMode.CLUSTER;
   private Integer timeToLiveSeconds;
   private RestartPolicy restartPolicy;
   private String type;

@@ -1,6 +1,5 @@
 package dev.caraml.store.sparkjob;
 
-import io.kubernetes.client.openapi.models.V1Secret;
 import io.kubernetes.client.openapi.models.V1Toleration;
 import java.util.List;
 import java.util.Map;
@@ -16,5 +15,5 @@ public class SparkExecutorSpec {
   private String memory;
   private String javaOptions;
   private Map<String, String> labels;
-  private List<V1Secret> secrets;
+  private List<SecretInfo> secrets;
 }

@@ -1,6 +1,5 @@
 package dev.caraml.store.sparkjob;
 
-import io.kubernetes.client.openapi.models.V1Secret;
 import io.kubernetes.client.openapi.models.V1Toleration;
 import java.util.List;
 import java.util.Map;
@@ -19,5 +18,5 @@ public class SparkDriverSpec {
   private Map<String, String> labels;
   private String serviceAccount;
   private Map<String, String> serviceAnnotations;
-  private List<V1Secret> secrets;
+  private List<SecretInfo> secrets;
 }
