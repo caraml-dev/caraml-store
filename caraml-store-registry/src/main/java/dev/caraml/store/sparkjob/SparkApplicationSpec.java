@@ -18,6 +18,8 @@ public class SparkApplicationSpec {
   private Integer timeToLiveSeconds;
   private RestartPolicy restartPolicy;
   private String type;
+  private String sparkVersion;
+  private String pythonVersion;
 
   public void addArgument(String name, String value) {
     arguments.add("--" + name);
