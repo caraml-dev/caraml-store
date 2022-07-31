@@ -41,7 +41,7 @@ def containerRegistry = System.getenv('DOCKER_REGISTRY')
 
 jib {
     from {
-        image = 'amazoncorretto:17-alpine'
+        image = 'amazoncorretto:17.04'
     }
     to {
         image = "${containerRegistry == null ? "" : containerRegistry + "/"}${project.name}:${version}"
