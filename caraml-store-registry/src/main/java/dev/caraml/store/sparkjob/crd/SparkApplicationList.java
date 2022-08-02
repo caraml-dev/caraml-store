@@ -1,4 +1,4 @@
-package dev.caraml.store.sparkjob;
+package dev.caraml.store.sparkjob.crd;
 
 import io.kubernetes.client.common.KubernetesListObject;
 import io.kubernetes.client.openapi.models.V1ListMeta;

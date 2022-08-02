@@ -1,0 +1,16 @@
+{
+  "entities": [
+    "entity1"
+  ],
+  "features": [
+    {
+      "name": "feature1",
+      "valueType": "INT64"
+    }
+  ],
+  "name": "batch_feature_table",
+  "batchSource": {
+    "type": "BATCH_BIGQUERY",
+    "eventTimestampColumn": "event_timestamp"
+  }
+}

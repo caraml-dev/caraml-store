@@ -1,5 +1,6 @@
 package dev.caraml.store.sparkjob;
 
+import dev.caraml.store.sparkjob.crd.SparkApplication;
 import java.util.List;
 import java.util.Optional;
 

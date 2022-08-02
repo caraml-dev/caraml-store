@@ -1,4 +1,4 @@
-package dev.caraml.store.sparkjob;
+package dev.caraml.store.sparkjob.crd;
 
 import lombok.Getter;
 import lombok.Setter;
