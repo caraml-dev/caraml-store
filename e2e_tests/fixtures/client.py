@@ -9,5 +9,5 @@ def feast_client(
 ):
     return Client(
         core_url=f"{caraml_store_registry[0]}:{caraml_store_registry[1]}",
-        telemetry=pytestconfig.getoption("telemetry")
+        telemetry=False
     )
