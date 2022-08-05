@@ -132,7 +132,6 @@ public class RegistryGrpcServiceImpl extends CoreServiceGrpc.CoreServiceImplBase
     registryService.createProject(request.getName());
     responseObserver.onNext(CreateProjectResponse.getDefaultInstance());
     responseObserver.onCompleted();
-
   }
 
   @Override
@@ -197,7 +196,6 @@ public class RegistryGrpcServiceImpl extends CoreServiceGrpc.CoreServiceImplBase
     ListFeatureTablesResponse response = registryService.listFeatureTables(request.getFilter());
     responseObserver.onNext(response);
     responseObserver.onCompleted();
-
   }
 
   @Override
