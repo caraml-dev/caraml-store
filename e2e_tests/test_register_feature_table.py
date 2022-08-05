@@ -12,6 +12,15 @@ from feast.value_type import ValueType
 
 
 @pytest.fixture
+def online_store():
+    return OnlineStore(
+        name="feast-bigtable",
+        store_type="BIGTABLE",
+        description="Test online store"
+    )
+
+
+@pytest.fixture
 def customer_entity():
     return Entity(
         name="customer_id",
@@ -56,7 +65,11 @@ def basic_featuretable():
         topic="test_topic",
         event_timestamp_column="datetime_col",
     )
-    online_store = OnlineStore("unset", "UNSET", "store info not captured")
+    bigtable_store = OnlineStore(
+        name="feast-bigtable",
+        store_type="BIGTABLE",
+        description="Test online store"
+    )
     return FeatureTable(
         name="basic_featuretable",
         entities=["driver_id", "customer_id"],
@@ -68,9 +81,8 @@ def basic_featuretable():
         batch_source=batch_source,
         #stream_source=stream_source,
         labels={"key1": "val1", "key2": "val2"},
-        online_store=online_store
+        online_store=bigtable_store
     )
-
 
 
 @pytest.fixture
@@ -122,7 +134,11 @@ def test_get_list_basic(
     customer_entity: Entity,
     driver_entity: Entity,
     basic_featuretable: FeatureTable,
+    online_store: OnlineStore,
 ):
+
+    # Register OnlineStore
+    feast_client.register_online_store(online_store)
 
     # ApplyEntity
     feast_client.apply(customer_entity)
@@ -149,6 +165,7 @@ def test_get_list_basic(
     # GetFeatureTable Check
     actual_get_feature_table = feast_client.get_feature_table(name="basic_featuretable")
     assert actual_get_feature_table == basic_featuretable
+    assert actual_get_feature_table.online_store == online_store
 
     # ListFeatureTables Check
     actual_list_feature_table = [
