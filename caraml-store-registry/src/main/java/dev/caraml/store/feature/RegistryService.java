@@ -438,7 +438,9 @@ public class RegistryService {
         onlineStoreRepository.findById(newOnlineStoreProto.getName()).orElse(null);
 
     // Do nothing if no change
-    if (existingOnlineStore != null && existingOnlineStore.toProto().equals(newOnlineStoreProto)) {
+    if (existingOnlineStore != null
+        && !existingOnlineStore.isArchived()
+        && existingOnlineStore.toProto().equals(newOnlineStoreProto)) {
       return RegisterOnlineStoreResponse.newBuilder()
           .setStatus(RegisterOnlineStoreResponse.Status.NO_CHANGE)
           .setOnlineStore(registerOnlineStoreRequest.getOnlineStore())
