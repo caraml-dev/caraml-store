@@ -4,7 +4,7 @@ CREATE TABLE data_sources
 (
     id                       BIGINT       NOT NULL,
     type                     VARCHAR(255) NOT NULL,
-    config                   VARCHAR(255),
+    config                   TEXT,
     field_mapping            TEXT,
     timestamp_column         VARCHAR(255),
     created_timestamp_column VARCHAR(255),
