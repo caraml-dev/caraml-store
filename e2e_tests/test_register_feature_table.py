@@ -79,7 +79,7 @@ def basic_featuretable():
         ],
         max_age=Duration(seconds=3600),
         batch_source=batch_source,
-        #stream_source=stream_source,
+        stream_source=stream_source,
         labels={"key1": "val1", "key2": "val2"},
         online_store=bigtable_store
     )
