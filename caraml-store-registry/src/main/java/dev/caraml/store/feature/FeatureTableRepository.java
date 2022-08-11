@@ -10,6 +10,9 @@ public interface FeatureTableRepository extends JpaRepository<FeatureTable, Long
   // Find single FeatureTable by project and name
   Optional<FeatureTable> findFeatureTableByNameAndProject_Name(String name, String projectName);
 
+  Optional<FeatureTable> findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
+      String name, String projectName);
+
   // Find FeatureTables by project
   @EntityGraph(
       type = EntityGraph.EntityGraphType.FETCH,

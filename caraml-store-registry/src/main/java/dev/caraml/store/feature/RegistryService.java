@@ -350,18 +350,12 @@ public class RegistryService {
     String featureTableName = request.getName();
 
     Optional<FeatureTable> retrieveTable =
-        tableRepository.findFeatureTableByNameAndProject_Name(featureTableName, projectName);
+        tableRepository.findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
+            featureTableName, projectName);
     if (retrieveTable.isEmpty()) {
       throw new SpecNotFoundException(
           String.format(
               "No such Feature Table: (project: %s, name: %s)", projectName, featureTableName));
-    }
-
-    if (retrieveTable.get().isDeleted()) {
-      throw new SpecNotFoundException(
-          String.format(
-              "Feature Table has been deleted: (project: %s, name: %s)",
-              projectName, featureTableName));
     }
 
     return GetFeatureTableResponse.newBuilder().setTable(retrieveTable.get().toProto()).build();
@@ -373,7 +367,8 @@ public class RegistryService {
     String featureTableName = request.getName();
 
     Optional<FeatureTable> existingTable =
-        tableRepository.findFeatureTableByNameAndProject_Name(featureTableName, projectName);
+        tableRepository.findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
+            featureTableName, projectName);
     if (existingTable.isEmpty()) {
       throw new SpecNotFoundException(
           String.format(

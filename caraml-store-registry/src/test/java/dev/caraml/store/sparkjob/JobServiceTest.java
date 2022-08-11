@@ -71,7 +71,8 @@ public class JobServiceTest {
         .thenReturn(
             new Entity("entity1", "", ValueProto.ValueType.Enum.STRING, Collections.emptyMap()));
     FeatureTable featureTable = FeatureTable.fromProto(project, spec, entityRepository);
-    when(tableRepository.findFeatureTableByNameAndProject_Name("batch_feature_table", project))
+    when(tableRepository.findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
+            "batch_feature_table", project))
         .thenReturn(Optional.of(featureTable));
     jobservice.createOrUpdateBatchIngestionJob(
         project, "batch_feature_table", ingestionStart, ingestionEnd);

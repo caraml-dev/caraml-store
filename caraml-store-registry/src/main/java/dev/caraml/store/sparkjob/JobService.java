@@ -135,8 +135,7 @@ public class JobService {
       throws InvalidProtocolBufferException, SparkOperatorApiException {
     FeatureTableSpec spec =
         tableRepository
-            .findFeatureTableByNameAndProject_Name(project, featureTableName)
-            .filter(ft -> !ft.isDeleted())
+            .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(project, featureTableName)
             .map(ft -> ft.toProto().getSpec())
             .orElseThrow(
                 () -> {
@@ -165,8 +164,7 @@ public class JobService {
       throws SparkOperatorApiException {
     FeatureTableSpec spec =
         tableRepository
-            .findFeatureTableByNameAndProject_Name(featureTableName, project)
-            .filter(ft -> !ft.isDeleted())
+            .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(featureTableName, project)
             .map(ft -> ft.toProto().getSpec())
             .orElseThrow(
                 () -> {
