@@ -10,7 +10,7 @@ import lombok.Data;
 public class SparkApplication implements KubernetesObject {
 
   private V1ObjectMeta metadata;
-  private String apiVersion;
+  private String apiVersion = "sparkoperator.k8s.io/v1beta2";
   private String kind = "SparkApplication";
   private SparkApplicationSpec spec;
 
