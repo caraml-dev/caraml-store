@@ -29,6 +29,7 @@ import dev.caraml.store.testutils.it.SimpleCoreClient;
 import dev.caraml.store.testutils.util.TestUtil;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -734,12 +735,7 @@ public class RegistryGrpcServiceIT extends BaseIT {
               () -> apiClient.simpleGetFeatureTable(projectName, featureTableName));
 
       assertThat(featureTables.size(), equalTo(0));
-      assertThat(
-          exc.getMessage(),
-          equalTo(
-              String.format(
-                  "NOT_FOUND: Feature Table has been deleted: (project: %s, name: %s)",
-                  projectName, featureTableName)));
+      assertEquals(exc.getStatus().getCode(), Status.NOT_FOUND.getCode());
     }
 
     @Test

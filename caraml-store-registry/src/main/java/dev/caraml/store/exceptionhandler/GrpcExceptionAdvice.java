@@ -1,6 +1,7 @@
 package dev.caraml.store.exceptionhandler;
 
 import dev.caraml.store.feature.SpecNotFoundException;
+import dev.caraml.store.sparkjob.SparkOperatorApiException;
 import io.grpc.Status;
 import net.devh.boot.grpc.server.advice.GrpcAdvice;
 import net.devh.boot.grpc.server.advice.GrpcExceptionHandler;
@@ -21,6 +22,11 @@ public class GrpcExceptionAdvice {
   @GrpcExceptionHandler
   public Status handleSpecNotFound(SpecNotFoundException e) {
     return Status.NOT_FOUND.withDescription(e.getMessage()).withCause(e);
+  }
+
+  @GrpcExceptionHandler
+  public Status handleSparkOperatorApiException(SparkOperatorApiException e) {
+    return Status.INTERNAL.withDescription(e.getMessage()).withCause(e);
   }
 
   @GrpcExceptionHandler

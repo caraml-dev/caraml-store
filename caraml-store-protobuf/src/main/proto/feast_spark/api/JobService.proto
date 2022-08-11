@@ -2,7 +2,7 @@ syntax = "proto3";
 package feast_spark.api;
 
 option java_outer_classname = "JobServiceProto";
-option java_package = "feast_spark.proto.jobservice";
+option java_package = "dev.caraml.store.protobuf.jobservice";
 
 import "feast/core/DataSource.proto";
 import "google/protobuf/timestamp.proto";
