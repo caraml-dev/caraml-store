@@ -25,21 +25,26 @@ caraml:
   # as the flag arguments --feature-table and --store. For batch ingestion jobs, --start-time and --end-time will be added
   # to indicate the range of data to be ingested.
   jobService:
+    namespace: spark-operator
     streamIngestion:
       - store: store-name
-        namespace: spark-operator
         # Stream ingestion spark application spec
         # sparkApplicationSpec:
     batchIngestion:
       - store: store-name
-        namespace: spark-operator
         # Batch ingestion spark application spec
         # sparkApplicationSpec:
     historicalRetrieval:
-      namespace: spark-operator
       # Historical retrieval job spark application spec
-      # sparkApplicationSpec:
-
+       sparkApplicationSpec:
+         image:
+         driver:
+           cores: 1
+           memory: "2048m"
+         executor:
+           cores: 1
+           instances: 1
+           memory: "6144m"
 
 grpc:
   server:

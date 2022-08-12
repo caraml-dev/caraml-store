@@ -7,6 +7,8 @@ import lombok.Data;
 
 @Data
 public class SparkApplicationSpec {
+  private String mainApplicationFile;
+  private String mainClass;
   private DynamicAllocation dynamicAllocation;
   private SparkDriverSpec driver;
   private SparkExecutorSpec executor;
@@ -21,8 +23,7 @@ public class SparkApplicationSpec {
   private String sparkVersion;
   private String pythonVersion;
 
-  public void addArgument(String name, String value) {
-    arguments.add("--" + name);
-    arguments.add(value);
+  public void addArguments(List<String> newArguments) {
+    arguments.addAll(newArguments);
   }
 }
