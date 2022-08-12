@@ -13,13 +13,12 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 public class JobServiceConfig {
-  public record IngestionJobProperties(
-      String store, String namespace, SparkApplicationSpec sparkApplicationSpec) {}
+  public record IngestionJobProperties(String store, SparkApplicationSpec sparkApplicationSpec) {}
 
-  public record HistoricalRetrievalJobProperties(
-      String namespace, SparkApplicationSpec sparkApplicationSpec) {}
+  public record HistoricalRetrievalJobProperties(SparkApplicationSpec sparkApplicationSpec) {}
 
-  List<IngestionJobProperties> streamIngestion = new ArrayList<>();
-  List<IngestionJobProperties> batchIngestion = new ArrayList<>();
-  HistoricalRetrievalJobProperties historicalRetrieval;
+  private String namespace;
+  private List<IngestionJobProperties> streamIngestion = new ArrayList<>();
+  private List<IngestionJobProperties> batchIngestion = new ArrayList<>();
+  private HistoricalRetrievalJobProperties historicalRetrieval;
 }

@@ -1,6 +1,5 @@
 package dev.caraml.store.feature;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import dev.caraml.store.protobuf.core.CoreServiceGrpc;
 import dev.caraml.store.protobuf.core.CoreServiceProto.ApplyEntityRequest;
 import dev.caraml.store.protobuf.core.CoreServiceProto.ApplyEntityResponse;
@@ -178,7 +177,7 @@ public class RegistryGrpcServiceImpl extends CoreServiceGrpc.CoreServiceImplBase
               tableName, projectName));
       responseObserver.onError(
           Status.ALREADY_EXISTS.withDescription(e.getMessage()).withCause(e).asRuntimeException());
-    } catch (SparkOperatorApiException | InvalidProtocolBufferException e) {
+    } catch (SparkOperatorApiException e) {
       log.error(
           String.format(
               "ApplyFeatureTable: feature spec was applied but streaming job creation failed: (name: %s, project: %s)",

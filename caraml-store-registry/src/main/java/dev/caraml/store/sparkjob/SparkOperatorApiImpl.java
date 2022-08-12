@@ -1,6 +1,5 @@
 package dev.caraml.store.sparkjob;
 
-import dev.caraml.store.sparkjob.crd.ClusterConfig;
 import dev.caraml.store.sparkjob.crd.SparkApplication;
 import dev.caraml.store.sparkjob.crd.SparkApplicationList;
 import io.kubernetes.client.openapi.ApiClient;

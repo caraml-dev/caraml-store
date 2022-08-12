@@ -49,10 +49,10 @@ public class JobServiceTest {
   public void shouldCreateBatchIngestionJob() throws IOException, ParseException {
     List<JobServiceConfig.IngestionJobProperties> jobs = new ArrayList<>();
     JobServiceConfig properties = new JobServiceConfig();
+    properties.setNamespace("spark-operator");
     properties.setBatchIngestion(jobs);
     JobServiceConfig.IngestionJobProperties batchJobProperty =
-        new JobServiceConfig.IngestionJobProperties(
-            "store", "spark-operator", new SparkApplicationSpec());
+        new JobServiceConfig.IngestionJobProperties("store", new SparkApplicationSpec());
     jobs.add(batchJobProperty);
     JobService jobservice = new JobService(properties, entityRepository, tableRepository, api);
     FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder();
@@ -81,20 +81,23 @@ public class JobServiceTest {
     expectedMetadata.setLabels(
         Map.of(
             "caraml.dev/table", "batch_feature_table",
+            "caraml.dev/store", "store",
             "caraml.dev/project", "project",
-            "caraml.dev/type", "OFFLINE_TO_ONLINE_JOB"));
+            "caraml.dev/type", "BATCH_INGESTION_JOB"));
     expectedMetadata.setNamespace("spark-operator");
-    expectedMetadata.setName("caraml-58c06c7994b14e1e88cb03ef2a392faa");
+    expectedMetadata.setName("caraml-5b41d97ec1180f188e4c45ede5b22760");
     expectedSparkApplication.setMetadata(expectedMetadata);
     SparkApplicationSpec expectedSparkApplicationSpec = new SparkApplicationSpec();
-    expectedSparkApplicationSpec.addArgument(
-        "feature-table",
-        "{\"project\":\"project\",\"name\":\"batch_feature_table\",\"labels\":{},\"maxAge\":0,\"entities\":[{\"name\":\"entity1\",\"type\":\"STRING\"}],\"features\":[{\"name\":\"feature1\",\"type\":\"INT64\"}]}");
-    expectedSparkApplicationSpec.addArgument(
-        "source",
-        "{\"type\":\"BATCH_BIGQUERY\",\"eventTimestampColumn\":\"event_timestamp\",\"bigqueryOptions\":{}}");
-    expectedSparkApplicationSpec.addArgument("start", "2022-08-01T01:00:00Z");
-    expectedSparkApplicationSpec.addArgument("end", "2022-08-02T01:00:00Z");
+    expectedSparkApplicationSpec.addArguments(
+        List.of(
+            "--feature-table",
+            "{\"project\":\"project\",\"name\":\"batch_feature_table\",\"labels\":{},\"maxAge\":0,\"entities\":[{\"name\":\"entity1\",\"type\":\"STRING\"}],\"features\":[{\"name\":\"feature1\",\"type\":\"INT64\"}]}",
+            "--source",
+            "{\"type\":\"BATCH_BIGQUERY\",\"eventTimestampColumn\":\"event_timestamp\",\"bigqueryOptions\":{}}",
+            "--start",
+            "2022-08-01T01:00:00Z",
+            "--end",
+            "2022-08-02T01:00:00Z"));
     expectedSparkApplication.setSpec(expectedSparkApplicationSpec);
     verify(api, times(1)).create(expectedSparkApplication);
   }
@@ -103,10 +106,10 @@ public class JobServiceTest {
   public void shouldCreateStreamingJob() throws IOException, SparkOperatorApiException {
     List<JobServiceConfig.IngestionJobProperties> jobs = new ArrayList<>();
     JobServiceConfig properties = new JobServiceConfig();
+    properties.setNamespace("spark-operator");
     properties.setStreamIngestion(jobs);
     JobServiceConfig.IngestionJobProperties streamJobProperty =
-        new JobServiceConfig.IngestionJobProperties(
-            "store", "spark-operator", new SparkApplicationSpec());
+        new JobServiceConfig.IngestionJobProperties("store", new SparkApplicationSpec());
     jobs.add(streamJobProperty);
     JobService jobservice = new JobService(properties, entityRepository, tableRepository, api);
     FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder();
@@ -129,18 +132,19 @@ public class JobServiceTest {
     expectedMetadata.setLabels(
         Map.of(
             "caraml.dev/table", "streaming_feature_table",
+            "caraml.dev/store", "store",
             "caraml.dev/project", "project",
-            "caraml.dev/type", "STREAM_TO_ONLINE_JOB"));
+            "caraml.dev/type", "STREAM_INGESTION_JOB"));
     expectedMetadata.setNamespace("spark-operator");
-    expectedMetadata.setName("caraml-580e67b7b225337efeca46c7df15938c");
+    expectedMetadata.setName("caraml-f6c31d965f86ccf26e72b3b418fdc190");
     expectedSparkApplication.setMetadata(expectedMetadata);
     SparkApplicationSpec expectedSparkApplicationSpec = new SparkApplicationSpec();
-    expectedSparkApplicationSpec.addArgument(
-        "feature-table",
-        "{\"project\":\"project\",\"name\":\"streaming_feature_table\",\"labels\":{},\"maxAge\":0,\"entities\":[{\"name\":\"entity1\",\"type\":\"STRING\"}],\"features\":[{\"name\":\"feature1\",\"type\":\"FLOAT\"}]}");
-    expectedSparkApplicationSpec.addArgument(
-        "source",
-        "{\"type\":\"STREAM_KAFKA\",\"eventTimestampColumn\":\"event_timestamp\",\"kafkaOptions\":{\"bootstrapServers\":\"kafka:9102\",\"topic\":\"topic\",\"messageFormat\":{\"protoFormat\":{\"classPath\":\"com.example.FeastFeature\"}}}}");
+    expectedSparkApplicationSpec.addArguments(
+        List.of(
+            "--feature-table",
+            "{\"project\":\"project\",\"name\":\"streaming_feature_table\",\"labels\":{},\"maxAge\":0,\"entities\":[{\"name\":\"entity1\",\"type\":\"STRING\"}],\"features\":[{\"name\":\"feature1\",\"type\":\"FLOAT\"}]}",
+            "--source",
+            "{\"type\":\"STREAM_KAFKA\",\"eventTimestampColumn\":\"event_timestamp\",\"kafkaOptions\":{\"bootstrapServers\":\"kafka:9102\",\"topic\":\"topic\",\"messageFormat\":{\"protoFormat\":{\"classPath\":\"com.example.FeastFeature\"}}}}"));
     expectedSparkApplication.setSpec(expectedSparkApplicationSpec);
     verify(api, times(1)).create(expectedSparkApplication);
   }
