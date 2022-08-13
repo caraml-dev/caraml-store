@@ -26,8 +26,8 @@ import org.springframework.stereotype.Service;
 public class JobService {
 
   private String namespace;
-  private final Map<JobType, Map<String, JobServiceConfig.IngestionJobProperties>>
-      ingestionJobsByTypeAndStoreName = new HashMap<>();
+  private final Map<JobType, Map<String, IngestionJobProperties>> ingestionJobsByTypeAndStoreName =
+      new HashMap<>();
   private final EntityRepository entityRepository;
   private final FeatureTableRepository tableRepository;
 
@@ -43,15 +43,11 @@ public class JobService {
     this.ingestionJobsByTypeAndStoreName.put(
         JobType.STREAM_INGESTION_JOB,
         config.getStreamIngestion().stream()
-            .collect(
-                Collectors.toMap(
-                    JobServiceConfig.IngestionJobProperties::store, Function.identity())));
+            .collect(Collectors.toMap(IngestionJobProperties::store, Function.identity())));
     this.ingestionJobsByTypeAndStoreName.put(
         JobType.BATCH_INGESTION_JOB,
         config.getBatchIngestion().stream()
-            .collect(
-                Collectors.toMap(
-                    JobServiceConfig.IngestionJobProperties::store, Function.identity())));
+            .collect(Collectors.toMap(IngestionJobProperties::store, Function.identity())));
     this.entityRepository = entityRepository;
     this.tableRepository = tableRepository;
     this.sparkOperatorApi = sparkOperatorApi;
@@ -131,13 +127,13 @@ public class JobService {
   private SparkApplication createOrUpdateIngestionJob(
       JobType jobType, String project, FeatureTableSpec spec, List<String> additionalArguments) {
 
-    Map<String, JobServiceConfig.IngestionJobProperties> jobConfigByStoreName =
+    Map<String, IngestionJobProperties> jobConfigByStoreName =
         ingestionJobsByTypeAndStoreName.get(jobType);
     if (jobConfigByStoreName == null) {
       throw new IllegalArgumentException(
           String.format("Job properties not found for job type: %s", jobType.toString()));
     }
-    JobServiceConfig.IngestionJobProperties jobProperties =
+    IngestionJobProperties jobProperties =
         jobConfigByStoreName.get(spec.getOnlineStore().getName());
     if (jobProperties == null) {
       throw new IllegalArgumentException(

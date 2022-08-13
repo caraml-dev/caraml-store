@@ -47,12 +47,12 @@ public class JobServiceTest {
 
   @Test
   public void shouldCreateBatchIngestionJob() throws IOException, ParseException {
-    List<JobServiceConfig.IngestionJobProperties> jobs = new ArrayList<>();
+    List<IngestionJobProperties> jobs = new ArrayList<>();
     JobServiceConfig properties = new JobServiceConfig();
     properties.setNamespace("spark-operator");
     properties.setBatchIngestion(jobs);
-    JobServiceConfig.IngestionJobProperties batchJobProperty =
-        new JobServiceConfig.IngestionJobProperties("store", new SparkApplicationSpec());
+    IngestionJobProperties batchJobProperty =
+        new IngestionJobProperties("store", new SparkApplicationSpec());
     jobs.add(batchJobProperty);
     JobService jobservice = new JobService(properties, entityRepository, tableRepository, api);
     FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder();
@@ -104,12 +104,12 @@ public class JobServiceTest {
 
   @Test
   public void shouldCreateStreamingJob() throws IOException, SparkOperatorApiException {
-    List<JobServiceConfig.IngestionJobProperties> jobs = new ArrayList<>();
+    List<IngestionJobProperties> jobs = new ArrayList<>();
     JobServiceConfig properties = new JobServiceConfig();
     properties.setNamespace("spark-operator");
     properties.setStreamIngestion(jobs);
-    JobServiceConfig.IngestionJobProperties streamJobProperty =
-        new JobServiceConfig.IngestionJobProperties("store", new SparkApplicationSpec());
+    IngestionJobProperties streamJobProperty =
+        new IngestionJobProperties("store", new SparkApplicationSpec());
     jobs.add(streamJobProperty);
     JobService jobservice = new JobService(properties, entityRepository, tableRepository, api);
     FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder();
