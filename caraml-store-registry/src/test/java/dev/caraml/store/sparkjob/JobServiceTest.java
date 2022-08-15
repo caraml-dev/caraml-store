@@ -1,5 +1,6 @@
 package dev.caraml.store.sparkjob;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,11 +18,14 @@ import dev.caraml.store.protobuf.core.OnlineStoreProto;
 import dev.caraml.store.protobuf.types.ValueProto;
 import dev.caraml.store.sparkjob.crd.SparkApplication;
 import dev.caraml.store.sparkjob.crd.SparkApplicationSpec;
+import dev.caraml.store.sparkjob.crd.SparkApplicationState;
+import dev.caraml.store.sparkjob.crd.SparkApplicationStatus;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +47,23 @@ public class JobServiceTest {
     MockitoAnnotations.openMocks(this);
     entityRepository = mock(EntityRepository.class);
     api = mock(SparkOperatorApi.class);
+    when(api.create(any()))
+        .thenAnswer(
+            invocation -> {
+              SparkApplication input = invocation.getArgument(0, SparkApplication.class);
+              SparkApplication appWithStatus = new SparkApplication();
+              appWithStatus.setSpec(input.getSpec());
+              appWithStatus.setKind(input.getKind());
+              V1ObjectMeta metadata = new V1ObjectMeta();
+              metadata.setName(input.getMetadata().getName());
+              metadata.setLabels(input.getMetadata().getLabels());
+              metadata.setCreationTimestamp(OffsetDateTime.now());
+              appWithStatus.setMetadata(metadata);
+              SparkApplicationStatus status = new SparkApplicationStatus();
+              status.setApplicationState(new SparkApplicationState("SUBMITTED"));
+              appWithStatus.setStatus(status);
+              return appWithStatus;
+            });
   }
 
   @Test
@@ -74,8 +95,6 @@ public class JobServiceTest {
     when(tableRepository.findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
             "batch_feature_table", project))
         .thenReturn(Optional.of(featureTable));
-    jobservice.createOrUpdateBatchIngestionJob(
-        project, "batch_feature_table", ingestionStart, ingestionEnd);
     SparkApplication expectedSparkApplication = new SparkApplication();
     V1ObjectMeta expectedMetadata = new V1ObjectMeta();
     expectedMetadata.setLabels(
@@ -93,12 +112,14 @@ public class JobServiceTest {
             "--feature-table",
             "{\"project\":\"project\",\"name\":\"batch_feature_table\",\"labels\":{},\"maxAge\":0,\"entities\":[{\"name\":\"entity1\",\"type\":\"STRING\"}],\"features\":[{\"name\":\"feature1\",\"type\":\"INT64\"}]}",
             "--source",
-            "{\"type\":\"BATCH_BIGQUERY\",\"eventTimestampColumn\":\"event_timestamp\",\"bigqueryOptions\":{}}",
+            "{\"bq\":{\"project\":\"project\",\"dataset\":\"dataset\",\"table\":\"table\",\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}",
             "--start",
             "2022-08-01T01:00:00Z",
             "--end",
             "2022-08-02T01:00:00Z"));
     expectedSparkApplication.setSpec(expectedSparkApplicationSpec);
+    jobservice.createOrUpdateBatchIngestionJob(
+        project, "batch_feature_table", ingestionStart, ingestionEnd);
     verify(api, times(1)).create(expectedSparkApplication);
   }
 

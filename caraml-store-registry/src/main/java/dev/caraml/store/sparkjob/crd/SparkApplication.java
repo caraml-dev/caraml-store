@@ -13,6 +13,7 @@ public class SparkApplication implements KubernetesObject {
   private String apiVersion = "sparkoperator.k8s.io/v1beta2";
   private String kind = "SparkApplication";
   private SparkApplicationSpec spec;
+  private SparkApplicationStatus status;
 
   public void addLabels(Map<String, String> labels) {
     if (metadata.getLabels() == null) {

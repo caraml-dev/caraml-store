@@ -11,6 +11,9 @@
   "name": "batch_feature_table",
   "batchSource": {
     "type": "BATCH_BIGQUERY",
-    "eventTimestampColumn": "event_timestamp"
+    "eventTimestampColumn": "event_timestamp",
+    "bigqueryOptions" : {
+      "tableRef": "project:dataset.table"
+    }
   }
 }

@@ -1,11 +1,9 @@
 package dev.caraml.store.sparkjob;
 
-import com.google.protobuf.Timestamp;
 import dev.caraml.store.protobuf.jobservice.JobServiceGrpc;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.*;
-import dev.caraml.store.sparkjob.crd.SparkApplication;
 import io.grpc.stub.StreamObserver;
-import java.time.Instant;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +22,7 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
   public void startOfflineToOnlineIngestionJob(
       StartOfflineToOnlineIngestionJobRequest request,
       StreamObserver<StartOfflineToOnlineIngestionJobResponse> responseObserver) {
-    SparkApplication sparkApplication =
+    Job job =
         jobService.createOrUpdateBatchIngestionJob(
             request.getProject(),
             request.getTableName(),
@@ -32,11 +30,19 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
             request.getEndDate());
     StartOfflineToOnlineIngestionJobResponse response =
         StartOfflineToOnlineIngestionJobResponse.newBuilder()
-            .setJobStartTime(
-                Timestamp.newBuilder().setSeconds(Instant.now().getEpochSecond()).build())
-            .setId(sparkApplication.getMetadata().getName())
+            .setJobStartTime(job.getStartTime())
+            .setId(job.getId())
             .setTableName(request.getTableName())
             .build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+  }
+
+  public void listJobs(ListJobsRequest request, StreamObserver<ListJobsResponse> responseObserver) {
+    List<Job> jobs =
+        jobService.listJobs(
+            request.getIncludeTerminated(), request.getProject(), request.getTableName());
+    ListJobsResponse response = ListJobsResponse.newBuilder().addAllJobs(jobs).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
