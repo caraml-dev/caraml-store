@@ -4,7 +4,7 @@ import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import dev.caraml.store.feature.EntityRepository;
 import dev.caraml.store.feature.FeatureTableRepository;
-import dev.caraml.store.feature.SpecNotFoundException;
+import dev.caraml.store.feature.ResourceNotFoundException;
 import dev.caraml.store.protobuf.core.FeatureTableProto.FeatureTableSpec;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.Job;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobStatus;
@@ -81,13 +81,14 @@ public class JobService {
         Timestamps.fromSeconds(app.getMetadata().getCreationTimestamp().toEpochSecond());
 
     JobStatus jobStatus = JobStatus.JOB_STATUS_PENDING;
-    if(app.getStatus() != null) {
-      jobStatus = switch (app.getStatus().getApplicationState().getState()) {
-        case "COMPLETED" -> JobStatus.JOB_STATUS_DONE;
-        case "FAILED" -> JobStatus.JOB_STATUS_ERROR;
-        case "RUNNING" -> JobStatus.JOB_STATUS_RUNNING;
-        default -> JobStatus.JOB_STATUS_PENDING;
-      };
+    if (app.getStatus() != null) {
+      jobStatus =
+          switch (app.getStatus().getApplicationState().getState()) {
+            case "COMPLETED" -> JobStatus.JOB_STATUS_DONE;
+            case "FAILED" -> JobStatus.JOB_STATUS_ERROR;
+            case "RUNNING" -> JobStatus.JOB_STATUS_RUNNING;
+            default -> JobStatus.JOB_STATUS_PENDING;
+          };
     }
     String tableName = labels.getOrDefault(FEATURE_TABLE_LABEL, "");
 
@@ -113,7 +114,7 @@ public class JobService {
             .map(ft -> ft.toProto().getSpec())
             .orElseThrow(
                 () -> {
-                  throw new SpecNotFoundException(
+                  throw new ResourceNotFoundException(
                       String.format(
                           "No such Feature Table: (project: %s, name: %s)",
                           project, featureTableName));
@@ -145,7 +146,7 @@ public class JobService {
             .map(ft -> ft.toProto().getSpec())
             .orElseThrow(
                 () -> {
-                  throw new SpecNotFoundException(
+                  throw new ResourceNotFoundException(
                       String.format(
                           "No such Feature Table: (project: %s, name: %s)",
                           project, featureTableName));
@@ -228,5 +229,9 @@ public class JobService {
       jobStream = jobStream.filter(job -> job.getStatus() == JobStatus.JOB_STATUS_RUNNING);
     }
     return jobStream.toList();
+  }
+
+  public Optional<Job> getJob(String id) {
+    return sparkOperatorApi.get(namespace, id).map(this::sparkApplicationToJob);
   }
 }

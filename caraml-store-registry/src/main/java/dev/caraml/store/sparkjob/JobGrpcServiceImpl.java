@@ -1,6 +1,9 @@
 package dev.caraml.store.sparkjob;
 
+import dev.caraml.store.feature.ResourceNotFoundException;
 import dev.caraml.store.protobuf.jobservice.JobServiceGrpc;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetJobRequest;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetJobResponse;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.Job;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.ListJobsRequest;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.ListJobsResponse;
@@ -42,11 +45,26 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
     responseObserver.onCompleted();
   }
 
+  @Override
   public void listJobs(ListJobsRequest request, StreamObserver<ListJobsResponse> responseObserver) {
     List<Job> jobs =
         jobService.listJobs(
             request.getIncludeTerminated(), request.getProject(), request.getTableName());
     ListJobsResponse response = ListJobsResponse.newBuilder().addAllJobs(jobs).build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void getJob(GetJobRequest request, StreamObserver<GetJobResponse> responseObserver) {
+    GetJobResponse response =
+        jobService
+            .getJob(request.getJobId())
+            .map(job -> GetJobResponse.newBuilder().setJob(job).build())
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        String.format("Job id %s does not exist", request.getJobId())));
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
