@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class SparkApplicationState {
 
-  private String state;
+  private final String state;
 }

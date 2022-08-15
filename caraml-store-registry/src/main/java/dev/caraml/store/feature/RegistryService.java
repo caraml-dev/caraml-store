@@ -78,7 +78,7 @@ public class RegistryService {
     Entity entity = entityRepository.findEntityByNameAndProject_Name(entityName, projectName);
 
     if (entity == null) {
-      throw new SpecNotFoundException(
+      throw new ResourceNotFoundException(
           String.format("Entity with name \"%s\" could not be found.", entityName));
     }
 
@@ -249,7 +249,7 @@ public class RegistryService {
    *
    * @param request Contains FeatureTable spec and project parameters used to create or update a
    *     FeatureTable.
-   * @throws SpecNotFoundException projects and entities referenced in request do not exist.
+   * @throws ResourceNotFoundException projects and entities referenced in request do not exist.
    * @return response containing the applied FeatureTable spec.
    */
   @Transactional
@@ -341,7 +341,7 @@ public class RegistryService {
    * project if specified, otherwise in default project.
    *
    * @param request containing the retrieval parameters.
-   * @throws SpecNotFoundException if no FeatureTable matches given request.
+   * @throws ResourceNotFoundException if no FeatureTable matches given request.
    * @return response containing the requested FeatureTable.
    */
   @Transactional
@@ -353,7 +353,7 @@ public class RegistryService {
         tableRepository.findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
             featureTableName, projectName);
     if (retrieveTable.isEmpty()) {
-      throw new SpecNotFoundException(
+      throw new ResourceNotFoundException(
           String.format(
               "No such Feature Table: (project: %s, name: %s)", projectName, featureTableName));
     }
@@ -370,7 +370,7 @@ public class RegistryService {
         tableRepository.findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
             featureTableName, projectName);
     if (existingTable.isEmpty()) {
-      throw new SpecNotFoundException(
+      throw new ResourceNotFoundException(
           String.format(
               "No such Feature Table: (project: %s, name: %s)", projectName, featureTableName));
     }
@@ -404,7 +404,7 @@ public class RegistryService {
             .findById(name)
             .orElseThrow(
                 () ->
-                    new SpecNotFoundException(
+                    new ResourceNotFoundException(
                         String.format("Online store with name '%s' not found", name)));
 
     GetOnlineStoreResponse.Status status = GetOnlineStoreResponse.Status.ACTIVE;
@@ -469,7 +469,7 @@ public class RegistryService {
             .findById(name)
             .orElseThrow(
                 () ->
-                    new SpecNotFoundException(
+                    new ResourceNotFoundException(
                         String.format("Online store with name '%s' not found", name)));
 
     onlineStore.setArchived(true);

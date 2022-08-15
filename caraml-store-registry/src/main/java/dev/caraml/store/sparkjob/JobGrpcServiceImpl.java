@@ -1,11 +1,16 @@
 package dev.caraml.store.sparkjob;
 
-import com.google.protobuf.Timestamp;
+import dev.caraml.store.feature.ResourceNotFoundException;
 import dev.caraml.store.protobuf.jobservice.JobServiceGrpc;
-import dev.caraml.store.protobuf.jobservice.JobServiceProto.*;
-import dev.caraml.store.sparkjob.crd.SparkApplication;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetJobRequest;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetJobResponse;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.Job;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.ListJobsRequest;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.ListJobsResponse;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnlineIngestionJobRequest;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnlineIngestionJobResponse;
 import io.grpc.stub.StreamObserver;
-import java.time.Instant;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +29,7 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
   public void startOfflineToOnlineIngestionJob(
       StartOfflineToOnlineIngestionJobRequest request,
       StreamObserver<StartOfflineToOnlineIngestionJobResponse> responseObserver) {
-    SparkApplication sparkApplication =
+    Job job =
         jobService.createOrUpdateBatchIngestionJob(
             request.getProject(),
             request.getTableName(),
@@ -32,11 +37,34 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
             request.getEndDate());
     StartOfflineToOnlineIngestionJobResponse response =
         StartOfflineToOnlineIngestionJobResponse.newBuilder()
-            .setJobStartTime(
-                Timestamp.newBuilder().setSeconds(Instant.now().getEpochSecond()).build())
-            .setId(sparkApplication.getMetadata().getName())
+            .setJobStartTime(job.getStartTime())
+            .setId(job.getId())
             .setTableName(request.getTableName())
             .build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void listJobs(ListJobsRequest request, StreamObserver<ListJobsResponse> responseObserver) {
+    List<Job> jobs =
+        jobService.listJobs(
+            request.getIncludeTerminated(), request.getProject(), request.getTableName());
+    ListJobsResponse response = ListJobsResponse.newBuilder().addAllJobs(jobs).build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void getJob(GetJobRequest request, StreamObserver<GetJobResponse> responseObserver) {
+    GetJobResponse response =
+        jobService
+            .getJob(request.getJobId())
+            .map(job -> GetJobResponse.newBuilder().setJob(job).build())
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        String.format("Job id %s does not exist", request.getJobId())));
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }

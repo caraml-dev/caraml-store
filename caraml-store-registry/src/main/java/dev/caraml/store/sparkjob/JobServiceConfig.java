@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 public class JobServiceConfig {
-  public record IngestionJobProperties(String store, SparkApplicationSpec sparkApplicationSpec) {}
 
   public record HistoricalRetrievalJobProperties(SparkApplicationSpec sparkApplicationSpec) {}
 

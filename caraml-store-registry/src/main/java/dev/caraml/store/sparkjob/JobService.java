@@ -1,10 +1,13 @@
 package dev.caraml.store.sparkjob;
 
 import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.Timestamps;
 import dev.caraml.store.feature.EntityRepository;
 import dev.caraml.store.feature.FeatureTableRepository;
-import dev.caraml.store.feature.SpecNotFoundException;
+import dev.caraml.store.feature.ResourceNotFoundException;
 import dev.caraml.store.protobuf.core.FeatureTableProto.FeatureTableSpec;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.Job;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobStatus;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobType;
 import dev.caraml.store.sparkjob.adapter.BatchIngestionArgumentAdapter;
 import dev.caraml.store.sparkjob.adapter.StreamIngestionArgumentAdapter;
@@ -16,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +29,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class JobService {
 
-  private String namespace;
-  private final Map<JobType, Map<String, JobServiceConfig.IngestionJobProperties>>
-      ingestionJobsByTypeAndStoreName = new HashMap<>();
+  private final String namespace;
+  private final Map<JobType, Map<String, IngestionJobProperties>> ingestionJobsByTypeAndStoreName =
+      new HashMap<>();
   private final EntityRepository entityRepository;
   private final FeatureTableRepository tableRepository;
 
@@ -43,15 +47,11 @@ public class JobService {
     this.ingestionJobsByTypeAndStoreName.put(
         JobType.STREAM_INGESTION_JOB,
         config.getStreamIngestion().stream()
-            .collect(
-                Collectors.toMap(
-                    JobServiceConfig.IngestionJobProperties::store, Function.identity())));
+            .collect(Collectors.toMap(IngestionJobProperties::store, Function.identity())));
     this.ingestionJobsByTypeAndStoreName.put(
         JobType.BATCH_INGESTION_JOB,
         config.getBatchIngestion().stream()
-            .collect(
-                Collectors.toMap(
-                    JobServiceConfig.IngestionJobProperties::store, Function.identity())));
+            .collect(Collectors.toMap(IngestionJobProperties::store, Function.identity())));
     this.entityRepository = entityRepository;
     this.tableRepository = tableRepository;
     this.sparkOperatorApi = sparkOperatorApi;
@@ -75,15 +75,46 @@ public class JobService {
             .toLowerCase();
   }
 
-  public SparkApplication createOrUpdateStreamingIngestionJob(
-      String project, String featureTableName) {
+  private Job sparkApplicationToJob(SparkApplication app) {
+    Map<String, String> labels = app.getMetadata().getLabels();
+    Timestamp startTime =
+        Timestamps.fromSeconds(app.getMetadata().getCreationTimestamp().toEpochSecond());
+
+    JobStatus jobStatus = JobStatus.JOB_STATUS_PENDING;
+    if (app.getStatus() != null) {
+      jobStatus =
+          switch (app.getStatus().getApplicationState().getState()) {
+            case "COMPLETED" -> JobStatus.JOB_STATUS_DONE;
+            case "FAILED" -> JobStatus.JOB_STATUS_ERROR;
+            case "RUNNING" -> JobStatus.JOB_STATUS_RUNNING;
+            default -> JobStatus.JOB_STATUS_PENDING;
+          };
+    }
+    String tableName = labels.getOrDefault(FEATURE_TABLE_LABEL, "");
+
+    Job.Builder builder =
+        Job.newBuilder()
+            .setId(app.getMetadata().getName())
+            .setStartTime(startTime)
+            .setStatus(jobStatus);
+    switch (JobType.valueOf(labels.get(JOB_TYPE_LABEL))) {
+      case BATCH_INGESTION_JOB -> builder.setBatchIngestion(
+          Job.OfflineToOnlineMeta.newBuilder().setTableName(tableName));
+      case STREAM_INGESTION_JOB -> builder.setStreamIngestion(
+          Job.StreamToOnlineMeta.newBuilder().setTableName(tableName));
+    }
+
+    return builder.build();
+  }
+
+  public Job createOrUpdateStreamingIngestionJob(String project, String featureTableName) {
     FeatureTableSpec spec =
         tableRepository
             .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(project, featureTableName)
             .map(ft -> ft.toProto().getSpec())
             .orElseThrow(
                 () -> {
-                  throw new SpecNotFoundException(
+                  throw new ResourceNotFoundException(
                       String.format(
                           "No such Feature Table: (project: %s, name: %s)",
                           project, featureTableName));
@@ -99,15 +130,14 @@ public class JobService {
                 e -> entityRepository.findEntityByNameAndProject_Name(e, project).getType()));
   }
 
-  public SparkApplication createOrUpdateStreamingIngestionJob(
-      String project, FeatureTableSpec spec) {
+  public Job createOrUpdateStreamingIngestionJob(String project, FeatureTableSpec spec) {
     Map<String, String> entityNameToType = getEntityToTypeMap(project, spec);
     List<String> arguments =
         new StreamIngestionArgumentAdapter(project, spec, entityNameToType).getArguments();
     return createOrUpdateIngestionJob(JobType.STREAM_INGESTION_JOB, project, spec, arguments);
   }
 
-  public SparkApplication createOrUpdateBatchIngestionJob(
+  public Job createOrUpdateBatchIngestionJob(
       String project, String featureTableName, Timestamp startTime, Timestamp endTime)
       throws SparkOperatorApiException {
     FeatureTableSpec spec =
@@ -116,7 +146,7 @@ public class JobService {
             .map(ft -> ft.toProto().getSpec())
             .orElseThrow(
                 () -> {
-                  throw new SpecNotFoundException(
+                  throw new ResourceNotFoundException(
                       String.format(
                           "No such Feature Table: (project: %s, name: %s)",
                           project, featureTableName));
@@ -128,16 +158,16 @@ public class JobService {
     return createOrUpdateIngestionJob(JobType.BATCH_INGESTION_JOB, project, spec, arguments);
   }
 
-  private SparkApplication createOrUpdateIngestionJob(
+  private Job createOrUpdateIngestionJob(
       JobType jobType, String project, FeatureTableSpec spec, List<String> additionalArguments) {
 
-    Map<String, JobServiceConfig.IngestionJobProperties> jobConfigByStoreName =
+    Map<String, IngestionJobProperties> jobConfigByStoreName =
         ingestionJobsByTypeAndStoreName.get(jobType);
     if (jobConfigByStoreName == null) {
       throw new IllegalArgumentException(
           String.format("Job properties not found for job type: %s", jobType.toString()));
     }
-    JobServiceConfig.IngestionJobProperties jobProperties =
+    IngestionJobProperties jobProperties =
         jobConfigByStoreName.get(spec.getOnlineStore().getName());
     if (jobProperties == null) {
       throw new IllegalArgumentException(
@@ -170,12 +200,38 @@ public class JobService {
     sparkApplication.setSpec(jobProperties.sparkApplicationSpec());
     sparkApplication.getSpec().addArguments(additionalArguments);
 
-    if (existingApplication.isPresent()) {
-      sparkOperatorApi.update(sparkApplication);
-    } else {
-      sparkOperatorApi.create(sparkApplication);
-    }
+    SparkApplication updatedApplication =
+        existingApplication.isPresent()
+            ? sparkOperatorApi.update(sparkApplication)
+            : sparkOperatorApi.create(sparkApplication);
+    return sparkApplicationToJob(updatedApplication);
+  }
 
-    return sparkApplication;
+  public List<Job> listJobs(Boolean includeTerminated, String project, String tableName) {
+    Stream<String> equalitySelectors =
+        Map.of(
+                PROJECT_LABEL, project,
+                FEATURE_TABLE_LABEL, tableName)
+            .entrySet()
+            .stream()
+            .filter(es -> !es.getValue().isEmpty())
+            .map(es -> String.format("%s=%s", es.getKey(), es.getValue()));
+    String jobSets =
+        Stream.of(JobType.BATCH_INGESTION_JOB, JobType.STREAM_INGESTION_JOB, JobType.RETRIEVAL_JOB)
+            .map(Enum::toString)
+            .collect(Collectors.joining(","));
+    Stream<String> setSelectors = Stream.of(String.format("%s in (%s)", JOB_TYPE_LABEL, jobSets));
+    String labelSelectors =
+        Stream.concat(equalitySelectors, setSelectors).collect(Collectors.joining(","));
+    Stream<Job> jobStream =
+        sparkOperatorApi.list(namespace, labelSelectors).stream().map(this::sparkApplicationToJob);
+    if (!includeTerminated) {
+      jobStream = jobStream.filter(job -> job.getStatus() == JobStatus.JOB_STATUS_RUNNING);
+    }
+    return jobStream.toList();
+  }
+
+  public Optional<Job> getJob(String id) {
+    return sparkOperatorApi.get(namespace, id).map(this::sparkApplicationToJob);
   }
 }
