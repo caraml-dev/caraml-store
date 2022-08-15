@@ -1,7 +1,11 @@
 package dev.caraml.store.sparkjob;
 
 import dev.caraml.store.protobuf.jobservice.JobServiceGrpc;
-import dev.caraml.store.protobuf.jobservice.JobServiceProto.*;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.Job;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.ListJobsRequest;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.ListJobsResponse;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnlineIngestionJobRequest;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnlineIngestionJobResponse;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
