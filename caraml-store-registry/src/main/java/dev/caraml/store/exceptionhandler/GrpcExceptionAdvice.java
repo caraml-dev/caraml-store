@@ -1,6 +1,7 @@
 package dev.caraml.store.exceptionhandler;
 
 import dev.caraml.store.feature.ResourceNotFoundException;
+import dev.caraml.store.sparkjob.JobNotFoundException;
 import dev.caraml.store.sparkjob.SparkOperatorApiException;
 import io.grpc.Status;
 import net.devh.boot.grpc.server.advice.GrpcAdvice;
@@ -20,7 +21,12 @@ public class GrpcExceptionAdvice {
   }
 
   @GrpcExceptionHandler
-  public Status handleSpecNotFound(ResourceNotFoundException e) {
+  public Status handleResourceNotFound(ResourceNotFoundException e) {
+    return Status.NOT_FOUND.withDescription(e.getMessage()).withCause(e);
+  }
+
+  @GrpcExceptionHandler
+  public Status handleJobNotFound(JobNotFoundException e) {
     return Status.NOT_FOUND.withDescription(e.getMessage()).withCause(e);
   }
 

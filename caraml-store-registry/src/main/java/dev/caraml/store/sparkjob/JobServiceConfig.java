@@ -1,6 +1,5 @@
 package dev.caraml.store.sparkjob;
 
-import dev.caraml.store.sparkjob.crd.SparkApplicationSpec;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -13,8 +12,6 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 public class JobServiceConfig {
-
-  public record HistoricalRetrievalJobProperties(SparkApplicationSpec sparkApplicationSpec) {}
 
   private String namespace;
   private List<IngestionJobProperties> streamIngestion = new ArrayList<>();

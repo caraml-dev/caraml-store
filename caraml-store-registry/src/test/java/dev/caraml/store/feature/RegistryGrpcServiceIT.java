@@ -332,13 +332,7 @@ public class RegistryGrpcServiceIT extends BaseIT {
           assertThrows(
               StatusRuntimeException.class,
               () -> apiClient.simpleGetFeatureTable(projectName, featureTableName));
-
-      assertThat(
-          exc.getMessage(),
-          equalTo(
-              String.format(
-                  "NOT_FOUND: No such Feature Table: (project: %s, name: %s)",
-                  projectName, featureTableName)));
+      assertEquals(exc.getStatus().getCode(), Status.NOT_FOUND.getCode());
     }
 
     @Test
@@ -777,13 +771,7 @@ public class RegistryGrpcServiceIT extends BaseIT {
           assertThrows(
               StatusRuntimeException.class,
               () -> apiClient.deleteFeatureTable(projectName, featureTableName));
-
-      assertThat(
-          exc.getMessage(),
-          equalTo(
-              String.format(
-                  "NOT_FOUND: No such Feature Table: (project: %s, name: %s)",
-                  projectName, featureTableName)));
+      assertEquals(exc.getStatus().getCode(), Status.NOT_FOUND.getCode());
     }
   }
 

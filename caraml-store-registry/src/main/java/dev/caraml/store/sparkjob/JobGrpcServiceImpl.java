@@ -1,7 +1,8 @@
 package dev.caraml.store.sparkjob;
 
-import dev.caraml.store.feature.ResourceNotFoundException;
 import dev.caraml.store.protobuf.jobservice.JobServiceGrpc;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetHistoricalFeaturesRequest;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetHistoricalFeaturesResponse;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetJobRequest;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetJobResponse;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.Job;
@@ -46,6 +47,27 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
   }
 
   @Override
+  public void getHistoricalFeatures(
+      GetHistoricalFeaturesRequest request,
+      StreamObserver<GetHistoricalFeaturesResponse> responseObserver) {
+    Job job =
+        jobService.createRetrievalJob(
+            request.getProject(),
+            request.getFeatureRefsList(),
+            request.getEntitySource(),
+            request.getOutputFormat(),
+            request.getOutputLocation());
+    GetHistoricalFeaturesResponse response =
+        GetHistoricalFeaturesResponse.newBuilder()
+            .setId(job.getId())
+            .setJobStartTime(job.getStartTime())
+            .setOutputFileUri(job.getRetrieval().getOutputLocation())
+            .build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+  }
+
+  @Override
   public void listJobs(ListJobsRequest request, StreamObserver<ListJobsResponse> responseObserver) {
     List<Job> jobs =
         jobService.listJobs(
@@ -61,10 +83,7 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
         jobService
             .getJob(request.getJobId())
             .map(job -> GetJobResponse.newBuilder().setJob(job).build())
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        String.format("Job id %s does not exist", request.getJobId())));
+            .orElseThrow(() -> new JobNotFoundException(request.getJobId()));
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
