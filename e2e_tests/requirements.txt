@@ -9,3 +9,6 @@ pytest-xdist==2.1.0
 deepdiff==4.3.2
 Jinja2==3.0.3
 protobuf==3.*
+avro==1.10.0
+kafka-python==2.0.2
+pytest-kafka==0.4.0

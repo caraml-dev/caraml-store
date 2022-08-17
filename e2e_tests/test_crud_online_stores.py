@@ -10,7 +10,6 @@ def online_store():
                        description="Test online store"
                        )
 
-
 def test_register_online_store(
         feast_client: Client,
         online_store: OnlineStore
@@ -21,7 +20,6 @@ def test_register_online_store(
 
     # Get online store
     assert feast_client.get_online_store(name=online_store.name) == online_store
-
 
 def test_archive_online_store(
         feast_client: Client,
