@@ -34,8 +34,8 @@ import org.springframework.stereotype.Service;
 public class JobService {
 
   private final String namespace;
-  private final Map<JobType, Map<String, IngestionJobProperties>> ingestionJobsByTypeAndStoreName =
-      new HashMap<>();
+  private final Map<JobType, Map<String, IngestionJobProperties>>
+      ingestionJobTemplateByTypeAndStoreName = new HashMap<>();
   private final HistoricalRetrievalJobProperties retrievalJobProperties;
   private final EntityRepository entityRepository;
   private final FeatureTableRepository tableRepository;
@@ -49,11 +49,11 @@ public class JobService {
       FeatureTableRepository tableRepository,
       SparkOperatorApi sparkOperatorApi) {
     namespace = config.getNamespace();
-    ingestionJobsByTypeAndStoreName.put(
+    ingestionJobTemplateByTypeAndStoreName.put(
         JobType.STREAM_INGESTION_JOB,
         config.getStreamIngestion().stream()
             .collect(Collectors.toMap(IngestionJobProperties::store, Function.identity())));
-    ingestionJobsByTypeAndStoreName.put(
+    ingestionJobTemplateByTypeAndStoreName.put(
         JobType.BATCH_INGESTION_JOB,
         config.getBatchIngestion().stream()
             .collect(Collectors.toMap(IngestionJobProperties::store, Function.identity())));
@@ -179,14 +179,14 @@ public class JobService {
   private Job createOrUpdateIngestionJob(
       JobType jobType, String project, FeatureTableSpec spec, List<String> additionalArguments) {
 
-    Map<String, IngestionJobProperties> jobConfigByStoreName =
-        ingestionJobsByTypeAndStoreName.get(jobType);
-    if (jobConfigByStoreName == null) {
+    Map<String, IngestionJobProperties> jobTemplateByStoreName =
+        ingestionJobTemplateByTypeAndStoreName.get(jobType);
+    if (jobTemplateByStoreName == null) {
       throw new IllegalArgumentException(
           String.format("Job properties not found for job type: %s", jobType.toString()));
     }
     IngestionJobProperties jobProperties =
-        jobConfigByStoreName.get(spec.getOnlineStore().getName());
+        jobTemplateByStoreName.get(spec.getOnlineStore().getName());
     if (jobProperties == null) {
       throw new IllegalArgumentException(
           String.format(
@@ -215,7 +215,7 @@ public class JobService {
                       spec.getName()));
               return app;
             });
-    sparkApplication.setSpec(jobProperties.sparkApplicationSpec());
+    sparkApplication.setSpec(jobProperties.sparkApplicationSpec().deepCopy());
     sparkApplication.getSpec().addArguments(additionalArguments);
 
     SparkApplication updatedApplication =
@@ -270,7 +270,7 @@ public class JobService {
     app.getMetadata().setName(getRetrievalJobId());
     app.getMetadata().setNamespace(namespace);
     app.addLabels(Map.of(JOB_TYPE_LABEL, JobType.RETRIEVAL_JOB.toString(), PROJECT_LABEL, project));
-    app.setSpec(retrievalJobProperties.sparkApplicationSpec());
+    app.setSpec(retrievalJobProperties.sparkApplicationSpec().deepCopy());
     Map<String, String> entityNameToType = getEntityToTypeMap(project, featureTableSpecs);
     List<String> arguments =
         new HistoricalRetrievalArgumentAdapter(

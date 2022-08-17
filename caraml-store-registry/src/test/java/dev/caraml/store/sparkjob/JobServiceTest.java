@@ -104,7 +104,7 @@ public class JobServiceTest {
             "caraml.dev/project", "project",
             "caraml.dev/type", "BATCH_INGESTION_JOB"));
     expectedMetadata.setNamespace("spark-operator");
-    expectedMetadata.setName("caraml-5b41d97ec1180f188e4c45ede5b22760");
+    expectedMetadata.setName("caraml-5b41d97ec1180f18");
     expectedSparkApplication.setMetadata(expectedMetadata);
     SparkApplicationSpec expectedSparkApplicationSpec = new SparkApplicationSpec();
     expectedSparkApplicationSpec.addArguments(
@@ -157,7 +157,7 @@ public class JobServiceTest {
             "caraml.dev/project", "project",
             "caraml.dev/type", "STREAM_INGESTION_JOB"));
     expectedMetadata.setNamespace("spark-operator");
-    expectedMetadata.setName("caraml-f6c31d965f86ccf26e72b3b418fdc190");
+    expectedMetadata.setName("caraml-f6c31d965f86ccf2");
     expectedSparkApplication.setMetadata(expectedMetadata);
     SparkApplicationSpec expectedSparkApplicationSpec = new SparkApplicationSpec();
     expectedSparkApplicationSpec.addArguments(
@@ -165,7 +165,7 @@ public class JobServiceTest {
             "--feature-table",
             "{\"project\":\"project\",\"name\":\"streaming_feature_table\",\"labels\":{},\"maxAge\":0,\"entities\":[{\"name\":\"entity1\",\"type\":\"STRING\"}],\"features\":[{\"name\":\"feature1\",\"type\":\"FLOAT\"}]}",
             "--source",
-            "{\"type\":\"STREAM_KAFKA\",\"eventTimestampColumn\":\"event_timestamp\",\"kafkaOptions\":{\"bootstrapServers\":\"kafka:9102\",\"topic\":\"topic\",\"messageFormat\":{\"protoFormat\":{\"classPath\":\"com.example.FeastFeature\"}}}}"));
+            "{\"kafka\":{\"bootstrapServers\":\"kafka:9102\",\"topic\":\"topic\",\"format\":{\"classPath\":\"com.example.FeastFeature\",\"jsonClass\":\"ProtoFormat\"},\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}"));
     expectedSparkApplication.setSpec(expectedSparkApplicationSpec);
     verify(api, times(1)).create(expectedSparkApplication);
   }
