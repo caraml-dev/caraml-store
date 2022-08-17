@@ -827,8 +827,7 @@ public class RegistryGrpcServiceIT extends BaseIT {
     public void shouldThrowNoFoundExceptionIfOnlineStoreNotFound() {
       StatusRuntimeException exc =
           assertThrows(StatusRuntimeException.class, () -> apiClient.getOnlineStore("made-up"));
-      assertThat(
-          exc.getMessage(), equalTo("NOT_FOUND: Online store with name 'made-up' not found"));
+      assertThat(exc.getStatus().getCode(), equalTo(Status.NOT_FOUND.getCode()));
     }
   }
 
@@ -853,8 +852,7 @@ public class RegistryGrpcServiceIT extends BaseIT {
       StatusRuntimeException exc =
           assertThrows(StatusRuntimeException.class, () -> apiClient.archiveOnlineStore("made-up"));
 
-      assertThat(
-          exc.getMessage(), equalTo("NOT_FOUND: Online store with name 'made-up' not found"));
+      assertThat(exc.getStatus().getCode(), equalTo(Status.NOT_FOUND.getCode()));
     }
   }
 
