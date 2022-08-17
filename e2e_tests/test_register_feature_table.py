@@ -2,8 +2,8 @@ import pytest
 from google.protobuf.duration_pb2 import Duration
 
 from feast.client import Client
-from feast.data_format import ParquetFormat, ProtoFormat
-from feast.data_source import FileSource, KafkaSource
+from feast.data_format import ParquetFormat
+from feast.data_source import FileSource
 from feast.entity import Entity
 from feast.online_store import OnlineStore
 from feast.feature import Feature
@@ -54,17 +54,6 @@ def basic_featuretable():
         created_timestamp_column="timestamp",
         date_partition_column="datetime",
     )
-    stream_source = KafkaSource(
-        field_mapping={
-            "dev_entity": "dev_entity_field",
-            "dev_feature_float": "dev_feature_float_field",
-            "dev_feature_string": "dev_feature_string_field",
-        },
-        bootstrap_servers="localhost:9094",
-        message_format=ProtoFormat(class_path="class.path"),
-        topic="test_topic",
-        event_timestamp_column="datetime_col",
-    )
     bigtable_store = OnlineStore(
         name="feast-bigtable",
         store_type="BIGTABLE",
@@ -79,7 +68,6 @@ def basic_featuretable():
         ],
         max_age=Duration(seconds=3600),
         batch_source=batch_source,
-        stream_source=stream_source,
         labels={"key1": "val1", "key2": "val2"},
         online_store=bigtable_store
     )
@@ -128,7 +116,6 @@ def alltypes_featuretable():
         labels={"cat": "alltypes"},
     )
 
-
 def test_get_list_basic(
     feast_client: Client,
     customer_entity: Entity,
@@ -174,7 +161,6 @@ def test_get_list_basic(
         if ft.name == "basic_featuretable"
     ][0]
     assert actual_list_feature_table == basic_featuretable
-
 
 def test_get_list_alltypes(
     feast_client: Client, alltypes_entity: Entity, alltypes_featuretable: FeatureTable

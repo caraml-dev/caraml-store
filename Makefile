@@ -17,4 +17,9 @@ setup-e2e-tests:
 	pip install -r e2e_tests/requirements.txt && pip install feast==$(PYTHON_SDK_VERSION)
 
 run-e2e-tests: setup-e2e-tests
-	cd e2e_tests; pytest --verbose --color=yes --registry-url $(CARAML_STORE_REGISTRY_URL)
+	cd e2e_tests; \
+	pytest --verbose \
+	--color=yes \
+	--registry-url $(CARAML_STORE_REGISTRY_URL) \
+	--serving-url $(CARAML_STORE_SERVING_URL) \
+	--kafka-brokers $(KAFKA_BROKERS)
