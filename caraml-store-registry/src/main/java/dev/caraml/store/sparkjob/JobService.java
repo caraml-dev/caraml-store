@@ -3,13 +3,16 @@ package dev.caraml.store.sparkjob;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import dev.caraml.store.feature.EntityRepository;
+import dev.caraml.store.feature.FeatureTableNotFoundException;
 import dev.caraml.store.feature.FeatureTableRepository;
-import dev.caraml.store.feature.ResourceNotFoundException;
+import dev.caraml.store.protobuf.core.DataSourceProto.DataSource;
+import dev.caraml.store.protobuf.core.FeatureProto.FeatureSpec;
 import dev.caraml.store.protobuf.core.FeatureTableProto.FeatureTableSpec;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.Job;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobStatus;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobType;
 import dev.caraml.store.sparkjob.adapter.BatchIngestionArgumentAdapter;
+import dev.caraml.store.sparkjob.adapter.HistoricalRetrievalArgumentAdapter;
 import dev.caraml.store.sparkjob.adapter.StreamIngestionArgumentAdapter;
 import dev.caraml.store.sparkjob.crd.SparkApplication;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +36,7 @@ public class JobService {
   private final String namespace;
   private final Map<JobType, Map<String, IngestionJobProperties>> ingestionJobsByTypeAndStoreName =
       new HashMap<>();
+  private final HistoricalRetrievalJobProperties retrievalJobProperties;
   private final EntityRepository entityRepository;
   private final FeatureTableRepository tableRepository;
 
@@ -43,15 +48,16 @@ public class JobService {
       EntityRepository entityRepository,
       FeatureTableRepository tableRepository,
       SparkOperatorApi sparkOperatorApi) {
-    this.namespace = config.getNamespace();
-    this.ingestionJobsByTypeAndStoreName.put(
+    namespace = config.getNamespace();
+    ingestionJobsByTypeAndStoreName.put(
         JobType.STREAM_INGESTION_JOB,
         config.getStreamIngestion().stream()
             .collect(Collectors.toMap(IngestionJobProperties::store, Function.identity())));
-    this.ingestionJobsByTypeAndStoreName.put(
+    ingestionJobsByTypeAndStoreName.put(
         JobType.BATCH_INGESTION_JOB,
         config.getBatchIngestion().stream()
             .collect(Collectors.toMap(IngestionJobProperties::store, Function.identity())));
+    retrievalJobProperties = config.getHistoricalRetrieval();
     this.entityRepository = entityRepository;
     this.tableRepository = tableRepository;
     this.sparkOperatorApi = sparkOperatorApi;
@@ -63,6 +69,8 @@ public class JobService {
   static final String FEATURE_TABLE_LABEL = LABEL_PREFIX + "table";
   static final String PROJECT_LABEL = LABEL_PREFIX + "project";
 
+  static final Integer JOB_ID_LENGTH = 16;
+
   private String getIngestionJobId(JobType jobType, String project, FeatureTableSpec spec) {
     return "caraml-"
         + DigestUtils.md5Hex(
@@ -72,7 +80,12 @@ public class JobService {
                     project,
                     spec.getName(),
                     spec.getOnlineStore().getName()))
+            .substring(0, JOB_ID_LENGTH)
             .toLowerCase();
+  }
+
+  private String getRetrievalJobId() {
+    return "caraml-" + RandomStringUtils.randomAlphanumeric(JOB_ID_LENGTH).toLowerCase();
   }
 
   private Job sparkApplicationToJob(SparkApplication app) {
@@ -102,6 +115,7 @@ public class JobService {
           Job.OfflineToOnlineMeta.newBuilder().setTableName(tableName));
       case STREAM_INGESTION_JOB -> builder.setStreamIngestion(
           Job.StreamToOnlineMeta.newBuilder().setTableName(tableName));
+      case RETRIEVAL_JOB -> builder.setRetrieval(Job.RetrievalJobMeta.newBuilder().build());
     }
 
     return builder.build();
@@ -114,16 +128,23 @@ public class JobService {
             .map(ft -> ft.toProto().getSpec())
             .orElseThrow(
                 () -> {
-                  throw new ResourceNotFoundException(
-                      String.format(
-                          "No such Feature Table: (project: %s, name: %s)",
-                          project, featureTableName));
+                  throw new FeatureTableNotFoundException(project, featureTableName);
                 });
     return createOrUpdateStreamingIngestionJob(project, spec);
   }
 
   private Map<String, String> getEntityToTypeMap(String project, FeatureTableSpec spec) {
     return spec.getEntitiesList().stream()
+        .collect(
+            Collectors.toMap(
+                Function.identity(),
+                e -> entityRepository.findEntityByNameAndProject_Name(e, project).getType()));
+  }
+
+  private Map<String, String> getEntityToTypeMap(String project, List<FeatureTableSpec> specs) {
+    return specs.stream()
+        .flatMap(spec -> spec.getEntitiesList().stream())
+        .distinct()
         .collect(
             Collectors.toMap(
                 Function.identity(),
@@ -146,10 +167,7 @@ public class JobService {
             .map(ft -> ft.toProto().getSpec())
             .orElseThrow(
                 () -> {
-                  throw new ResourceNotFoundException(
-                      String.format(
-                          "No such Feature Table: (project: %s, name: %s)",
-                          project, featureTableName));
+                  throw new FeatureTableNotFoundException(project, featureTableName);
                 });
     Map<String, String> entityNameToType = getEntityToTypeMap(project, spec);
     List<String> arguments =
@@ -205,6 +223,62 @@ public class JobService {
             ? sparkOperatorApi.update(sparkApplication)
             : sparkOperatorApi.create(sparkApplication);
     return sparkApplicationToJob(updatedApplication);
+  }
+
+  public Job createRetrievalJob(
+      String project,
+      List<String> featureRefs,
+      DataSource entitySource,
+      String outputFormat,
+      String outputUri) {
+    if (retrievalJobProperties == null) {
+      throw new IllegalArgumentException(
+          "Historical retrieval job properties have not been configured");
+    }
+    Map<String, List<String>> featuresGroupedByFeatureTable =
+        featureRefs.stream()
+            .map(ref -> ref.split(":"))
+            .collect(
+                Collectors.toMap(
+                    splitRef -> splitRef[0],
+                    splitRef -> List.of(splitRef[1]),
+                    (left, right) -> Stream.concat(left.stream(), right.stream()).toList()));
+    List<FeatureTableSpec> featureTableSpecs =
+        featuresGroupedByFeatureTable.entrySet().stream()
+            .map(
+                es -> {
+                  FeatureTableSpec featureTableSpec =
+                      tableRepository
+                          .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
+                              es.getKey(), project)
+                          .map(ft -> ft.toProto().getSpec())
+                          .orElseThrow(
+                              () -> new FeatureTableNotFoundException(project, es.getKey()));
+                  List<FeatureSpec> filteredFeatures =
+                      featureTableSpec.getFeaturesList().stream()
+                          .filter(f -> es.getValue().contains(f.getName()))
+                          .toList();
+                  return featureTableSpec.toBuilder()
+                      .clearFeatures()
+                      .addAllFeatures(filteredFeatures)
+                      .build();
+                })
+            .toList();
+
+    SparkApplication app = new SparkApplication();
+    app.setMetadata(new V1ObjectMeta());
+    app.getMetadata().setName(getRetrievalJobId());
+    app.getMetadata().setNamespace(namespace);
+    app.addLabels(Map.of(JOB_TYPE_LABEL, JobType.RETRIEVAL_JOB.toString(), PROJECT_LABEL, project));
+    app.setSpec(retrievalJobProperties.sparkApplicationSpec());
+    Map<String, String> entityNameToType = getEntityToTypeMap(project, featureTableSpecs);
+    List<String> arguments =
+        new HistoricalRetrievalArgumentAdapter(
+                project, featureTableSpecs, entityNameToType, entitySource, outputFormat, outputUri)
+            .getArguments();
+    app.getSpec().addArguments(arguments);
+
+    return sparkApplicationToJob(sparkOperatorApi.create(app));
   }
 
   public List<Job> listJobs(Boolean includeTerminated, String project, String tableName) {

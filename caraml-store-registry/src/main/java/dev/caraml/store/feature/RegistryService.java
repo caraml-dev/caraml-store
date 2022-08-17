@@ -78,8 +78,7 @@ public class RegistryService {
     Entity entity = entityRepository.findEntityByNameAndProject_Name(entityName, projectName);
 
     if (entity == null) {
-      throw new ResourceNotFoundException(
-          String.format("Entity with name \"%s\" could not be found.", entityName));
+      throw new EntityNotFoundException(projectName, entityName);
     }
 
     // Build GetEntityResponse
@@ -353,9 +352,7 @@ public class RegistryService {
         tableRepository.findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
             featureTableName, projectName);
     if (retrieveTable.isEmpty()) {
-      throw new ResourceNotFoundException(
-          String.format(
-              "No such Feature Table: (project: %s, name: %s)", projectName, featureTableName));
+      throw new FeatureTableNotFoundException(projectName, featureTableName);
     }
 
     return GetFeatureTableResponse.newBuilder().setTable(retrieveTable.get().toProto()).build();
@@ -370,9 +367,7 @@ public class RegistryService {
         tableRepository.findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
             featureTableName, projectName);
     if (existingTable.isEmpty()) {
-      throw new ResourceNotFoundException(
-          String.format(
-              "No such Feature Table: (project: %s, name: %s)", projectName, featureTableName));
+      throw new FeatureTableNotFoundException(projectName, featureTableName);
     }
 
     existingTable.get().delete();
@@ -402,10 +397,7 @@ public class RegistryService {
     OnlineStore onlineStore =
         onlineStoreRepository
             .findById(name)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        String.format("Online store with name '%s' not found", name)));
+            .orElseThrow(() -> new OnlineStoreNotFoundException(name));
 
     GetOnlineStoreResponse.Status status = GetOnlineStoreResponse.Status.ACTIVE;
     if (onlineStore.isArchived()) {
@@ -467,10 +459,7 @@ public class RegistryService {
     OnlineStore onlineStore =
         onlineStoreRepository
             .findById(name)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        String.format("Online store with name '%s' not found", name)));
+            .orElseThrow(() -> new OnlineStoreNotFoundException(name));
 
     onlineStore.setArchived(true);
     onlineStoreRepository.saveAndFlush(onlineStore);
