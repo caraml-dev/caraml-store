@@ -26,6 +26,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -40,6 +42,15 @@ import lombok.Setter;
 @Table(
     name = "feature_tables",
     uniqueConstraints = @UniqueConstraint(columnNames = {"name", "project_name"}))
+@NamedEntityGraph(
+    name = "FeatureTable.attributes",
+    attributeNodes = {
+      @NamedAttributeNode("entities"),
+      @NamedAttributeNode("features"),
+      @NamedAttributeNode("streamSource"),
+      @NamedAttributeNode("batchSource"),
+      @NamedAttributeNode("onlineStore")
+    })
 public class FeatureTable extends AbstractTimestampEntity {
 
   @Id @GeneratedValue private long id;
