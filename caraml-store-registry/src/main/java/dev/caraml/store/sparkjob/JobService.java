@@ -231,7 +231,7 @@ public class JobService {
       DataSource entitySource,
       String outputFormat,
       String outputUri) {
-    if (retrievalJobProperties == null) {
+    if (retrievalJobProperties == null || retrievalJobProperties.sparkApplicationSpec() == null) {
       throw new IllegalArgumentException(
           "Historical retrieval job properties have not been configured");
     }

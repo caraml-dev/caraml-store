@@ -150,6 +150,6 @@ class DataSourceConverter {
   }
 
   public String convert(List<DataSourceProto.DataSource> sources) throws JsonProcessingException {
-    return mapper.writeValueAsString(sources.stream().map(this::sourceToArgument));
+    return mapper.writeValueAsString(sources.stream().map(this::sourceToArgument).toList());
   }
 }
