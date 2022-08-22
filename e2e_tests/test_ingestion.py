@@ -2,12 +2,16 @@ import json
 import os
 import time
 import uuid
+from enum import Enum
+from typing import Union
 
+from datetime import timedelta
 import numpy as np
 import pandas as pd
 from google.protobuf.duration_pb2 import Duration
 
 from feast import (
+    BigQuerySource,
     Client,
     Entity,
     Feature,
@@ -21,6 +25,12 @@ from feast.online_store import OnlineStore
 from feast.wait import wait_retry_backoff
 from e2e_tests.utils.kafka import check_consumer_exist, ingest_and_retrieve
 
+class SparkJobStatus(Enum):
+    STARTING = 0
+    IN_PROGRESS = 1
+    FAILED = 2
+    COMPLETED = 3
+
 
 def generate_data():
     df = pd.DataFrame(columns=["s2id", "unique_drivers", "event_timestamp"])
@@ -32,6 +42,59 @@ def generate_data():
     df["date"] = df["event_timestamp"].dt.date
 
     return df
+
+
+def ingest_and_verify(
+    feast_client: Client,
+    feature_table: FeatureTable,
+    original: pd.DataFrame,
+):
+    job = feast_client.start_offline_to_online_ingestion(
+        feature_table,
+        original.event_timestamp.min().to_pydatetime(),
+        original.event_timestamp.max().to_pydatetime() + timedelta(seconds=1),
+    )
+    assert job.get_feature_table() == feature_table.name
+
+    wait_retry_backoff(
+        lambda: (None, job.get_status() == SparkJobStatus.COMPLETED), 180
+    )
+
+    features = feast_client.get_online_features(
+        [f"{feature_table.name}:unique_drivers"],
+        entity_rows=[{"s2id": s2_id} for s2_id in original["s2id"].tolist()],
+    ).to_dict()
+
+    ingested = pd.DataFrame.from_dict(features)
+    pd.testing.assert_frame_equal(
+        ingested[["s2id", f"{feature_table.name}:unique_drivers"]],
+        original[["s2id", "unique_drivers"]].rename(
+            columns={"unique_drivers": f"{feature_table.name}:unique_drivers"}
+        ),
+    )
+
+
+def test_offline_ingestion(
+    feast_client: Client,
+    batch_source: Union[BigQuerySource, FileSource],
+):
+    entity = Entity(name="s2id", description="S2id", value_type=ValueType.INT64,)
+
+    feature_table = FeatureTable(
+        name="drivers",
+        entities=["s2id"],
+        features=[Feature("unique_drivers", ValueType.INT64)],
+        batch_source=batch_source,
+    )
+
+    feast_client.apply(entity)
+    feast_client.apply(feature_table)
+
+    original = generate_data()
+    feast_client.ingest(feature_table, original)  # write to batch (offline) storage
+
+    ingest_and_verify(feast_client, feature_table, original)
+
 
 def test_streaming_ingestion_bigtable(
     feast_client: Client,
