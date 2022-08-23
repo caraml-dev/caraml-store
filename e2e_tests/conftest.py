@@ -6,11 +6,17 @@ def pytest_addoption(parser):
 
 
 from .fixtures.client import (  # noqa
-    feast_client
+    feast_client,
+    local_staging_path,
+    global_staging_path
 )
 
 from .fixtures.external_services import (  # type: ignore # noqa
     caraml_store_registry,
     caraml_store_serving,
     kafka_server
+)
+
+from .fixtures.data import (  # noqa
+    batch_source
 )

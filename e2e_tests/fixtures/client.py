@@ -20,7 +20,7 @@ def feast_client(
 
 @pytest.fixture(scope="session")
 def global_staging_path(pytestconfig):
-    if pytestconfig.getoption("env") == "local" and not pytestconfig.getoption(
+    if not pytestconfig.getoption(
         "staging_path", ""
     ):
         tmp_path = tempfile.mkdtemp()
