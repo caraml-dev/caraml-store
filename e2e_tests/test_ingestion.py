@@ -89,6 +89,13 @@ def test_offline_ingestion(
         ),
     )
 
+    # Register OnlineStore
+    feast_client.register_online_store(OnlineStore(
+        name="feast-bigtable",
+        store_type="BIGTABLE",
+        description="Test online store"
+    ))
+
     feast_client.apply(entity)
     feast_client.apply(feature_table)
 
