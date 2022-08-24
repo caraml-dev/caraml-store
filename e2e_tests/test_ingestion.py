@@ -82,6 +82,11 @@ def test_offline_ingestion(
         entities=["s2id"],
         features=[Feature("unique_drivers", ValueType.INT64)],
         batch_source=batch_source,
+        online_store=OnlineStore(
+            name="feast-bigtable",
+            store_type="BIGTABLE",
+            description="Test online store"
+        ),
     )
 
     feast_client.apply(entity)
