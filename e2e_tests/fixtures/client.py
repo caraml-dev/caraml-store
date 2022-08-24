@@ -14,7 +14,7 @@ def feast_client(
     return Client(
         core_url=f"{caraml_store_registry[0]}:{caraml_store_registry[1]}",
         serving_url=f"{caraml_store_serving[0]}:{caraml_store_serving[1]}",
-        jobservice_url=f"{caraml_store_registry[0]}:{caraml_store_registry[1]}",
+        job_service_url=f"{caraml_store_registry[0]}:{caraml_store_registry[1]}",
         telemetry=False
     )
 
