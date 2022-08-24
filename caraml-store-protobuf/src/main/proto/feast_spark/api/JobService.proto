@@ -1,5 +1,5 @@
 syntax = "proto3";
-package feast.core;
+package feast_spark.api;
 
 option java_outer_classname = "JobServiceProto";
 option java_package = "dev.caraml.store.protobuf.jobservice";
