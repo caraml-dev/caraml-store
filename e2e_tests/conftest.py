@@ -7,6 +7,7 @@ def pytest_addoption(parser):
 
 from .fixtures.client import (  # noqa
     feast_client,
+    feast_spark_client,
     local_staging_path,
     global_staging_path
 )

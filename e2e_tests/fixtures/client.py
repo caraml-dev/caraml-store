@@ -4,6 +4,7 @@ import uuid
 from typing import Tuple
 import pytest
 from feast import Client
+from feast_spark import Client as SparkClient
 
 @pytest.fixture
 def feast_client(
@@ -17,6 +18,10 @@ def feast_client(
         job_service_url=f"{caraml_store_registry[0]}:{caraml_store_registry[1]}",
         telemetry=False
     )
+
+@pytest.fixture
+def feast_spark_client(feast_client: Client) -> SparkClient:
+    return SparkClient(feast_client)
 
 @pytest.fixture(scope="session")
 def global_staging_path(pytestconfig):

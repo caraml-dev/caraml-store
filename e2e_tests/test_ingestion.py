@@ -2,7 +2,6 @@ import json
 import os
 import time
 import uuid
-from enum import Enum
 from typing import Union
 
 from datetime import timedelta
@@ -24,12 +23,8 @@ from feast.data_format import AvroFormat, ParquetFormat
 from feast.online_store import OnlineStore
 from feast.wait import wait_retry_backoff
 from e2e_tests.utils.kafka import check_consumer_exist, ingest_and_retrieve
-
-class SparkJobStatus(Enum):
-    STARTING = 0
-    IN_PROGRESS = 1
-    FAILED = 2
-    COMPLETED = 3
+from feast_spark import Client as SparkClient
+from feast_spark.pyspark.abc import SparkJobStatus
 
 
 def generate_data():
@@ -46,10 +41,11 @@ def generate_data():
 
 def ingest_and_verify(
     feast_client: Client,
+    feast_spark_client: SparkClient,
     feature_table: FeatureTable,
     original: pd.DataFrame,
 ):
-    job = feast_client.start_offline_to_online_ingestion(
+    job = feast_spark_client.start_offline_to_online_ingestion(
         feature_table,
         original.event_timestamp.min().to_pydatetime(),
         original.event_timestamp.max().to_pydatetime() + timedelta(seconds=1),
@@ -76,6 +72,7 @@ def ingest_and_verify(
 
 def test_offline_ingestion(
     feast_client: Client,
+    feast_spark_client: SparkClient,
     batch_source: Union[BigQuerySource, FileSource],
 ):
     entity = Entity(name="s2id", description="S2id", value_type=ValueType.INT64,)
@@ -93,7 +90,7 @@ def test_offline_ingestion(
     original = generate_data()
     feast_client.ingest(feature_table, original)  # write to batch (offline) storage
 
-    ingest_and_verify(feast_client, feature_table, original)
+    ingest_and_verify(feast_client, feast_spark_client, feature_table, original)
 
 
 def test_streaming_ingestion_bigtable(
