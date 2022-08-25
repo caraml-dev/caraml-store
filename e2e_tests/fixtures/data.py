@@ -12,7 +12,7 @@ __all__ = ("bq_dataset", "batch_source")
 
 @pytest.fixture(scope="session")
 def bq_dataset(pytestconfig):
-    client = bigquery.Client(project=pytestconfig.getoption("bq_project"))
+    client = bigquery.Client(project="gods-dev")
     timestamp = int(time.time())
     name = f"feast_e2e_{timestamp}"
     client.create_dataset(name)
