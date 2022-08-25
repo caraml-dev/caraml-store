@@ -22,7 +22,7 @@ def bq_dataset(pytestconfig):
 @pytest.fixture
 def batch_source(local_staging_path: str, pytestconfig, request: FixtureRequest):
     bq_project = "gods-dev"
-    bq_dataset = request.getfixturevalue("bq_dataset")
+    bq_dataset = "feast_e2e_1627375931"
     return BigQuerySource(
         event_timestamp_column="event_timestamp",
         created_timestamp_column="created_timestamp",
