@@ -19,5 +19,6 @@ from .fixtures.external_services import (  # type: ignore # noqa
 )
 
 from .fixtures.data import (  # noqa
-    batch_source
+    batch_source,
+    bq_dataset
 )
