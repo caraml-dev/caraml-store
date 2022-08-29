@@ -8,6 +8,8 @@ import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetJobResponse;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.Job;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.ListJobsRequest;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.ListJobsResponse;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.ScheduleOfflineToOnlineIngestionJobRequest;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.ScheduleOfflineToOnlineIngestionJobResponse;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnlineIngestionJobRequest;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnlineIngestionJobResponse;
 import io.grpc.stub.StreamObserver;
@@ -42,6 +44,21 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
             .setId(job.getId())
             .setTableName(request.getTableName())
             .build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void scheduleOfflineToOnlineIngestionJob(
+      ScheduleOfflineToOnlineIngestionJobRequest request,
+      StreamObserver<ScheduleOfflineToOnlineIngestionJobResponse> responseObserver) {
+    jobService.scheduleBatchIngestionJob(
+        request.getProject(),
+        request.getTableName(),
+        request.getCronSchedule(),
+        request.getIngestionTimespan());
+    ScheduleOfflineToOnlineIngestionJobResponse response =
+        ScheduleOfflineToOnlineIngestionJobResponse.getDefaultInstance();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }

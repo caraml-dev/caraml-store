@@ -1,5 +1,7 @@
 package dev.caraml.store.sparkjob;
 
+import dev.caraml.store.sparkjob.crd.ScheduledSparkApplication;
+import dev.caraml.store.sparkjob.crd.ScheduledSparkApplicationList;
 import dev.caraml.store.sparkjob.crd.SparkApplication;
 import dev.caraml.store.sparkjob.crd.SparkApplicationList;
 import io.kubernetes.client.openapi.ApiClient;
@@ -19,14 +21,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class SparkOperatorApiImpl implements SparkOperatorApi {
 
-  private final GenericKubernetesApi<SparkApplication, SparkApplicationList> api;
+  private final GenericKubernetesApi<SparkApplication, SparkApplicationList> sparkApplicationApi;
+  private final GenericKubernetesApi<ScheduledSparkApplication, ScheduledSparkApplicationList>
+      scheduledSparkApplicationApi;
 
   @Autowired
   public SparkOperatorApiImpl(ClusterConfig cluster) throws IOException {
     ApiClient client =
         cluster.getInCluster() ? ClientBuilder.cluster().build() : Config.defaultClient();
     Configuration.setDefaultApiClient(client);
-    this.api =
+    this.sparkApplicationApi =
         new GenericKubernetesApi<>(
             SparkApplication.class,
             SparkApplicationList.class,
@@ -34,12 +38,20 @@ public class SparkOperatorApiImpl implements SparkOperatorApi {
             "v1beta2",
             "sparkapplications",
             client);
+    this.scheduledSparkApplicationApi =
+        new GenericKubernetesApi<>(
+            ScheduledSparkApplication.class,
+            ScheduledSparkApplicationList.class,
+            "sparkoperator.k8s.io",
+            "v1beta2",
+            "scheduledsparkapplications",
+            client);
   }
 
   @Override
   public SparkApplication update(SparkApplication app) throws SparkOperatorApiException {
     try {
-      return api.update(app).throwsApiException().getObject();
+      return sparkApplicationApi.update(app).throwsApiException().getObject();
     } catch (ApiException e) {
       throw new SparkOperatorApiException(e.getMessage());
     }
@@ -48,7 +60,27 @@ public class SparkOperatorApiImpl implements SparkOperatorApi {
   @Override
   public SparkApplication create(SparkApplication app) throws SparkOperatorApiException {
     try {
-      return api.create(app).throwsApiException().getObject();
+      return sparkApplicationApi.create(app).throwsApiException().getObject();
+    } catch (ApiException e) {
+      throw new SparkOperatorApiException(e.getMessage());
+    }
+  }
+
+  @Override
+  public ScheduledSparkApplication update(ScheduledSparkApplication app)
+      throws SparkOperatorApiException {
+    try {
+      return scheduledSparkApplicationApi.update(app).throwsApiException().getObject();
+    } catch (ApiException e) {
+      throw new SparkOperatorApiException(e.getMessage());
+    }
+  }
+
+  @Override
+  public ScheduledSparkApplication create(ScheduledSparkApplication app)
+      throws SparkOperatorApiException {
+    try {
+      return scheduledSparkApplicationApi.create(app).throwsApiException().getObject();
     } catch (ApiException e) {
       throw new SparkOperatorApiException(e.getMessage());
     }
@@ -60,16 +92,31 @@ public class SparkOperatorApiImpl implements SparkOperatorApi {
     ListOptions options = new ListOptions();
     options.setLabelSelector(labelSelector);
     try {
-      return api.list(namespace, options).throwsApiException().getObject().getItems();
+      return sparkApplicationApi
+          .list(namespace, options)
+          .throwsApiException()
+          .getObject()
+          .getItems();
     } catch (ApiException e) {
       throw new SparkOperatorApiException(e.getMessage());
     }
   }
 
   @Override
-  public Optional<SparkApplication> get(String namespace, String name)
+  public Optional<SparkApplication> getSparkApplication(String namespace, String name)
       throws SparkOperatorApiException {
-    KubernetesApiResponse<SparkApplication> resp = api.get(namespace, name);
+    KubernetesApiResponse<SparkApplication> resp = sparkApplicationApi.get(namespace, name);
+    return switch (resp.getHttpStatusCode()) {
+      case 200, 404 -> Optional.ofNullable(resp.getObject());
+      default -> throw new SparkOperatorApiException(resp.getStatus().toString());
+    };
+  }
+
+  @Override
+  public Optional<ScheduledSparkApplication> getScheduledSparkApplication(
+      String namespace, String name) throws SparkOperatorApiException {
+    KubernetesApiResponse<ScheduledSparkApplication> resp =
+        scheduledSparkApplicationApi.get(namespace, name);
     return switch (resp.getHttpStatusCode()) {
       case 200, 404 -> Optional.ofNullable(resp.getObject());
       default -> throw new SparkOperatorApiException(resp.getStatus().toString());
