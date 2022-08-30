@@ -1,24 +1,5 @@
 plugins {
-    id 'java'
-    id 'idea'
-    id 'com.diffplug.spotless'
     id 'me.qoomon.git-versioning'
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-repositories {
-    mavenCentral()
-}
-
-spotless {
-    java {
-        removeUnusedImports()
-        googleJavaFormat()
-    }
 }
 
 version = '0.0.0-SNAPSHOT'
@@ -35,8 +16,4 @@ gitVersioning.apply {
             version = '${ref.version}'
         }
     }
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
 }

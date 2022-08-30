@@ -6,4 +6,4 @@ pluginManagement {
 	}
 }
 rootProject.name = 'caraml-store'
-include('caraml-store-testutil', 'caraml-store-protobuf', 'caraml-store-registry')
+include('caraml-store-testutil', 'caraml-store-protobuf', 'caraml-store-registry', 'caraml-store-spark')

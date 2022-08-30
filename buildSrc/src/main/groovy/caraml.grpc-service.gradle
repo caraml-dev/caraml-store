@@ -1,5 +1,5 @@
 plugins {
-    id 'caraml.java-common'
+    id 'caraml.java'
     id 'caraml.test-suite'
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
