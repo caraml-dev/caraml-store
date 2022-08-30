@@ -16,6 +16,17 @@ class SparkSpec extends UnitSpec with BeforeAndAfter {
       .setAppName("Testing")
       .set("spark.driver.bindAddress", "localhost")
       .set("spark.default.parallelism", "8")
+      .set(
+        "spark.metrics.conf.*.sink.statsd.class",
+        "org.apache.spark.metrics.sink.StatsdSinkWithTags"
+      )
+      .set("spark.metrics.conf.*.sink.statsd.host", "localhost")
+      .set("spark.metrics.conf.*.sink.statsd.period", "999") // disable scheduled reporting
+      .set("spark.metrics.conf.*.sink.statsd.unit", "minutes")
+      .set("spark.metrics.labels", "job_id=test")
+      .set("spark.metrics.namespace", "")
+      .set("spark.sql.legacy.allowUntypedScalaUDF", "true")
+      .set("spark.sql.execution.arrow.maxRecordsPerBatch", "50000")
 
     sparkSession = SparkSession
       .builder()

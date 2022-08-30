@@ -1,14 +1,14 @@
 buildscript {
     ext {
         protobufVersion = '3.19.2'
-        protobufPluginVersion = '0.8.18'
         grpcVersion = '1.42.2'
     }
 }
 
 plugins {
     id 'caraml.library'
-    id 'com.google.protobuf' version "${protobufPluginVersion}"
+    id 'com.google.protobuf'
+    id 'idea'
 }
 
 repositories {
