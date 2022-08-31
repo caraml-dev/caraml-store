@@ -9,7 +9,7 @@ import org.joda.time.DateTime
 import org.json4s.jackson.JsonMethods.{parse => parseJSON}
 import org.json4s.{DefaultFormats, Formats}
 
-class RowValidatorTest extends SparkSpec {
+class RowValidatorSpec extends SparkSpec {
   implicit val formats: Formats = DefaultFormats
 
   val featureTable: FeatureTable = FeatureTable(
