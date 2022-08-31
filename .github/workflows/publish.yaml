@@ -24,9 +24,21 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Build Image
+      - name: Build gRPC service images
         uses: gradle/gradle-build-action@v2
         env:
           DOCKER_REGISTRY: ghcr.io/${{ github.repository_owner }}
         with:
           arguments: jib
+      - name: Build Spark application image
+        uses: gradle/gradle-build-action@v2
+        env:
+          DOCKER_REGISTRY: ghcr.io/${{ github.repository_owner }}
+        with:
+          arguments: caraml-store-spark:docker
+      - name: Build Spark application image
+        uses: gradle/gradle-build-action@v2
+        env:
+          DOCKER_REGISTRY: ghcr.io/${{ github.repository_owner }}
+        with:
+          arguments: caraml-store-spark:dockerPush

@@ -65,6 +65,7 @@ shadowJar {
     exclude "META-INF/*.DSA"
     exclude "META-INF/*.RSA"
     relocate "com.google.protobuf", "com.google.protobuf.vendor"
+    zip64 true
 }
 
 def containerRegistry = System.getenv('DOCKER_REGISTRY')
