@@ -68,8 +68,8 @@ object BatchPipeline extends BasePipeline {
 
     validRows.write
       .format(config.store match {
-        case _: RedisConfig     => "dev.caraml.spark.stores.redis"
-        case _: BigTableConfig  => "dev.caraml.spark.stores.bigtable"
+        case _: RedisConfig    => "dev.caraml.spark.stores.redis"
+        case _: BigTableConfig => "dev.caraml.spark.stores.bigtable"
       })
       .option("entity_columns", featureTable.entities.map(_.name).mkString(","))
       .option("namespace", featureTable.name)

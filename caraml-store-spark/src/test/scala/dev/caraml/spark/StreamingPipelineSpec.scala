@@ -1,10 +1,19 @@
 package dev.caraml.spark
 
-import com.dimafeng.testcontainers.{ForAllTestContainer, GenericContainer, KafkaContainer, MultipleContainers}
+import com.dimafeng.testcontainers.{
+  ForAllTestContainer,
+  GenericContainer,
+  KafkaContainer,
+  MultipleContainers
+}
 import com.example.protos.{AllTypesMessage, InnerMessage, TestMessage, VehicleType}
 import com.google.protobuf.{AbstractMessage, ByteString, Timestamp}
 import dev.caraml.spark.helpers.DataHelper.{generateDistinctRows, generateTempPath}
-import dev.caraml.spark.helpers.RedisStorageHelper.{beStoredRow, encodeFeatureKey, murmurHashHexString}
+import dev.caraml.spark.helpers.RedisStorageHelper.{
+  beStoredRow,
+  encodeFeatureKey,
+  murmurHashHexString
+}
 import dev.caraml.spark.helpers.TestRow
 import dev.caraml.store.protobuf.types.ValueProto.ValueType
 import org.apache.commons.codec.digest.DigestUtils

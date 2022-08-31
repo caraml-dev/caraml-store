@@ -1,8 +1,17 @@
 package dev.caraml.spark
 
 import com.dimafeng.testcontainers.{ForAllTestContainer, GenericContainer}
-import dev.caraml.spark.helpers.DataHelper.{generateDistinctRows, generateTempPath, rowGenerator, storeAsParquet}
-import dev.caraml.spark.helpers.RedisStorageHelper.{beStoredRow, encodeFeatureKey, murmurHashHexString}
+import dev.caraml.spark.helpers.DataHelper.{
+  generateDistinctRows,
+  generateTempPath,
+  rowGenerator,
+  storeAsParquet
+}
+import dev.caraml.spark.helpers.RedisStorageHelper.{
+  beStoredRow,
+  encodeFeatureKey,
+  murmurHashHexString
+}
 import dev.caraml.spark.helpers.TestRow
 import dev.caraml.spark.metrics.StatsDStub
 import dev.caraml.store.protobuf.types.ValueProto.ValueType
