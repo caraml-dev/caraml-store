@@ -24,9 +24,10 @@ configurations {
 
 dependencies {
     compileOnly "org.apache.spark:spark-sql_$scalaVersion:$sparkVersion"
-    compileOnly "org.apache.spark:spark-avro_$scalaVersion:$sparkVersion"
     compileOnly "org.apache.spark:spark-catalyst_$scalaVersion:$sparkVersion"
     compileOnly "org.apache.spark:spark-streaming_$scalaVersion:$sparkVersion"
+    implementation "org.apache.spark:spark-avro_$scalaVersion:$sparkVersion"
+    implementation "org.apache.spark:spark-sql-kafka-0-10_$scalaVersion:${sparkVersion}"
     implementation project(':caraml-store-protobuf')
     implementation 'io.odpf:stencil:0.2.1'
     implementation 'joda-time:joda-time:2.10.6'
@@ -37,6 +38,7 @@ dependencies {
     testImplementation "com.dimafeng:testcontainers-scala-scalatest_$scalaVersion:0.38.8"
     // Downgraded to the version of wiremock which still use jackson 2.10.0
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.26.3'
+    testImplementation "com.dimafeng:testcontainers-scala-kafka_$scalaVersion:0.38.8"
     testRuntimeOnly 'com.vladsch.flexmark:flexmark-all:0.35.10'
 }
 application {
@@ -51,6 +53,7 @@ shadowJar {
     exclude "META-INF/*.SF"
     exclude "META-INF/*.DSA"
     exclude "META-INF/*.RSA"
+    relocate "com.google.protobuf", "com.google.protobuf.vendor"
 }
 
 def containerRegistry = System.getenv('DOCKER_REGISTRY')
