@@ -53,7 +53,7 @@ def ingest_and_verify(
     assert job.get_feature_table() == feature_table.name
 
     wait_retry_backoff(
-        lambda: (None, job.get_status() == SparkJobStatus.COMPLETED), 180
+        lambda: (None, job.get_status() == SparkJobStatus.COMPLETED), 300
     )
 
     features = feast_client.get_online_features(
