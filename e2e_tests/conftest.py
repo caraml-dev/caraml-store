@@ -3,6 +3,7 @@ def pytest_addoption(parser):
     parser.addoption("--registry-url", action="store", default="localhost:6565")
     parser.addoption("--serving-url", action="store", default="localhost:6566")
     parser.addoption("--kafka-brokers", action="store", default="localhost:9092")
+    parser.addoption("--bq-project", action="store", default="gods-dev")
 
 
 from .fixtures.client import (  # noqa
