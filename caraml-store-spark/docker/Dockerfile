@@ -11,4 +11,5 @@ ADD https://repo1.maven.org/maven2/com/google/cloud/spark/spark-bigquery-with-de
 RUN mkdir -p /dev
 
 ADD caraml-spark-application-with-dependencies.jar /opt/spark/jars
+ADD historical_feature_retrieval_job.py /opt/spark/work-dir
 

@@ -80,7 +80,7 @@ def containerRegistry = System.getenv('DOCKER_REGISTRY')
 docker {
     dependsOn shadowJar
     dockerfile file('docker/Dockerfile')
-    files shadowJar.outputs
+    files shadowJar.outputs, "$rootDir/caraml-store-pyspark/scripts"
     name "${containerRegistry == null ? "" : containerRegistry + "/"}${project.name}:${version}"
 }
 
