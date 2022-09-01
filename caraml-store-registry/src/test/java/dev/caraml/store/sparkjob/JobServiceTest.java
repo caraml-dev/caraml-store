@@ -47,7 +47,7 @@ public class JobServiceTest {
     MockitoAnnotations.openMocks(this);
     entityRepository = mock(EntityRepository.class);
     api = mock(SparkOperatorApi.class);
-    when(api.create(any()))
+    when(api.create(any(SparkApplication.class)))
         .thenAnswer(
             invocation -> {
               SparkApplication input = invocation.getArgument(0, SparkApplication.class);

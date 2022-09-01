@@ -13,8 +13,12 @@ import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobStatus;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobType;
 import dev.caraml.store.sparkjob.adapter.BatchIngestionArgumentAdapter;
 import dev.caraml.store.sparkjob.adapter.HistoricalRetrievalArgumentAdapter;
+import dev.caraml.store.sparkjob.adapter.ScheduledBatchIngestionArgumentAdapter;
 import dev.caraml.store.sparkjob.adapter.StreamIngestionArgumentAdapter;
+import dev.caraml.store.sparkjob.crd.ScheduledSparkApplication;
+import dev.caraml.store.sparkjob.crd.ScheduledSparkApplicationSpec;
 import dev.caraml.store.sparkjob.crd.SparkApplication;
+import dev.caraml.store.sparkjob.crd.SparkApplicationSpec;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import java.util.HashMap;
 import java.util.List;
@@ -161,6 +165,7 @@ public class JobService {
   public Job createOrUpdateBatchIngestionJob(
       String project, String featureTableName, Timestamp startTime, Timestamp endTime)
       throws SparkOperatorApiException {
+
     FeatureTableSpec spec =
         tableRepository
             .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(featureTableName, project)
@@ -174,6 +179,67 @@ public class JobService {
         new BatchIngestionArgumentAdapter(project, spec, entityNameToType, startTime, endTime)
             .getArguments();
     return createOrUpdateIngestionJob(JobType.BATCH_INGESTION_JOB, project, spec, arguments);
+  }
+
+  public void scheduleBatchIngestionJob(
+      String project, String featureTableName, String schedule, Integer ingestionTimespan) {
+    FeatureTableSpec featureTableSpec =
+        tableRepository
+            .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(featureTableName, project)
+            .map(ft -> ft.toProto().getSpec())
+            .orElseThrow(
+                () -> {
+                  throw new FeatureTableNotFoundException(project, featureTableName);
+                });
+    IngestionJobProperties batchIngestionJobTemplate =
+        ingestionJobTemplateByTypeAndStoreName
+            .get(JobType.BATCH_INGESTION_JOB)
+            .get(featureTableSpec.getOnlineStore().getName());
+    if (batchIngestionJobTemplate == null) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Job properties not found for store name: %s",
+              featureTableSpec.getOnlineStore().getName()));
+    }
+
+    String ingestionJobId =
+        getIngestionJobId(JobType.BATCH_INGESTION_JOB, project, featureTableSpec);
+    Optional<ScheduledSparkApplication> existingScheduledApplication =
+        sparkOperatorApi.getScheduledSparkApplication(namespace, ingestionJobId);
+    ScheduledSparkApplication scheduledSparkApplication =
+        existingScheduledApplication.orElseGet(
+            () -> {
+              ScheduledSparkApplication scheduledApp = new ScheduledSparkApplication();
+              scheduledApp.setMetadata(new V1ObjectMeta());
+              scheduledApp.getMetadata().setName(ingestionJobId);
+              scheduledApp.getMetadata().setNamespace(namespace);
+              scheduledApp.addLabels(
+                  Map.of(
+                      JOB_TYPE_LABEL,
+                      JobType.BATCH_INGESTION_JOB.toString(),
+                      STORE_LABEL,
+                      featureTableSpec.getOnlineStore().getName(),
+                      PROJECT_LABEL,
+                      project,
+                      FEATURE_TABLE_LABEL,
+                      featureTableSpec.getName()));
+              return scheduledApp;
+            });
+    SparkApplicationSpec appSpec = batchIngestionJobTemplate.sparkApplicationSpec().deepCopy();
+    Map<String, String> entityNameToType = getEntityToTypeMap(project, featureTableSpec);
+    List<String> arguments =
+        new ScheduledBatchIngestionArgumentAdapter(
+                project, featureTableSpec, entityNameToType, ingestionTimespan)
+            .getArguments();
+    appSpec.addArguments(arguments);
+    ScheduledSparkApplicationSpec scheduledAppSpec =
+        new ScheduledSparkApplicationSpec(schedule, appSpec);
+    scheduledSparkApplication.setSpec(scheduledAppSpec);
+    if (existingScheduledApplication.isPresent()) {
+      sparkOperatorApi.update(scheduledSparkApplication);
+    } else {
+      sparkOperatorApi.create(scheduledSparkApplication);
+    }
   }
 
   private Job createOrUpdateIngestionJob(
@@ -195,7 +261,7 @@ public class JobService {
 
     String ingestionJobId = getIngestionJobId(jobType, project, spec);
     Optional<SparkApplication> existingApplication =
-        sparkOperatorApi.get(namespace, ingestionJobId);
+        sparkOperatorApi.getSparkApplication(namespace, ingestionJobId);
     SparkApplication sparkApplication =
         existingApplication.orElseGet(
             () -> {
@@ -306,6 +372,6 @@ public class JobService {
   }
 
   public Optional<Job> getJob(String id) {
-    return sparkOperatorApi.get(namespace, id).map(this::sparkApplicationToJob);
+    return sparkOperatorApi.getSparkApplication(namespace, id).map(this::sparkApplicationToJob);
   }
 }
