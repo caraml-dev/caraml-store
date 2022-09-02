@@ -14,7 +14,8 @@ image:
 	./gradlew jib
 
 setup-e2e-tests:
-	pip install -r e2e_tests/requirements.txt && pip install feast==$(PYTHON_SDK_VERSION)
+	pip install -r e2e_tests/requirements.txt && \
+	pip install feast==$(PYTHON_SDK_VERSION) feast-spark==$(SPARK_SDK_VERSION)
 
 run-e2e-tests: setup-e2e-tests
 	cd e2e_tests; \
