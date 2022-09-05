@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+    id 'com.diffplug.spotless'
+    id 'caraml.common'
+}
+
+repositories {
+    mavenCentral()
+}
+
+spotless {
+    java {
+        removeUnusedImports()
+        googleJavaFormat()
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

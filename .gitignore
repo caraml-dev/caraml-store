@@ -38,3 +38,16 @@ out/
 
 ### Generated Code ##
 **/generated/
+
+### Python ###
+__pycache__/
+*.py[cod]
+*$py.class
+.mypy_cache/
+.pytest_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
