@@ -11,6 +11,7 @@ def feast_client(
     pytestconfig,
     caraml_store_registry: Tuple[str, int],
     caraml_store_serving: Tuple[str, int],
+    local_staging_path,
 ):
     return Client(
         core_url=f"{caraml_store_registry[0]}:{caraml_store_registry[1]}",
