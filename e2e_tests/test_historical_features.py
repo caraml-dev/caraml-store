@@ -91,6 +91,8 @@ def test_historical_features(
 
     output_dir = job.get_output_file_uri()
 
+    print(job.get_output_file_uri())
+    print(job.get_status())
     joined_df = read_parquet(output_dir)
 
     expected_joined_df = pd.DataFrame(
