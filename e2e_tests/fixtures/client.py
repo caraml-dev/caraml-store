@@ -17,9 +17,7 @@ def feast_client(
         core_url=f"{caraml_store_registry[0]}:{caraml_store_registry[1]}",
         serving_url=f"{caraml_store_serving[0]}:{caraml_store_serving[1]}",
         job_service_url=f"{caraml_store_registry[0]}:{caraml_store_registry[1]}",
-        historical_feature_output_location=os.path.join(
-            local_staging_path, "historical_output"
-        ),
+        historical_feature_output_location="gs://d-gods-feast-spark/historical-retrieval-output",
         telemetry=False
     )
 
