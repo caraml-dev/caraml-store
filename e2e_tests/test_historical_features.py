@@ -4,8 +4,10 @@ from urllib.parse import urlparse
 
 import numpy as np
 import pandas as pd
+import gcsfs
 from google.protobuf.duration_pb2 import Duration
 from pandas._testing import assert_frame_equal
+from pyarrow import parquet
 
 from feast import Client, Entity, Feature, FeatureTable, ValueType
 from feast.data_source import BigQuerySource, FileSource
@@ -17,8 +19,11 @@ np.random.seed(0)
 
 def read_parquet(uri):
     parsed_uri = urlparse(uri)
-    if parsed_uri.scheme == "file":
-        return pd.read_parquet(parsed_uri.path)
+    if parsed_uri.scheme == "gs":
+        fs = gcsfs.GCSFileSystem()
+        files = ["gs://" + path for path in fs.glob(uri + "/part-*")]
+        ds = parquet.ParquetDataset(files, filesystem=fs)
+        return ds.read().to_pandas()
     else:
         raise ValueError(f"Unsupported URL scheme {uri}")
 
@@ -91,9 +96,6 @@ def test_historical_features(
 
     output_dir = job.get_output_file_uri()
 
-    print(f"HISTORICAL JOB ID : {job.get_id()}")
-    print(f"OUTPUT-DIR: {job.get_output_file_uri()}")
-    print(f"STATUS: {job.get_status()}")
     joined_df = read_parquet(output_dir)
 
     expected_joined_df = pd.DataFrame(
