@@ -1,0 +1,16 @@
+plugins {
+    id 'caraml.grpc-service'
+}
+
+dependencies {
+    implementation project(':caraml-store-protobuf')
+    implementation 'com.google.guava:guava:26.0-jre'
+    implementation 'org.apache.commons:commons-lang3:3.10'
+    implementation 'org.apache.avro:avro:1.10.2'
+    implementation 'com.google.cloud:google-cloud-bigtable:1.21.2'
+    implementation 'io.lettuce:lettuce-core:6.2.0.RELEASE'
+    implementation 'io.netty:netty-transport-native-epoll:4.1.52.Final:linux-x86_64'
+    testImplementation project(':caraml-store-testutil')
+    testImplementation 'org.testcontainers:junit-jupiter:1.17.2'
+    testImplementation 'org.grpcmock:grpcmock-junit5:0.7.9'
+}

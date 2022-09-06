@@ -1,4 +1,4 @@
-package dev.caraml.store.sparkjob;
+package dev.caraml.store.api;
 
 import dev.caraml.store.protobuf.jobservice.JobServiceGrpc;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetHistoricalFeaturesRequest;
@@ -12,6 +12,8 @@ import dev.caraml.store.protobuf.jobservice.JobServiceProto.ScheduleOfflineToOnl
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.ScheduleOfflineToOnlineIngestionJobResponse;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnlineIngestionJobRequest;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnlineIngestionJobResponse;
+import dev.caraml.store.sparkjob.JobNotFoundException;
+import dev.caraml.store.sparkjob.JobService;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;

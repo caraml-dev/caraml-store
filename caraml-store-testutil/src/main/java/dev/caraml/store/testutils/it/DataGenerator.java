@@ -2,6 +2,7 @@ package dev.caraml.store.testutils.it;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Duration;
+import com.google.protobuf.Timestamp;
 import dev.caraml.store.protobuf.core.DataFormatProto.FileFormat;
 import dev.caraml.store.protobuf.core.DataFormatProto.FileFormat.ParquetFormat;
 import dev.caraml.store.protobuf.core.DataFormatProto.StreamFormat;
@@ -15,6 +16,8 @@ import dev.caraml.store.protobuf.core.FeatureProto;
 import dev.caraml.store.protobuf.core.FeatureProto.FeatureSpec;
 import dev.caraml.store.protobuf.core.FeatureTableProto.FeatureTableSpec;
 import dev.caraml.store.protobuf.core.OnlineStoreProto;
+import dev.caraml.store.protobuf.serving.ServingServiceProto.FeatureReference;
+import dev.caraml.store.protobuf.serving.ServingServiceProto.GetOnlineFeaturesRequest.EntityRow;
 import dev.caraml.store.protobuf.types.ValueProto;
 import java.util.List;
 import java.util.Map;
@@ -206,6 +209,22 @@ public class DataGenerator {
         .setName(name)
         .setType(OnlineStoreProto.StoreType.REDIS)
         .setDescription("A dummy online store")
+        .build();
+  }
+
+  public static EntityRow createEntityRow(
+      String entityName, ValueProto.Value entityValue, long seconds) {
+    return EntityRow.newBuilder()
+        .setTimestamp(Timestamp.newBuilder().setSeconds(seconds))
+        .putFields(entityName, entityValue)
+        .build();
+  }
+
+  public static FeatureReference createFeatureReference(
+      String featureTableName, String featureName) {
+    return FeatureReference.newBuilder()
+        .setFeatureTable(featureTableName)
+        .setName(featureName)
         .build();
   }
 }
