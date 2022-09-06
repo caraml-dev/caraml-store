@@ -78,7 +78,7 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
         GetHistoricalFeaturesResponse.newBuilder()
             .setId(job.getId())
             .setJobStartTime(job.getStartTime())
-            .setOutputFileUri(job.getRetrieval().getOutputLocation())
+            .setOutputFileUri(request.getOutputLocation())
             .build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
