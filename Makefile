@@ -23,4 +23,6 @@ run-e2e-tests: setup-e2e-tests
 	--color=yes \
 	--registry-url $(CARAML_STORE_REGISTRY_URL) \
 	--serving-url $(CARAML_STORE_SERVING_URL) \
-	--kafka-brokers $(KAFKA_BROKERS)
+	--kafka-brokers $(KAFKA_BROKERS) \
+	--bq-project $(GCP_PROJECT) \
+	--historical-feature-output-location $(GCP_BUCKET_PATH)

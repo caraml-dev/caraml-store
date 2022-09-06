@@ -114,6 +114,4 @@ def test_historical_features(
         ),
     )
 
-    job = feast_spark_client.get_historical_features(feature_refs, customers_df)
-    job.get_output_file_uri()
     assert job.get_status() == SparkJobStatus.COMPLETED
