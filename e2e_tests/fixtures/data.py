@@ -10,6 +10,7 @@ from datetime import datetime
 
 __all__ = ("bq_dataset", "batch_source")
 
+
 @pytest.fixture(scope="session")
 def bq_dataset(pytestconfig):
     client = bigquery.Client(project=pytestconfig.getoption("bq_project"))
@@ -19,8 +20,9 @@ def bq_dataset(pytestconfig):
     yield name
     client.delete_dataset(name, delete_contents=True)
 
+
 @pytest.fixture
-def batch_source(local_staging_path: str, pytestconfig, request: FixtureRequest):
+def batch_source(local_staging_path: str, pytestconfig, request: FixtureRequest) -> BigQuerySource:
     bq_project = pytestconfig.getoption("bq_project")
     bq_dataset = request.getfixturevalue("bq_dataset")
     return BigQuerySource(

@@ -74,6 +74,7 @@ def test_offline_ingestion(
     feast_client: Client,
     feast_spark_client: SparkClient,
     batch_source: Union[BigQuerySource, FileSource],
+    online_store: OnlineStore,
 ):
     entity = Entity(name="s2id", description="S2id", value_type=ValueType.INT64,)
 
@@ -82,19 +83,8 @@ def test_offline_ingestion(
         entities=["s2id"],
         features=[Feature("unique_drivers", ValueType.INT64)],
         batch_source=batch_source,
-        online_store=OnlineStore(
-            name="feast-bigtable",
-            store_type="BIGTABLE",
-            description="Test online store"
-        ),
+        online_store=online_store,
     )
-
-    # Register OnlineStore
-    feast_client.register_online_store(OnlineStore(
-        name="feast-bigtable",
-        store_type="BIGTABLE",
-        description="Test online store"
-    ))
 
     feast_client.apply(entity)
     feast_client.apply(feature_table)
@@ -109,6 +99,7 @@ def test_streaming_ingestion_bigtable(
     feast_client: Client,
     kafka_server,
     pytestconfig,
+    online_store,
 ):
     entity = Entity(name="s2id", description="S2id", value_type=ValueType.INT64,)
     kafka_broker = f"{kafka_server[0]}:{kafka_server[1]}"
@@ -131,19 +122,8 @@ def test_streaming_ingestion_bigtable(
             message_format=AvroFormat(avro_schema()),
             topic=topic_name,
         ),
-        online_store=OnlineStore(
-            name="feast-bigtable",
-            store_type="BIGTABLE",
-            description="Test online store"
-        ),
+        online_store=online_store,
     )
-
-    # Register OnlineStore
-    feast_client.register_online_store(OnlineStore(
-        name="feast-bigtable",
-        store_type="BIGTABLE",
-        description="Test online store"
-    ))
 
     feast_client.apply(entity)
     feast_client.apply(feature_table)
