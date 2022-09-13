@@ -24,6 +24,7 @@ public class SparkApplicationSpec {
   private String type;
   private String sparkVersion;
   private String pythonVersion;
+  private List<String> imagePullSecrets;
 
   public void addArguments(List<String> newArguments) {
     arguments.addAll(newArguments);
