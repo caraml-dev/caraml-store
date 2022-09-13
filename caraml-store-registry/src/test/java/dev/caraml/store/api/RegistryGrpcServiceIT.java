@@ -1,4 +1,4 @@
-package dev.caraml.store.feature;
+package dev.caraml.store.api;
 
 import static dev.caraml.store.protobuf.types.ValueProto.ValueType.Enum.FLOAT;
 import static dev.caraml.store.protobuf.types.ValueProto.ValueType.Enum.INT64;

@@ -1,5 +1,8 @@
-package dev.caraml.store.feature;
+package dev.caraml.store.api;
 
+import dev.caraml.store.feature.Project;
+import dev.caraml.store.feature.RegistryConfig;
+import dev.caraml.store.feature.RegistryService;
 import dev.caraml.store.protobuf.core.CoreServiceGrpc;
 import dev.caraml.store.protobuf.core.CoreServiceProto.ApplyEntityRequest;
 import dev.caraml.store.protobuf.core.CoreServiceProto.ApplyEntityResponse;
