@@ -12,10 +12,11 @@ import scala.collection.JavaConverters._
 case class ClusterPipelineProvider(endpoint: RedisEndpoint) extends PipelineProvider {
 
   val nodes = Set(new HostAndPort(endpoint.host, endpoint.port)).asJava
-  val DEFAULT_CLIENT_CONFIG = DefaultJedisClientConfig
+  val configBuilder = DefaultJedisClientConfig
     .builder()
-    .password(endpoint.password)
-    .build()
+  val DEFAULT_CLIENT_CONFIG =
+    if (endpoint.password.isEmpty) configBuilder.build()
+    else configBuilder.password(endpoint.password).build()
   val provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)
 
   /**
