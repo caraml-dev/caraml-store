@@ -26,3 +26,5 @@ run-e2e-tests: setup-e2e-tests
 	--kafka-brokers $(KAFKA_BROKERS) \
 	--bq-project $(GCP_PROJECT) \
 	--historical-feature-output-location $(GCP_BUCKET_PATH)
+	--store-name $(STORE_NAME) \
+	--store-type $(STORE_TYPE)
