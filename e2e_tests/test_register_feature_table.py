@@ -12,15 +12,6 @@ from feast.value_type import ValueType
 
 
 @pytest.fixture
-def online_store():
-    return OnlineStore(
-        name="feast-bigtable",
-        store_type="BIGTABLE",
-        description="Test online store"
-    )
-
-
-@pytest.fixture
 def customer_entity():
     return Entity(
         name="customer_id",
@@ -41,7 +32,7 @@ def driver_entity():
 
 
 @pytest.fixture
-def basic_featuretable():
+def basic_featuretable(online_store: OnlineStore):
     batch_source = FileSource(
         field_mapping={
             "dev_entity": "dev_entity_field",
@@ -54,11 +45,6 @@ def basic_featuretable():
         created_timestamp_column="timestamp",
         date_partition_column="datetime",
     )
-    bigtable_store = OnlineStore(
-        name="feast-bigtable",
-        store_type="BIGTABLE",
-        description="Test online store"
-    )
     return FeatureTable(
         name="basic_featuretable",
         entities=["driver_id", "customer_id"],
@@ -69,7 +55,7 @@ def basic_featuretable():
         max_age=Duration(seconds=3600),
         batch_source=batch_source,
         labels={"key1": "val1", "key2": "val2"},
-        online_store=bigtable_store
+        online_store=online_store
     )
 
 
@@ -116,6 +102,7 @@ def alltypes_featuretable():
         labels={"cat": "alltypes"},
     )
 
+
 def test_get_list_basic(
     feast_client: Client,
     customer_entity: Entity,
@@ -123,10 +110,6 @@ def test_get_list_basic(
     basic_featuretable: FeatureTable,
     online_store: OnlineStore,
 ):
-
-    # Register OnlineStore
-    feast_client.register_online_store(online_store)
-
     # ApplyEntity
     feast_client.apply(customer_entity)
     feast_client.apply(driver_entity)
@@ -161,6 +144,7 @@ def test_get_list_basic(
         if ft.name == "basic_featuretable"
     ][0]
     assert actual_list_feature_table == basic_featuretable
+
 
 def test_get_list_alltypes(
     feast_client: Client, alltypes_entity: Entity, alltypes_featuretable: FeatureTable

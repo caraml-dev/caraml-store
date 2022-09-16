@@ -5,6 +5,8 @@ def pytest_addoption(parser):
     parser.addoption("--kafka-brokers", action="store", default="localhost:9092")
     parser.addoption("--bq-project", action="store", default="")
     parser.addoption("--historical-feature-output-location", action="store", default="file://tmp")
+    parser.addopton("--store-name", action="store", default="caraml-store")
+    parser.addopton("--store-type", action="store", default="BIGTABLE")
 
 
 from .fixtures.client import (  # noqa

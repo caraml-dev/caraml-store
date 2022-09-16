@@ -2,9 +2,13 @@ import os
 import tempfile
 import uuid
 from typing import Tuple
+
+import grpc
 import pytest
 from feast import Client
+from feast.online_store import OnlineStore
 from feast_spark import Client as SparkClient
+
 
 @pytest.fixture
 def feast_client(
@@ -20,9 +24,11 @@ def feast_client(
         telemetry=False
     )
 
+
 @pytest.fixture
 def feast_spark_client(feast_client: Client) -> SparkClient:
     return SparkClient(feast_client)
+
 
 @pytest.fixture(scope="session")
 def global_staging_path(pytestconfig):
@@ -39,3 +45,18 @@ def global_staging_path(pytestconfig):
 @pytest.fixture(scope="function")
 def local_staging_path(global_staging_path):
     return os.path.join(global_staging_path, str(uuid.uuid4()))
+
+
+@pytest.fixture
+def online_store(pytestconfig, feast_client: Client):
+    store_name = pytestconfig.getoption("store_name")
+    try:
+        return feast_client.get_online_store(store_name)
+    except grpc.RpcError:
+        online_store = OnlineStore(
+            store_name,
+            pytestconfig.getoption("store_type"),
+            "e2e ingestion test store"
+        )
+        feast_client.register_online_store(online_store)
+        return online_store
