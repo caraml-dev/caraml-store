@@ -31,7 +31,7 @@ object IngestionJob {
         val json = parseJSON(x)
         JsonUtils
           .mapFieldWithParent(json) {
-            case (parent: String, (key: String, v: JValue)) if !parent.equals("field_mapping") =>
+            case (parent: String, (key: String, v: JValue)) if !parent.equals("fieldMapping") =>
               JsonUtils.camelize(key) -> v
             case (_, x) => x
           }
