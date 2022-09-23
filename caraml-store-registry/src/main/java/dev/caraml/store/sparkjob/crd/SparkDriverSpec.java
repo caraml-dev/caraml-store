@@ -11,12 +11,14 @@ public class SparkDriverSpec {
   private Map<String, String> nodeSelector;
   private List<V1Toleration> tolerations;
   private Integer cores;
+  private String coreRequest;
   private String mainApplicationFile;
   private String mainClass;
   private String memory;
   private String javaOptions;
   private Map<String, String> labels;
   private String serviceAccount;
+  private Map<String, String> annotations;
   private Map<String, String> serviceAnnotations;
   private List<SecretInfo> secrets;
 }
