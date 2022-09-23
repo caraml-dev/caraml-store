@@ -72,6 +72,7 @@ public class JobServiceTest {
     JobServiceConfig properties = new JobServiceConfig();
     properties.setNamespace("spark-operator");
     properties.setBatchIngestion(jobs);
+    properties.setDefaultStore(new DefaultStore("store", "store"));
     IngestionJobProperties batchJobProperty =
         new IngestionJobProperties("store", new SparkApplicationSpec());
     jobs.add(batchJobProperty);
@@ -129,6 +130,7 @@ public class JobServiceTest {
     JobServiceConfig properties = new JobServiceConfig();
     properties.setNamespace("spark-operator");
     properties.setStreamIngestion(jobs);
+    properties.setDefaultStore(new DefaultStore("store", "store"));
     IngestionJobProperties streamJobProperty =
         new IngestionJobProperties("store", new SparkApplicationSpec());
     jobs.add(streamJobProperty);

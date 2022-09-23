@@ -17,4 +17,5 @@ public class JobServiceConfig {
   private List<IngestionJobProperties> streamIngestion = new ArrayList<>();
   private List<IngestionJobProperties> batchIngestion = new ArrayList<>();
   private HistoricalRetrievalJobProperties historicalRetrieval;
+  private DefaultStore defaultStore;
 }

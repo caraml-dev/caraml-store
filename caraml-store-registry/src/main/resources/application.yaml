@@ -27,11 +27,11 @@ caraml:
   jobService:
     namespace: spark-operator
     streamIngestion:
-      - store: store-name
+      - store: default-store
         # Stream ingestion spark application spec
         # sparkApplicationSpec:
     batchIngestion:
-      - store: store-name
+      - store: default-store
         # Batch ingestion spark application spec
         # sparkApplicationSpec:
     historicalRetrieval:
@@ -45,6 +45,10 @@ caraml:
            cores: 1
            instances: 1
            memory: "6144m"
+    # Default store for ingestion if store name is not specified in the feature table
+    defaultStore:
+      stream: default-store
+      batch: default-store
 
 grpc:
   server:
