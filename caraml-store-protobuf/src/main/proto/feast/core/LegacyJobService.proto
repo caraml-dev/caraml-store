@@ -1,0 +1,24 @@
+// Legacy compatibility endpoint for older version of feast client.
+// The new endpoint is defined in feast_spark/api/JobService.proto
+
+syntax = "proto3";
+package feast.core;
+
+option java_outer_classname = "JobServiceProto";
+option java_package = "dev.caraml.store.protobuf.compat";
+
+import "google/protobuf/timestamp.proto";
+import "feast/core/DataSource.proto";
+import "feast_spark/api/JobService.proto";
+
+
+service JobService {
+  // Start job to ingest data from offline store into online store
+  rpc StartOfflineToOnlineIngestionJob (feast_spark.api.StartOfflineToOnlineIngestionJobRequest) returns (feast_spark.api.StartOfflineToOnlineIngestionJobResponse);
+
+  // Produce a training dataset, return a job id that will provide a file reference
+  rpc GetHistoricalFeatures (feast_spark.api.GetHistoricalFeaturesRequest) returns (feast_spark.api.GetHistoricalFeaturesResponse);
+
+  // Get details of a single job
+  rpc GetJob (feast_spark.api.GetJobRequest) returns (feast_spark.api.GetJobResponse);
+}
