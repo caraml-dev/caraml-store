@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 public class JobService {
 
   private final String namespace;
+  private final DefaultStore defaultStore;
   private final Map<JobType, Map<String, IngestionJobProperties>>
       ingestionJobTemplateByTypeAndStoreName = new HashMap<>();
   private final HistoricalRetrievalJobProperties retrievalJobProperties;
@@ -53,6 +54,7 @@ public class JobService {
       FeatureTableRepository tableRepository,
       SparkOperatorApi sparkOperatorApi) {
     namespace = config.getNamespace();
+    defaultStore = config.getDefaultStore();
     ingestionJobTemplateByTypeAndStoreName.put(
         JobType.STREAM_INGESTION_JOB,
         config.getStreamIngestion().stream()
@@ -83,7 +85,7 @@ public class JobService {
                     jobType.toString(),
                     project,
                     spec.getName(),
-                    spec.getOnlineStore().getName()))
+                    getDefaultStoreIfAbsent(spec, jobType)))
             .substring(0, JOB_ID_LENGTH)
             .toLowerCase();
   }
@@ -155,6 +157,15 @@ public class JobService {
                 e -> entityRepository.findEntityByNameAndProject_Name(e, project).getType()));
   }
 
+  private String getDefaultStoreIfAbsent(FeatureTableSpec spec, JobType jobType) {
+    String defaultStoreName =
+        jobType == JobType.BATCH_INGESTION_JOB ? defaultStore.batch() : defaultStore.stream();
+    String onlineStoreName = spec.getOnlineStore().getName();
+    return onlineStoreName.isEmpty() || onlineStoreName.equals("unset")
+        ? defaultStoreName
+        : onlineStoreName;
+  }
+
   public Job createOrUpdateStreamingIngestionJob(String project, FeatureTableSpec spec) {
     Map<String, String> entityNameToType = getEntityToTypeMap(project, spec);
     List<String> arguments =
@@ -191,15 +202,14 @@ public class JobService {
                 () -> {
                   throw new FeatureTableNotFoundException(project, featureTableName);
                 });
+    String onlineStoreName = getDefaultStoreIfAbsent(featureTableSpec, JobType.BATCH_INGESTION_JOB);
     IngestionJobProperties batchIngestionJobTemplate =
         ingestionJobTemplateByTypeAndStoreName
             .get(JobType.BATCH_INGESTION_JOB)
-            .get(featureTableSpec.getOnlineStore().getName());
+            .get(onlineStoreName);
     if (batchIngestionJobTemplate == null) {
       throw new IllegalArgumentException(
-          String.format(
-              "Job properties not found for store name: %s",
-              featureTableSpec.getOnlineStore().getName()));
+          String.format("Job properties not found for store name: %s", onlineStoreName));
     }
 
     String ingestionJobId =
@@ -218,7 +228,7 @@ public class JobService {
                       JOB_TYPE_LABEL,
                       JobType.BATCH_INGESTION_JOB.toString(),
                       STORE_LABEL,
-                      featureTableSpec.getOnlineStore().getName(),
+                      onlineStoreName,
                       PROJECT_LABEL,
                       project,
                       FEATURE_TABLE_LABEL,
@@ -251,12 +261,11 @@ public class JobService {
       throw new IllegalArgumentException(
           String.format("Job properties not found for job type: %s", jobType.toString()));
     }
-    IngestionJobProperties jobProperties =
-        jobTemplateByStoreName.get(spec.getOnlineStore().getName());
+    String onlineStoreName = getDefaultStoreIfAbsent(spec, jobType);
+    IngestionJobProperties jobProperties = jobTemplateByStoreName.get(onlineStoreName);
     if (jobProperties == null) {
       throw new IllegalArgumentException(
-          String.format(
-              "Job properties not found for store name: %s", spec.getOnlineStore().getName()));
+          String.format("Job properties not found for store name: %s", onlineStoreName));
     }
 
     String ingestionJobId = getIngestionJobId(jobType, project, spec);
@@ -274,7 +283,7 @@ public class JobService {
                       JOB_TYPE_LABEL,
                       jobType.toString(),
                       STORE_LABEL,
-                      spec.getOnlineStore().getName(),
+                      onlineStoreName,
                       PROJECT_LABEL,
                       project,
                       FEATURE_TABLE_LABEL,
