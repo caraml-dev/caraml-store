@@ -137,7 +137,10 @@ class DataSourceConverter {
       case FILE_OPTIONS -> {
         DataSourceProto.DataSource.FileOptions fileOptions = sourceProtobuf.getFileOptions();
         FileSource fileSource =
-            new FileSource(fileOptions.getFileUrl(), new ParquetFormat(), sourceProtobuf.getEventTimestampColumn());
+            new FileSource(
+                fileOptions.getFileUrl(),
+                new ParquetFormat(),
+                sourceProtobuf.getEventTimestampColumn());
         if (!sourceProtobuf.getDatePartitionColumn().isEmpty()) {
           fileSource.setDatePartitionColumn(sourceProtobuf.getDatePartitionColumn());
         }

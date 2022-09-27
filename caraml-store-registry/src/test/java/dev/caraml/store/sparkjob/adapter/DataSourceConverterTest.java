@@ -4,7 +4,6 @@ import static dev.caraml.store.testutils.it.DataGenerator.createParquetFormat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import dev.caraml.store.protobuf.core.DataFormatProto;
 import dev.caraml.store.protobuf.core.DataSourceProto.DataSource;
 import org.junit.jupiter.api.Test;
 
@@ -33,10 +32,11 @@ class DataSourceConverterTest {
         DataSource.newBuilder()
             .setEventTimestampColumn("event_timestamp")
             .setType(DataSource.SourceType.BATCH_FILE)
-            .setFileOptions(DataSource.FileOptions.newBuilder()
-                .setFileFormat(createParquetFormat())
-                .setFileUrl("gs://bucket/file")
-                .build())
+            .setFileOptions(
+                DataSource.FileOptions.newBuilder()
+                    .setFileFormat(createParquetFormat())
+                    .setFileUrl("gs://bucket/file")
+                    .build())
             .build();
     DataSourceConverter dataSourceConverter = new DataSourceConverter();
     String expected =
