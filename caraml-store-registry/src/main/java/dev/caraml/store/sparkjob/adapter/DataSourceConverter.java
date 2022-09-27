@@ -32,6 +32,7 @@ class DataSourceConverter {
   @RequiredArgsConstructor
   static class FileSource extends DataSource {
     private final String path;
+    private final DataFormat format;
     private final Map<String, String> fieldMapping = new HashMap<>();
     private final String eventTimestampColumn;
     @Nullable String createdTimestampColumn;
@@ -76,6 +77,12 @@ class DataSourceConverter {
   static class AvroFormat extends DataFormat {
     private final String schemaJson;
     private final String jsonClass = "AvroFormat";
+  }
+
+  @Getter
+  @RequiredArgsConstructor
+  static class ParquetFormat extends DataFormat {
+    private final String jsonClass = "ParquetFormat";
   }
 
   public Map<String, DataSource> sourceToArgument(DataSourceProto.DataSource sourceProtobuf) {
@@ -130,7 +137,7 @@ class DataSourceConverter {
       case FILE_OPTIONS -> {
         DataSourceProto.DataSource.FileOptions fileOptions = sourceProtobuf.getFileOptions();
         FileSource fileSource =
-            new FileSource(fileOptions.getFileUrl(), sourceProtobuf.getEventTimestampColumn());
+            new FileSource(fileOptions.getFileUrl(), new ParquetFormat(), sourceProtobuf.getEventTimestampColumn());
         if (!sourceProtobuf.getDatePartitionColumn().isEmpty()) {
           fileSource.setDatePartitionColumn(sourceProtobuf.getDatePartitionColumn());
         }
