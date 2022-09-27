@@ -117,11 +117,18 @@ public class JobService {
             .setStartTime(startTime)
             .setStatus(jobStatus);
     switch (JobType.valueOf(labels.get(JOB_TYPE_LABEL))) {
-      case BATCH_INGESTION_JOB -> builder.setBatchIngestion(
-          Job.OfflineToOnlineMeta.newBuilder().setTableName(tableName));
-      case STREAM_INGESTION_JOB -> builder.setStreamIngestion(
-          Job.StreamToOnlineMeta.newBuilder().setTableName(tableName));
-      case RETRIEVAL_JOB -> builder.setRetrieval(Job.RetrievalJobMeta.newBuilder().build());
+      case BATCH_INGESTION_JOB -> {
+        builder.setBatchIngestion(Job.OfflineToOnlineMeta.newBuilder().setTableName(tableName));
+        builder.setType(JobType.BATCH_INGESTION_JOB);
+      }
+      case STREAM_INGESTION_JOB -> {
+        builder.setStreamIngestion(Job.StreamToOnlineMeta.newBuilder().setTableName(tableName));
+        builder.setType(JobType.STREAM_INGESTION_JOB);
+      }
+      case RETRIEVAL_JOB -> {
+        builder.setRetrieval(Job.RetrievalJobMeta.newBuilder().build());
+        builder.setType(JobType.RETRIEVAL_JOB);
+      }
     }
 
     return builder.build();
