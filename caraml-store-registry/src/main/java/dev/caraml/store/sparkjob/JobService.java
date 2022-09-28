@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -73,9 +74,11 @@ public class JobService {
   static final String STORE_LABEL = LABEL_PREFIX + "store";
   static final String JOB_TYPE_LABEL = LABEL_PREFIX + "type";
   static final String FEATURE_TABLE_LABEL = LABEL_PREFIX + "table";
+  static final String FEATURE_TABLE_HASH_LABEL = LABEL_PREFIX + "hash";
   static final String PROJECT_LABEL = LABEL_PREFIX + "project";
 
   static final Integer JOB_ID_LENGTH = 16;
+  static final Integer LABEL_CHARACTERS_LIMIT = 63;
 
   private String getIngestionJobId(JobType jobType, String project, FeatureTableSpec spec) {
     return "caraml-"
@@ -238,8 +241,10 @@ public class JobService {
                       onlineStoreName,
                       PROJECT_LABEL,
                       project,
+                      FEATURE_TABLE_HASH_LABEL,
+                      generateProjectTableHash(project, featureTableName),
                       FEATURE_TABLE_LABEL,
-                      featureTableSpec.getName()));
+                      StringUtils.truncate(featureTableName, LABEL_CHARACTERS_LIMIT)));
               return scheduledApp;
             });
     SparkApplicationSpec appSpec = batchIngestionJobTemplate.sparkApplicationSpec().deepCopy();
@@ -293,8 +298,10 @@ public class JobService {
                       onlineStoreName,
                       PROJECT_LABEL,
                       project,
+                      FEATURE_TABLE_HASH_LABEL,
+                      generateProjectTableHash(project, spec.getName()),
                       FEATURE_TABLE_LABEL,
-                      spec.getName()));
+                      StringUtils.truncate(spec.getName(), LABEL_CHARACTERS_LIMIT)));
               return app;
             });
     sparkApplication.setSpec(jobProperties.sparkApplicationSpec().deepCopy());
@@ -366,8 +373,10 @@ public class JobService {
   public List<Job> listJobs(Boolean includeTerminated, String project, String tableName) {
     Stream<String> equalitySelectors =
         Map.of(
-                PROJECT_LABEL, project,
-                FEATURE_TABLE_LABEL, tableName)
+                PROJECT_LABEL,
+                project,
+                FEATURE_TABLE_HASH_LABEL,
+                generateProjectTableHash(project, tableName))
             .entrySet()
             .stream()
             .filter(es -> !es.getValue().isEmpty())
@@ -389,5 +398,9 @@ public class JobService {
 
   public Optional<Job> getJob(String id) {
     return sparkOperatorApi.getSparkApplication(namespace, id).map(this::sparkApplicationToJob);
+  }
+
+  private String generateProjectTableHash(String project, String tableName) {
+    return DigestUtils.md5Hex(String.format("%s:%s", project, tableName));
   }
 }

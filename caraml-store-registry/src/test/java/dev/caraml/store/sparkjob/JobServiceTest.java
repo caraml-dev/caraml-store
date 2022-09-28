@@ -103,6 +103,7 @@ public class JobServiceTest {
             "caraml.dev/table", "batch_feature_table",
             "caraml.dev/store", "store",
             "caraml.dev/project", "project",
+            "caraml.dev/hash", "b52c978f4c9a1713f45dce2a1535b07a",
             "caraml.dev/type", "BATCH_INGESTION_JOB"));
     expectedMetadata.setNamespace("spark-operator");
     expectedMetadata.setName("caraml-5b41d97ec1180f18");
@@ -155,6 +156,7 @@ public class JobServiceTest {
     expectedMetadata.setLabels(
         Map.of(
             "caraml.dev/table", "streaming_feature_table",
+            "caraml.dev/hash", "20fef0730bf3206ad797b786e68abd5a",
             "caraml.dev/store", "store",
             "caraml.dev/project", "project",
             "caraml.dev/type", "STREAM_INGESTION_JOB"));
