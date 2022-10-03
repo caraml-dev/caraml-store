@@ -2,6 +2,8 @@ name: CaraML Store Release
 
 on:
   push:
+    tags:
+      - '*'
     branches:
       - main
 
