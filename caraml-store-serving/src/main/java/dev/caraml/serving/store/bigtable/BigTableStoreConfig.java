@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConfigurationProperties(prefix = "caraml.store.bigtable")
-@ConditionalOnProperty("caraml.store.bigtable.enabled")
+@ConditionalOnProperty(prefix = "caraml.store", name = "active", havingValue = "bigtable")
 @Getter
 @Setter
 public class BigTableStoreConfig {

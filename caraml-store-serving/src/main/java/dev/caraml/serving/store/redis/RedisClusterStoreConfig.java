@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConfigurationProperties(prefix = "caraml.store.redis-cluster")
-@ConditionalOnProperty("caraml.store.redis-cluster.enabled")
+@ConditionalOnProperty(prefix = "caraml.store", name = "active", havingValue = "redisCluster")
 @Getter
 @Setter
 public class RedisClusterStoreConfig {
@@ -35,8 +35,8 @@ public class RedisClusterStoreConfig {
   private String password;
   private ReadFrom readFrom;
   private Duration timeout;
-  private TCPConfig tcpConfig;
-  private TopologyRefreshConfig topologyRefreshConfig = TopologyRefreshConfig.DEFAULT;
+  private TCPConfig tcp;
+  private TopologyRefreshConfig topologyRefresh = TopologyRefreshConfig.DEFAULT;
 
   private static ClusterTopologyRefreshOptions getTopologyRefreshOptions(
       TopologyRefreshConfig topologyRefreshConfig) {
@@ -75,7 +75,7 @@ public class RedisClusterStoreConfig {
             .collect(Collectors.toList());
 
     io.lettuce.core.cluster.RedisClusterClient client =
-        tcpConfig == null
+        tcp == null
             ? io.lettuce.core.cluster.RedisClusterClient.create(redisURIList)
             : io.lettuce.core.cluster.RedisClusterClient.create(
                 ClientResources.builder()
@@ -83,14 +83,13 @@ public class RedisClusterStoreConfig {
                         new NettyCustomizer() {
                           @Override
                           public void afterBootstrapInitialized(Bootstrap bootstrap) {
+                            bootstrap.option(EpollChannelOption.TCP_KEEPIDLE, tcp.getKeepIdle());
                             bootstrap.option(
-                                EpollChannelOption.TCP_KEEPIDLE, tcpConfig.getKeepIdle());
+                                EpollChannelOption.TCP_KEEPINTVL, tcp.getKeepInterval());
                             bootstrap.option(
-                                EpollChannelOption.TCP_KEEPINTVL, tcpConfig.getKeepInterval());
+                                EpollChannelOption.TCP_KEEPCNT, tcp.getKeepConnection());
                             bootstrap.option(
-                                EpollChannelOption.TCP_KEEPCNT, tcpConfig.getKeepConnection());
-                            bootstrap.option(
-                                EpollChannelOption.TCP_USER_TIMEOUT, tcpConfig.getUserTimeout());
+                                EpollChannelOption.TCP_USER_TIMEOUT, tcp.getUserTimeout());
                           }
                         })
                     .build(),
@@ -100,7 +99,7 @@ public class RedisClusterStoreConfig {
             .socketOptions(SocketOptions.builder().keepAlive(true).tcpNoDelay(true).build())
             .timeoutOptions(TimeoutOptions.enabled(timeout))
             .pingBeforeActivateConnection(true)
-            .topologyRefreshOptions(getTopologyRefreshOptions(topologyRefreshConfig))
+            .topologyRefreshOptions(getTopologyRefreshOptions(topologyRefresh))
             .build());
 
     StatefulRedisClusterConnection<byte[], byte[]> connection =

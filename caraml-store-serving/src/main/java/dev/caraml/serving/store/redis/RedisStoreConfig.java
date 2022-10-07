@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConfigurationProperties(prefix = "caraml.store.redis")
-@ConditionalOnProperty("caraml.store.redis.enabled")
+@ConditionalOnProperty(prefix = "caraml.store", name = "active", havingValue = "redis")
 @Getter
 @Setter
 public class RedisStoreConfig {
@@ -25,7 +25,7 @@ public class RedisStoreConfig {
   private Integer port;
   private String password;
   private Boolean ssl;
-  private TCPConfig tcpConfig;
+  private TCPConfig tcp;
 
   @Bean
   public OnlineRetriever getRetriever() {
@@ -39,7 +39,7 @@ public class RedisStoreConfig {
     RedisURI uri = uriBuilder.build();
 
     io.lettuce.core.RedisClient client =
-        tcpConfig == null
+        tcp == null
             ? io.lettuce.core.RedisClient.create(uri)
             : io.lettuce.core.RedisClient.create(
                 ClientResources.builder()
@@ -47,14 +47,13 @@ public class RedisStoreConfig {
                         new NettyCustomizer() {
                           @Override
                           public void afterBootstrapInitialized(Bootstrap bootstrap) {
+                            bootstrap.option(EpollChannelOption.TCP_KEEPIDLE, tcp.getKeepIdle());
                             bootstrap.option(
-                                EpollChannelOption.TCP_KEEPIDLE, tcpConfig.getKeepIdle());
+                                EpollChannelOption.TCP_KEEPINTVL, tcp.getKeepInterval());
                             bootstrap.option(
-                                EpollChannelOption.TCP_KEEPINTVL, tcpConfig.getKeepInterval());
+                                EpollChannelOption.TCP_KEEPCNT, tcp.getKeepConnection());
                             bootstrap.option(
-                                EpollChannelOption.TCP_KEEPCNT, tcpConfig.getKeepConnection());
-                            bootstrap.option(
-                                EpollChannelOption.TCP_USER_TIMEOUT, tcpConfig.getUserTimeout());
+                                EpollChannelOption.TCP_USER_TIMEOUT, tcp.getUserTimeout());
                           }
                         })
                     .build(),
