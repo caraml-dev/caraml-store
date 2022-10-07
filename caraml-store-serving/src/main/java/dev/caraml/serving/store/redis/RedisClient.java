@@ -44,7 +44,7 @@ public class RedisClient implements RedisClientAdapter {
     }
     RedisURI uri = uriBuilder.build();
 
-    TCPConfig tcpConfig = config.getTcpConfig();
+    TCPConfig tcpConfig = config.getTcp();
     io.lettuce.core.RedisClient client =
         tcpConfig == null
             ? io.lettuce.core.RedisClient.create(uri)
