@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 public class JobServiceConfig {
 
   private String namespace;
+  private CommonJobProperties common;
   private List<IngestionJobProperties> streamIngestion = new ArrayList<>();
   private List<IngestionJobProperties> batchIngestion = new ArrayList<>();
   private HistoricalRetrievalJobProperties historicalRetrieval;
