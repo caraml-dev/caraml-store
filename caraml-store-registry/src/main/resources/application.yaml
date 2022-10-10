@@ -26,6 +26,9 @@ caraml:
   # to indicate the range of data to be ingested.
   jobService:
     namespace: spark-operator
+    common:
+      sparkImage: "ghcr.io/caraml-dev/caraml-store-spark:latest"
+
     streamIngestion:
       - store: default-store
         # Stream ingestion spark application spec
@@ -37,7 +40,6 @@ caraml:
     historicalRetrieval:
       # Historical retrieval job spark application spec
        sparkApplicationSpec:
-         image:
          driver:
            cores: 1
            memory: "2048m"

@@ -72,6 +72,7 @@ public class JobServiceTest {
     JobServiceConfig properties = new JobServiceConfig();
     properties.setNamespace("spark-operator");
     properties.setBatchIngestion(jobs);
+    properties.setCommon(new CommonJobProperties("sparkImage:latest"));
     properties.setDefaultStore(new DefaultStore("store", "store"));
     IngestionJobProperties batchJobProperty =
         new IngestionJobProperties("store", new SparkApplicationSpec());
@@ -109,6 +110,7 @@ public class JobServiceTest {
     expectedMetadata.setName("caraml-5b41d97ec1180f18");
     expectedSparkApplication.setMetadata(expectedMetadata);
     SparkApplicationSpec expectedSparkApplicationSpec = new SparkApplicationSpec();
+    expectedSparkApplicationSpec.setImage("sparkImage:latest");
     expectedSparkApplicationSpec.addArguments(
         List.of(
             "--feature-table",
@@ -131,6 +133,7 @@ public class JobServiceTest {
     JobServiceConfig properties = new JobServiceConfig();
     properties.setNamespace("spark-operator");
     properties.setStreamIngestion(jobs);
+    properties.setCommon(new CommonJobProperties("sparkImage:latest"));
     properties.setDefaultStore(new DefaultStore("store", "store"));
     IngestionJobProperties streamJobProperty =
         new IngestionJobProperties("store", new SparkApplicationSpec());
@@ -164,6 +167,7 @@ public class JobServiceTest {
     expectedMetadata.setName("caraml-f6c31d965f86ccf2");
     expectedSparkApplication.setMetadata(expectedMetadata);
     SparkApplicationSpec expectedSparkApplicationSpec = new SparkApplicationSpec();
+    expectedSparkApplicationSpec.setImage("sparkImage:latest");
     expectedSparkApplicationSpec.addArguments(
         List.of(
             "--feature-table",

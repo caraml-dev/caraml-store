@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 public class JobService {
 
   private final String namespace;
+  private final String sparkImage;
   private final DefaultStore defaultStore;
   private final Map<JobType, Map<String, IngestionJobProperties>>
       ingestionJobTemplateByTypeAndStoreName = new HashMap<>();
@@ -55,6 +56,7 @@ public class JobService {
       FeatureTableRepository tableRepository,
       SparkOperatorApi sparkOperatorApi) {
     namespace = config.getNamespace();
+    sparkImage = config.getCommon().sparkImage();
     defaultStore = config.getDefaultStore();
     ingestionJobTemplateByTypeAndStoreName.put(
         JobType.STREAM_INGESTION_JOB,
@@ -176,6 +178,12 @@ public class JobService {
         : onlineStoreName;
   }
 
+  private SparkApplicationSpec newSparkApplicationSpecCopy(SparkApplicationSpec spec) {
+    SparkApplicationSpec copiedSpec = spec.deepCopy();
+    copiedSpec.setImage(sparkImage);
+    return copiedSpec;
+  }
+
   public Job createOrUpdateStreamingIngestionJob(String project, FeatureTableSpec spec) {
     Map<String, String> entityNameToType = getEntityToTypeMap(project, spec);
     List<String> arguments =
@@ -247,7 +255,8 @@ public class JobService {
                       StringUtils.truncate(featureTableName, LABEL_CHARACTERS_LIMIT)));
               return scheduledApp;
             });
-    SparkApplicationSpec appSpec = batchIngestionJobTemplate.sparkApplicationSpec().deepCopy();
+    SparkApplicationSpec appSpec =
+        newSparkApplicationSpecCopy(batchIngestionJobTemplate.sparkApplicationSpec());
     Map<String, String> entityNameToType = getEntityToTypeMap(project, featureTableSpec);
     List<String> arguments =
         new ScheduledBatchIngestionArgumentAdapter(
@@ -304,7 +313,7 @@ public class JobService {
                       StringUtils.truncate(spec.getName(), LABEL_CHARACTERS_LIMIT)));
               return app;
             });
-    sparkApplication.setSpec(jobProperties.sparkApplicationSpec().deepCopy());
+    sparkApplication.setSpec(newSparkApplicationSpecCopy(jobProperties.sparkApplicationSpec()));
     sparkApplication.getSpec().addArguments(additionalArguments);
 
     SparkApplication updatedApplication =
@@ -359,7 +368,7 @@ public class JobService {
     app.getMetadata().setName(getRetrievalJobId());
     app.getMetadata().setNamespace(namespace);
     app.addLabels(Map.of(JOB_TYPE_LABEL, JobType.RETRIEVAL_JOB.toString(), PROJECT_LABEL, project));
-    app.setSpec(retrievalJobProperties.sparkApplicationSpec().deepCopy());
+    app.setSpec(newSparkApplicationSpecCopy(retrievalJobProperties.sparkApplicationSpec()));
     Map<String, String> entityNameToType = getEntityToTypeMap(project, featureTableSpecs);
     List<String> arguments =
         new HistoricalRetrievalArgumentAdapter(
