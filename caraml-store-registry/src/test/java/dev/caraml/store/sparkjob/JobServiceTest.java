@@ -74,6 +74,7 @@ public class JobServiceTest {
     properties.setBatchIngestion(jobs);
     properties.setCommon(new CommonJobProperties("sparkImage:latest"));
     properties.setDefaultStore(new DefaultStore("store", "store"));
+    properties.setDeltaIngestionDataset(new DeltaIngestionDataset("bq-project", "bq-dataset"));
     IngestionJobProperties batchJobProperty =
         new IngestionJobProperties("store", new SparkApplicationSpec());
     jobs.add(batchJobProperty);
@@ -123,7 +124,22 @@ public class JobServiceTest {
             "2022-08-02T01:00:00Z"));
     expectedSparkApplication.setSpec(expectedSparkApplicationSpec);
     jobservice.createOrUpdateBatchIngestionJob(
-        project, "batch_feature_table", ingestionStart, ingestionEnd);
+        project, "batch_feature_table", ingestionStart, ingestionEnd, false);
+    verify(api, times(1)).create(expectedSparkApplication);
+
+    // delta ingestion bq source override test
+    expectedSparkApplicationSpec.setArguments(
+        List.of(
+            "--feature-table",
+            "{\"project\":\"project\",\"name\":\"batch_feature_table\",\"labels\":{},\"maxAge\":0,\"entities\":[{\"name\":\"entity1\",\"type\":\"STRING\"}],\"features\":[{\"name\":\"feature1\",\"type\":\"INT64\"}]}",
+            "--source",
+            "{\"bq\":{\"project\":\"bq-project\",\"dataset\":\"bq-dataset\",\"table\":\"project_batch_feature_table_delta\",\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}",
+            "--start",
+            "2022-08-01T01:00:00Z",
+            "--end",
+            "2022-08-02T01:00:00Z"));
+    jobservice.createOrUpdateBatchIngestionJob(
+        project, "batch_feature_table", ingestionStart, ingestionEnd, true);
     verify(api, times(1)).create(expectedSparkApplication);
   }
 

@@ -51,6 +51,10 @@ caraml:
     defaultStore:
       stream: default-store
       batch: default-store
+    # BigQuery project where temp tables are stored for delta ingestion
+    deltaIngestionDataset:
+      project: bq-project
+      dataset: bq-dataset
 
 grpc:
   server:
