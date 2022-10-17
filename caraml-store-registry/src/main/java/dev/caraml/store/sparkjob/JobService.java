@@ -211,7 +211,7 @@ public class JobService {
                 });
     Map<String, String> entityNameToType = getEntityToTypeMap(project, spec);
 
-    if (deltaIngestion) {
+    if (deltaIngestion && spec.getBatchSource().getType() == DataSource.SourceType.BATCH_BIGQUERY) {
       FeatureTableSpec.Builder specBuilder = spec.toBuilder();
       specBuilder
           .getBatchSourceBuilder()
