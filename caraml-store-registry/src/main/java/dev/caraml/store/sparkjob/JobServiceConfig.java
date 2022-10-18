@@ -19,4 +19,5 @@ public class JobServiceConfig {
   private List<IngestionJobProperties> batchIngestion = new ArrayList<>();
   private HistoricalRetrievalJobProperties historicalRetrieval;
   private DefaultStore defaultStore;
+  private DeltaIngestionDataset deltaIngestionDataset;
 }

@@ -103,6 +103,9 @@ message StartOfflineToOnlineIngestionJobRequest {
 
     // End of time range for source data from offline store
     google.protobuf.Timestamp end_date = 4;
+
+    // optional setting for delta ingestion
+    bool delta_ingestion = 5;
 }
 
 message StartOfflineToOnlineIngestionJobResponse {

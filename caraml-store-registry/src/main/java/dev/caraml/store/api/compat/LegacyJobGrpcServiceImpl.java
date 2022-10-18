@@ -36,7 +36,8 @@ public class LegacyJobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase 
             request.getProject(),
             request.getTableName(),
             request.getStartDate(),
-            request.getEndDate());
+            request.getEndDate(),
+            request.getDeltaIngestion());
     StartOfflineToOnlineIngestionJobResponse response =
         StartOfflineToOnlineIngestionJobResponse.newBuilder()
             .setJobStartTime(job.getStartTime())

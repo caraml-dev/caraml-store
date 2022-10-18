@@ -44,6 +44,7 @@ public class JobService {
   private final Map<JobType, Map<String, IngestionJobProperties>>
       ingestionJobTemplateByTypeAndStoreName = new HashMap<>();
   private final HistoricalRetrievalJobProperties retrievalJobProperties;
+  private final DeltaIngestionDataset deltaIngestionDataset;
   private final EntityRepository entityRepository;
   private final FeatureTableRepository tableRepository;
 
@@ -67,6 +68,7 @@ public class JobService {
         config.getBatchIngestion().stream()
             .collect(Collectors.toMap(IngestionJobProperties::store, Function.identity())));
     retrievalJobProperties = config.getHistoricalRetrieval();
+    deltaIngestionDataset = config.getDeltaIngestionDataset();
     this.entityRepository = entityRepository;
     this.tableRepository = tableRepository;
     this.sparkOperatorApi = sparkOperatorApi;
@@ -192,7 +194,11 @@ public class JobService {
   }
 
   public Job createOrUpdateBatchIngestionJob(
-      String project, String featureTableName, Timestamp startTime, Timestamp endTime)
+      String project,
+      String featureTableName,
+      Timestamp startTime,
+      Timestamp endTime,
+      Boolean deltaIngestion)
       throws SparkOperatorApiException {
 
     FeatureTableSpec spec =
@@ -204,6 +210,16 @@ public class JobService {
                   throw new FeatureTableNotFoundException(project, featureTableName);
                 });
     Map<String, String> entityNameToType = getEntityToTypeMap(project, spec);
+
+    if (deltaIngestion && spec.getBatchSource().getType() == DataSource.SourceType.BATCH_BIGQUERY) {
+      FeatureTableSpec.Builder specBuilder = spec.toBuilder();
+      specBuilder
+          .getBatchSourceBuilder()
+          .getBigqueryOptionsBuilder()
+          .setTableRef(getDeltaTableRef(project, featureTableName));
+      spec = specBuilder.build();
+    }
+
     List<String> arguments =
         new BatchIngestionArgumentAdapter(project, spec, entityNameToType, startTime, endTime)
             .getArguments();
@@ -411,5 +427,14 @@ public class JobService {
 
   private String generateProjectTableHash(String project, String tableName) {
     return DigestUtils.md5Hex(String.format("%s:%s", project, tableName));
+  }
+
+  private String getDeltaTableRef(String projectName, String featureTableName) {
+    return String.format(
+        "%s:%s.%s_%s_delta",
+        deltaIngestionDataset.project(),
+        deltaIngestionDataset.dataset(),
+        projectName,
+        featureTableName);
   }
 }
