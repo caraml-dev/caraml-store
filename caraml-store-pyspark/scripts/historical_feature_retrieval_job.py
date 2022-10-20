@@ -894,7 +894,7 @@ if __name__ == "__main__":
         for source_conf in feature_tables_sources_conf:
             bq_source = source_conf.get("bq")
             if bq_source is not None:
-                source_conf["bq"]["materialization"] = bq_source.get("materialization")
+                source_conf["bq"]["materialization"] = bq_conf.get("materialization")
 
     try:
         start_job(
