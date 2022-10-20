@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /** In-memory cache of specs hosted in CaraML Store Registry. */
@@ -83,6 +84,9 @@ public class FeatureSpecService {
     featureCache.putAll(specs.getRight());
   }
 
+  @Scheduled(
+      initialDelayString = "{caraml.registry.cache.initialDelay}",
+      fixedRateString = "${caraml.registry.cache.refreshInterval}")
   public void scheduledPopulateCache() {
     try {
       populateCache();
