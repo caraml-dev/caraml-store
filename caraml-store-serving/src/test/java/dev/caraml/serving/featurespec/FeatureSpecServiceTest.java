@@ -28,7 +28,7 @@ import org.mockito.MockitoAnnotations;
 @ExtendWith(GrpcMockExtension.class)
 public class FeatureSpecServiceTest {
 
-  private CacheProperties cacheProperties = new CacheProperties(120, 60);
+  private CacheProperties cacheProperties = new CacheProperties(120, 5000, 60000);
   private ImmutableList<String> featureTableEntities;
   private ImmutableMap<String, ValueType.Enum> featureTable1Features;
   private ImmutableMap<String, ValueType.Enum> featureTable2Features;

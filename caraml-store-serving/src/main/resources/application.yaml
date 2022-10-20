@@ -6,8 +6,10 @@ caraml:
     cache:
       # Feature spec cache expiry (in hours after last access)
       expiry: 4
-      # Frequency of refreshing cache (in seconds)
-      refreshInterval: 60
+      # Initial delay before scheduling the cache refresh
+      initialDelay: 5000
+      # Frequency of refreshing cache (in milliseconds)
+      refreshInterval: 60000
 
   store:
     # Active store. Possible values: [redisCluster, redis, bigtable]
