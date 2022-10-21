@@ -1,3 +1,5 @@
+PROJECT_ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+
 format-java:
 	./gradlew spotlessApply
 
@@ -28,3 +30,13 @@ run-e2e-tests: setup-e2e-tests
 	--historical-feature-output-location $(GCP_BUCKET_PATH) \
 	--store-name $(STORE_NAME) \
 	--store-type $(STORE_TYPE)
+
+# Python SDK
+
+PROTOC_IMAGE_VERSION=latest
+
+build-docker-protoc:
+	docker build -t protoc:${PROTOC_IMAGE_VERSION} -f caraml-store-python/Dockerfile caraml-store-python
+
+compile-protos-py:
+	docker run -v ${PROJECT_ROOT_DIR}:/local protoc
