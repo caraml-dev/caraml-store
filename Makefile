@@ -40,3 +40,11 @@ build-docker-protoc:
 
 compile-protos-py:
 	docker run -v ${PROJECT_ROOT_DIR}:/local protoc
+
+install-python-sdk-local:
+	 pip install -e caraml-store-python
+
+package-python-sdk:
+	cd caraml-store-python; \
+	rm -rf build dist; \
+	python setup.py sdist bdist_wheel

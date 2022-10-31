@@ -27,4 +27,5 @@ do
   python -m grpc_tools.protoc -I. --grpc_python_out="${OUT_DIR}" feast/"${dir}"/*.proto;
 done
 
-python -m grpc_tools.protoc -I. --grpc_python_out="${OUT_DIR}" feast_spark/api/*.proto;
+# feast-spark-api
+python -m grpc_tools.protoc -I. --python_out="${OUT_DIR}" --mypy_out="${OUT_DIR}" --grpc_python_out="${OUT_DIR}" feast_spark/api/*.proto;
