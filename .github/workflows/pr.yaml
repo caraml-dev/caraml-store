@@ -33,7 +33,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: caraml-store-python
-          push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/protoc:${{ github.run_id }}.${{ github.run_attempt }}
             ghcr.io/${{ github.repository_owner }}/protoc:latest
