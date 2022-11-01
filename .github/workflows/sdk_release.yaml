@@ -1,0 +1,36 @@
+name: CaraML Store SDK Release
+
+on:
+  # Automatically run CI on SDK release
+  # (only if there are changes to relevant paths)
+  push:
+    tags:
+      - "sdk/v[0-9]+.[0-9]+.[0-9]+*"
+    paths:
+      - ".github/workflows/sdk_release.yaml"
+      - "caraml-store-python/**"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          # fetch full history for a proper version number assignment
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: Package
+        run: make package-python-sdk
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages_dir: caraml-store-python/dist
