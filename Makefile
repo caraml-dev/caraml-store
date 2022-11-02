@@ -46,6 +46,6 @@ install-python-sdk-local:
 
 package-python-sdk:
 	cd caraml-store-python; \
-	pip install -r requirements-build.txt \
+	pip install -r requirements-build.txt; \
 	rm -rf build dist; \
 	python setup.py sdist bdist_wheel
