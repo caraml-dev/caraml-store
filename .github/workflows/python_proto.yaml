@@ -1,0 +1,32 @@
+name: CaraML Store Python proto generator
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/python_proto.yaml"
+      - "caraml-store-python/Dockerfile"
+      - "caraml-store-python/utils/compile_protos.sh"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: 'ghcr.io'
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build protoc docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: caraml-store-python
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/protoc:${{ github.run_id }}.${{ github.run_attempt }}
+            ghcr.io/${{ github.repository_owner }}/protoc:latest

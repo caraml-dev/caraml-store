@@ -7,8 +7,6 @@ package feast.core;
 option java_outer_classname = "JobServiceProto";
 option java_package = "dev.caraml.store.protobuf.compat";
 
-import "google/protobuf/timestamp.proto";
-import "feast/core/DataSource.proto";
 import "feast_spark/api/JobService.proto";
 
 

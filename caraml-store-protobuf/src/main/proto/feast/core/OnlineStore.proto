@@ -4,8 +4,6 @@ package feast.core;
 option java_package = "dev.caraml.store.protobuf.core";
 option java_outer_classname = "OnlineStoreProto";
 
-import "google/protobuf/duration.proto";
-
 // OnlineStore provides a location where Feast reads and writes feature values.
 // Feature values will be written to the Store in the form of FeatureRow elements.
 // The way FeatureRow is encoded and decoded when it is written to and read from
