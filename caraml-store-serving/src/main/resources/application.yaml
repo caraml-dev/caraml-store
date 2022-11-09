@@ -11,6 +11,19 @@ caraml:
       # Frequency of refreshing cache (in milliseconds)
       refreshInterval: 60000
 
+  monitoring:
+    # Configure the behaviour of the timer metrics
+    timer:
+      # Published percentiles
+      percentiles:
+        - 0.5
+        - 0.95
+        - 0.99
+      # Minimum expected latency
+      minBucketMs: 1
+      # Maximum expected latency
+      maxBucketMs: 200
+
   store:
     # Active store. Possible values: [redisCluster, redis, bigtable]
     active: redis

@@ -15,9 +15,11 @@ import org.springframework.stereotype.Component;
 public class MonitoringInterceptor implements ServerInterceptor {
 
   private final MeterRegistry registry;
+  private final MonitoringConfig config;
 
-  public MonitoringInterceptor(MeterRegistry registry) {
+  public MonitoringInterceptor(MeterRegistry registry, MonitoringConfig config) {
     this.registry = registry;
+    this.config = config;
   }
 
   @Override
@@ -29,7 +31,7 @@ public class MonitoringInterceptor implements ServerInterceptor {
         new ServerCallWithMetricCollection<>(call);
     String fullMethodName = call.getMethodDescriptor().getFullMethodName();
     String methodName = fullMethodName.substring(fullMethodName.indexOf("/") + 1);
-    Metrics<ReqT, RespT> metrics = new ServingMetrics<>(registry, methodName);
+    Metrics<ReqT, RespT> metrics = new ServingMetrics<>(registry, methodName, config);
 
     return new ServerCallWithMetricCollectionListener<>(
         next.startCall(serverCall, headers),
