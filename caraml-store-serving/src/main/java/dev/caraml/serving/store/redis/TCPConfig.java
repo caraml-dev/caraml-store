@@ -1,5 +1,10 @@
 package dev.caraml.serving.store.redis;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class TCPConfig {
   private final Integer keepIdle;
   private final Integer keepInterval;
@@ -12,21 +17,5 @@ public class TCPConfig {
     this.keepInterval = keepInterval;
     this.keepConnection = keepConnection;
     this.userTimeout = userTimeout;
-  }
-
-  public Integer getKeepIdle() {
-    return keepIdle;
-  }
-
-  public Integer getKeepInterval() {
-    return keepInterval;
-  }
-
-  public Integer getKeepConnection() {
-    return keepConnection;
-  }
-
-  public Integer getUserTimeout() {
-    return userTimeout;
   }
 }
