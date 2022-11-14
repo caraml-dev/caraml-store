@@ -1,10 +1,15 @@
 package dev.caraml.serving.store.redis;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * TopologyRefreshConfig configure redis client behavior when there is change in redis cluster
  * topology. Refer to:
  * https://github.com/lettuce-io/lettuce-core/wiki/Client-options#cluster-specific-options
  */
+@Getter
+@Setter
 public class TopologyRefreshConfig {
   private final boolean enableAllAdaptiveTriggerRefresh;
   private final boolean enablePeriodicRefresh;
@@ -19,17 +24,5 @@ public class TopologyRefreshConfig {
     this.enableAllAdaptiveTriggerRefresh = enableAllAdaptiveTriggerRefresh;
     this.enablePeriodicRefresh = enablePeriodicRefresh;
     this.refreshPeriodSecond = refreshPeriodSecond;
-  }
-
-  public boolean isEnableAllAdaptiveTriggerRefresh() {
-    return enableAllAdaptiveTriggerRefresh;
-  }
-
-  public boolean isEnablePeriodicRefresh() {
-    return enablePeriodicRefresh;
-  }
-
-  public int getRefreshPeriodSecond() {
-    return refreshPeriodSecond;
   }
 }
