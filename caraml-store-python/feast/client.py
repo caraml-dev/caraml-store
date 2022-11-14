@@ -10,7 +10,9 @@ from feast.core.CoreService_pb2 import (
 from feast.core.FeatureTable_pb2 import FeatureTableSpec
 from feast_spark.api.JobService_pb2 import (
     StartOfflineToOnlineIngestionJobRequest,
-    StartOfflineToOnlineIngestionJobResponse
+    StartOfflineToOnlineIngestionJobResponse,
+    GetJobRequest,
+    Job
 )
 from feast_spark.api.JobService_pb2_grpc import JobServiceStub
 
@@ -45,17 +47,60 @@ class Client:
             self._job_service_stub = JobServiceStub(channel)
         return self._job_service_stub
 
+#  Wrapper methods over rpc services
+
+# Registry/core services"""
+
+    def get_feature_table(self, name: str, project: str = None) -> FeatureTableSpec:
+        """
+        Retrieves a feature table.
+
+        Args:
+            project: Feast project that this feature table belongs to
+            name: Name of feature table
+
+        Returns:
+            Returns either the requested feature table spec or raises an exception if
+            none is found
+        """
+        if project is None:
+            project = self.project
+
+        try:
+            response = self._core_service.GetFeatureTable(
+                GetFeatureTableRequest(project=project, name=name.strip()),
+            )
+        except grpc.RpcError:
+            raise
+        return response.table.spec
+
     def list_online_stores(self) -> ListOnlineStoresResponse:
+        """
+        List online stores
+        Returns: ListOnlineStoresResponse
+        """
         try:
             response = self._core_service.ListOnlineStores(ListOnlineStoresRequest())
         except grpc.RpcError:
             raise
         return response
 
+# Job services
+
     def start_offline_to_online_ingestion(
         self, feature_table: str, start: datetime, end: datetime, project: str = None, delta_ingestion: bool = False
     ) -> StartOfflineToOnlineIngestionJobResponse:
+        """
+        Start offline to online ingestion job
+        Args:
+            feature_table: feature table name
+            start: start datetime to filter recoreds to be ingested
+            end: end datetime to filter records to be ingested
+            project: caraml store project name
+            delta_ingestion: boolean setting for delta ingestion
 
+        Returns: StartOfflineToOnlineIngestionJobResponse
+        """
         if project is None:
             project = self.project
 
@@ -70,26 +115,17 @@ class Client:
             raise
         return response
 
-    def get_feature_table(self, name: str, project: str = None) -> FeatureTableSpec:
+    def get_job(self, job_id: str) -> Job:
         """
-        Retrieves a feature table.
-
+        Get job details
         Args:
-            project: Feast project that this feature table belongs to
-            name: Name of feature table
+            job_id: spark job id
 
-        Returns:
-            Returns either the requested feature table spec or raises an exception if
-            none is found
+        Returns: Job protobuf object
         """
-
-        if project is None:
-            project = self.project
-
+        request = GetJobRequest(job_id=job_id)
         try:
-            response = self._core_service.GetFeatureTable(
-                GetFeatureTableRequest(project=project, name=name.strip()),
-            )
+            response = self._job_service.GetJob(request)
         except grpc.RpcError:
             raise
-        return response.table.spec
+        return response.job
