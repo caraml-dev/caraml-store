@@ -6,10 +6,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TCPConfig {
-  private final Integer keepIdle;
-  private final Integer keepInterval;
-  private final Integer keepConnection;
-  private final Integer userTimeout;
+  private Integer keepIdle;
+  private Integer keepInterval;
+  private Integer keepConnection;
+  private Integer userTimeout;
 
   public TCPConfig(
       Integer keepIdle, Integer keepInterval, Integer keepConnection, Integer userTimeout) {

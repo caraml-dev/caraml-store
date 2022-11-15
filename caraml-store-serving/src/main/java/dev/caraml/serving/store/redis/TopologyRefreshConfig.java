@@ -11,9 +11,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TopologyRefreshConfig {
-  private final boolean enableAllAdaptiveTriggerRefresh;
-  private final boolean enablePeriodicRefresh;
-  private final int refreshPeriodSecond;
+  private boolean enableAllAdaptiveTriggerRefresh;
+  private boolean enablePeriodicRefresh;
+  private int refreshPeriodSecond;
 
   public static final TopologyRefreshConfig DEFAULT = new TopologyRefreshConfig(true, false, 30);
 
