@@ -1,6 +1,5 @@
 package dev.caraml.serving.monitoring;
 
-// import dev.caraml.store.protobuf.serving.ServingServiceProto.GetOnlineFeaturesRequest;
 import io.grpc.ForwardingServerCallListener.SimpleForwardingServerCallListener;
 import io.grpc.ServerCall;
 import io.grpc.Status;

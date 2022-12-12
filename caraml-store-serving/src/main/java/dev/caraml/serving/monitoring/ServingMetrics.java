@@ -1,11 +1,13 @@
 package dev.caraml.serving.monitoring;
 
+import dev.caraml.store.protobuf.serving.ServingServiceProto.FeatureReference;
 import dev.caraml.store.protobuf.serving.ServingServiceProto.GetOnlineFeaturesRequest;
 import io.grpc.Status;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import java.time.Duration;
+import java.util.List;
 
 public class ServingMetrics<ReqT, RespT> implements Metrics<ReqT, RespT> {
 
@@ -46,11 +48,26 @@ public class ServingMetrics<ReqT, RespT> implements Metrics<ReqT, RespT> {
         .register(registry);
   }
 
+  private List<Counter> newEntityCounters(GetOnlineFeaturesRequest featureRequest) {
+    return featureRequest.getFeaturesList().stream()
+        .map(FeatureReference::getFeatureTable)
+        .distinct()
+        .map(
+            table ->
+                Counter.builder("caraml_serving_entity_count")
+                    .tag("project", featureRequest.getProject())
+                    .tag("feature_table", table)
+                    .register(registry))
+        .toList();
+  }
+
   @Override
   public void onRequestReceived(ReqT requestMessage) {
     if (requestMessage instanceof GetOnlineFeaturesRequest featureRequest) {
       String project = featureRequest.getProject();
       newServingRequestCounter(project).increment();
+      newEntityCounters(featureRequest)
+          .forEach(counter -> counter.increment(featureRequest.getEntityRowsCount()));
     }
   }
 
