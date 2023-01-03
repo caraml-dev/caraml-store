@@ -1,5 +1,5 @@
 import pathlib
-from datetime import datetime, timedelta
+from datetime import datetime
 from os import path
 
 import pytest
@@ -20,7 +20,7 @@ from scripts.historical_feature_retrieval_job import (
     as_of_join,
     filter_feature_table_by_time_range,
     join_entity_to_feature_tables,
-    retrieve_historical_features,
+    retrieve_historical_features, source_from_dict, feature_table_from_dict,
 )
 
 
@@ -459,15 +459,15 @@ def test_multiple_join(
 
 def test_historical_feature_retrieval(spark: SparkSession):
     test_data_dir = path.join(pathlib.Path(__file__).parent.absolute(), "data")
-    entity_source = {
+    entity_source = source_from_dict({
         "file": {
             "format": {"jsonClass": "CSVFormat"},
             "path": f"file://{path.join(test_data_dir,  'customer_driver_pairs.csv')}",
             "eventTimestampColumn": "event_timestamp",
             "options": {"inferSchema": "true", "header": "true"},
         }
-    }
-    booking_source = {
+    })
+    booking_source = source_from_dict({
         "file": {
             "format": {"jsonClass": "CSVFormat"},
             "path": f"file://{path.join(test_data_dir,  'bookings.csv')}",
@@ -475,8 +475,8 @@ def test_historical_feature_retrieval(spark: SparkSession):
             "createdTimestampColumn": "created_timestamp",
             "options": {"inferSchema": "true", "header": "true"},
         }
-    }
-    transaction_source = {
+    })
+    transaction_source = source_from_dict({
         "file": {
             "format": {"jsonClass": "CSVFormat"},
             "path": f"file://{path.join(test_data_dir,  'transactions.csv')}",
@@ -484,19 +484,19 @@ def test_historical_feature_retrieval(spark: SparkSession):
             "createdTimestampColumn": "created_timestamp",
             "options": {"inferSchema": "true", "header": "true"},
         }
-    }
-    booking_table = {
+    })
+    booking_table = feature_table_from_dict({
         "name": "bookings",
         "entities": [{"name": "driver_id", "type": "int32"}],
         "features": [{"name": "completed_bookings", "type": "int32"}],
         "maxAge": 365 * 86400,
-    }
-    transaction_table = {
+    })
+    transaction_table = feature_table_from_dict({
         "name": "transactions",
         "entities": [{"name": "customer_id", "type": "int32"}],
         "features": [{"name": "daily_transactions", "type": "double"}],
         "maxAge": 86400,
-    }
+    })
 
     joined_df = retrieve_historical_features(
         spark,
@@ -531,7 +531,7 @@ def test_historical_feature_retrieval(spark: SparkSession):
 
 def test_historical_feature_retrieval_with_mapping(spark: SparkSession):
     test_data_dir = path.join(pathlib.Path(__file__).parent.absolute(), "data")
-    entity_source = {
+    entity_source = source_from_dict({
         "file": {
             "format": {"jsonClass": "CSVFormat"},
             "path": f"file://{path.join(test_data_dir,  'column_mapping_test_entity.csv')}",
@@ -539,8 +539,8 @@ def test_historical_feature_retrieval_with_mapping(spark: SparkSession):
             "fieldMapping": {"customer_id": "id"},
             "options": {"inferSchema": "true", "header": "true"},
         }
-    }
-    booking_source = {
+    })
+    booking_source = source_from_dict({
         "file": {
             "format": {"jsonClass": "CSVFormat"},
             "path": f"file://{path.join(test_data_dir,  'column_mapping_test_feature.csv')}",
@@ -548,13 +548,13 @@ def test_historical_feature_retrieval_with_mapping(spark: SparkSession):
             "createdTimestampColumn": "created_datetime",
             "options": {"inferSchema": "true", "header": "true"},
         }
-    }
-    booking_table = {
+    })
+    booking_table = feature_table_from_dict({
         "name": "bookings",
         "entities": [{"name": "customer_id", "type": "int32"}],
         "features": [{"name": "total_bookings", "type": "int32"}],
         "maxAge": 86400,
-    }
+    })
 
     joined_df = retrieve_historical_features(
         spark, entity_source, [booking_source], [booking_table],
@@ -584,32 +584,32 @@ def test_historical_feature_retrieval_with_mapping(spark: SparkSession):
 
 def test_historical_feature_retrieval_with_schema_errors(spark: SparkSession):
     test_data_dir = path.join(pathlib.Path(__file__).parent.absolute(), "data")
-    entity_source = {
+    entity_source = source_from_dict({
         "file": {
             "format": {"jsonClass": "CSVFormat"},
             "path": f"file://{path.join(test_data_dir,  'customer_driver_pairs.csv')}",
             "eventTimestampColumn": "event_timestamp",
             "options": {"inferSchema": "true", "header": "true"},
         }
-    }
-    entity_source_missing_timestamp = {
+    })
+    entity_source_missing_timestamp = source_from_dict({
         "file": {
             "format": {"jsonClass": "CSVFormat"},
             "path": f"file://{path.join(test_data_dir,  'customer_driver_pairs.csv')}",
             "eventTimestampColumn": "datetime",
             "options": {"inferSchema": "true", "header": "true"},
         }
-    }
-    entity_source_missing_entity = {
+    })
+    entity_source_missing_entity = source_from_dict({
         "file": {
             "format": {"jsonClass": "CSVFormat"},
             "path": f"file://{path.join(test_data_dir,  'customers.csv')}",
             "eventTimestampColumn": "event_timestamp",
             "options": {"inferSchema": "true", "header": "true"},
         }
-    }
+    })
 
-    booking_source = {
+    booking_source = source_from_dict({
         "file": {
             "format": {"jsonClass": "CSVFormat"},
             "path": f"file://{path.join(test_data_dir,  'bookings.csv')}",
@@ -617,8 +617,8 @@ def test_historical_feature_retrieval_with_schema_errors(spark: SparkSession):
             "createdTimestampColumn": "created_timestamp",
             "options": {"inferSchema": "true", "header": "true"},
         }
-    }
-    booking_source_missing_timestamp = {
+    })
+    booking_source_missing_timestamp = source_from_dict({
         "file": {
             "format": {"jsonClass": "CSVFormat"},
             "path": f"file://{path.join(test_data_dir,  'bookings.csv')}",
@@ -626,19 +626,19 @@ def test_historical_feature_retrieval_with_schema_errors(spark: SparkSession):
             "createdTimestampColumn": "created_datetime",
             "options": {"inferSchema": "true", "header": "true"},
         }
-    }
-    booking_table = {
+    })
+    booking_table = feature_table_from_dict({
         "name": "bookings",
         "entities": [{"name": "driver_id", "type": "int32"}],
         "features": [{"name": "completed_bookings", "type": "int32"}],
         "maxAge": 86400,
-    }
-    booking_table_missing_features = {
+    })
+    booking_table_missing_features = feature_table_from_dict({
         "name": "bookings",
         "entities": [{"name": "driver_id", "type": "int32"}],
         "features": [{"name": "nonexist_feature", "type": "int32"}],
         "maxAge": 86400,
-    }
+    })
 
     with pytest.raises(SchemaError):
         retrieve_historical_features(
@@ -663,15 +663,15 @@ def test_historical_feature_retrieval_with_schema_errors(spark: SparkSession):
 
 def test_implicit_type_conversion(spark: SparkSession,):
     test_data_dir = path.join(pathlib.Path(__file__).parent.absolute(), "data")
-    entity_source = {
+    entity_source = source_from_dict({
         "file": {
             "format": {"jsonClass": "CSVFormat"},
             "path": f"file://{path.join(test_data_dir,  'single_customer.csv')}",
             "eventTimestampColumn": "event_timestamp",
             "options": {"inferSchema": "true", "header": "true"},
         }
-    }
-    transaction_source = {
+    })
+    transaction_source = source_from_dict({
         "file": {
             "format": {"jsonClass": "CSVFormat"},
             "path": f"file://{path.join(test_data_dir,  'transactions.csv')}",
@@ -679,13 +679,13 @@ def test_implicit_type_conversion(spark: SparkSession,):
             "createdTimestampColumn": "created_timestamp",
             "options": {"inferSchema": "true", "header": "true"},
         }
-    }
-    transaction_table = {
+    })
+    transaction_table = feature_table_from_dict({
         "name": "transactions",
         "entities": [{"name": "customer_id", "type": "int32"}],
         "features": [{"name": "daily_transactions", "type": "float"}],
         "maxAge": 86400,
-    }
+    })
 
     joined_df = retrieve_historical_features(
         spark, entity_source, [transaction_source], [transaction_table],

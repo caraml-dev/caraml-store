@@ -1,0 +1,2 @@
+SELECT min({{ entity_source.event_timestamp_column }}) as min_event_timestamp, max({{ entity_source.event_timestamp_column }}) as max_event_timestamp
+FROM {{ entity_source.bq_ref }}

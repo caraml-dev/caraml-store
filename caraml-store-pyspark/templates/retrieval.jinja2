@@ -1,0 +1,93 @@
+WITH entity_dataframe AS (
+SELECT *,
+{{ entity_source.event_timestamp_column }} AS entity_timestamp
+{% for feature_view in feature_views %}
+    ,CONCAT(
+    {% for entity in feature_view.entities %}
+        CAST({{entity}} AS STRING),
+    {% endfor %}
+    CAST({{entity_source.event_timestamp_column}} AS STRING)
+    ) AS {{feature_view.name}}__entity_row_unique_id
+{% endfor %}
+FROM `{{ entity_source.bq_ref }}`
+),
+
+{% for feature_view in feature_views %}
+    {{ feature_view.name }}__entity_dataframe AS (
+    SELECT
+    {{ feature_view.entities | join(', ')}},
+    entity_timestamp,
+    {{feature_view.name}}__entity_row_unique_id
+    FROM entity_dataframe
+    GROUP BY
+    {{ feature_view.entities | join(', ')}},
+    entity_timestamp,
+    {{feature_view.name}}__entity_row_unique_id
+    ),
+
+    {{ feature_view.name }}__subquery AS (
+    SELECT
+    {{ feature_view.event_timestamp_column }} as event_timestamp,
+    {{ feature_view.entity_selections | join(', ')}},
+    {% for feature in feature_view.features %}
+        {{ feature_view.field_mapping.get(feature, feature) }} as {{ feature_view.name }}__{{ feature }}{% if loop.last %}{% else %}, {% endif %}
+    {% endfor %}
+    FROM {{ feature_view.bq_ref }}
+    WHERE {{ feature_view.event_timestamp_column }} <= '{{ feature_view.max_event_timestamp.isoformat() }}'
+    AND {{ feature_view.event_timestamp_column }} >= '{{ feature_view.min_event_timestamp.isoformat() }}'
+    ),
+
+    {{ feature_view.name }}__base AS (
+    SELECT
+    subquery.*,
+    entity_dataframe.entity_timestamp,
+    entity_dataframe.{{feature_view.name}}__entity_row_unique_id
+    FROM {{ feature_view.name }}__subquery AS subquery
+    INNER JOIN {{ feature_view.name }}__entity_dataframe AS entity_dataframe
+    ON TRUE
+    AND subquery.event_timestamp <= entity_dataframe.entity_timestamp
+    AND subquery.event_timestamp >= Timestamp_sub(entity_dataframe.entity_timestamp, interval {{ feature_view.max_age }} second)
+    {% for entity in feature_view.entities %}
+        AND subquery.{{ entity }} = entity_dataframe.{{ entity }}
+    {% endfor %}
+    ),
+
+    {{ feature_view.name }}__latest AS (
+    SELECT
+    event_timestamp,
+    {{feature_view.name}}__entity_row_unique_id
+    FROM
+    (
+    SELECT *,
+    ROW_NUMBER() OVER(
+    PARTITION BY {{feature_view.name}}__entity_row_unique_id
+    ORDER BY event_timestamp DESC
+    ) AS row_number
+    FROM {{ feature_view.name }}__base
+    )
+    WHERE row_number = 1
+    ),
+
+    {{ feature_view.name }}__cleaned AS (
+    SELECT base.*
+    FROM {{ feature_view.name }}__base as base
+    INNER JOIN {{ feature_view.name }}__latest
+    USING(
+    {{feature_view.name}}__entity_row_unique_id,
+    event_timestamp
+    )
+    ){% if loop.last %}{% else %}, {% endif %}
+{% endfor %}
+
+SELECT {{ final_output_feature_names | join(', ')}}
+FROM entity_dataframe
+{% for feature_view in feature_views %}
+    LEFT JOIN (
+    SELECT
+    {{feature_view.name}}__entity_row_unique_id
+    {% for feature in feature_view.features %}
+        ,{{ feature_view.name }}__{{ feature }}
+    {% endfor %}
+    FROM {{ feature_view.name }}__cleaned
+    ) USING ({{feature_view.name}}__entity_row_unique_id)
+{% endfor %}
