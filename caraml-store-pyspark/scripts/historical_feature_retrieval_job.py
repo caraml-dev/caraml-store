@@ -3,10 +3,12 @@ import argparse
 import json
 import logging
 import os
-from datetime import timedelta
+from dataclasses import dataclass
+from datetime import timedelta, datetime
 from logging.config import dictConfig
-from typing import Any, Dict, List, NamedTuple, Optional
+from typing import Any, Dict, List, NamedTuple, Optional, cast
 
+from jinja2 import FileSystemLoader, Environment
 from pyspark import SparkContext
 from pyspark.sql import DataFrame, SparkSession, Window
 from pyspark.sql import functions as func
@@ -201,6 +203,10 @@ class BigQuerySource(Source):
         return f"{self.project}:{self.dataset}.{self.table}"
 
     @property
+    def bq_ref(self) -> str:
+        return f"{self.project}.{self.dataset}.{self.table}"
+
+    @property
     def spark_read_options(self) -> Dict[str, str]:
         opts = {**super().spark_read_options, "viewsEnabled": "true"}
         if self.materialization:
@@ -213,7 +219,7 @@ class BigQuerySource(Source):
         return opts
 
 
-def _source_from_dict(dct: Dict) -> Source:
+def source_from_dict(dct: Dict) -> Source:
     if "file" in dct.keys():
         return FileSource(
             format=FileSource.PROTO_FORMAT_TO_SPARK[
@@ -317,6 +323,41 @@ class FileDestination(NamedTuple):
 
     format: str
     path: str
+
+
+@dataclass
+class BigQueryFeatureView:
+    name: str
+    entities: List[str]
+    features: List[str]
+    project: str
+    bq_ref: str
+    event_timestamp_column: str
+    created_timestamp_column: Optional[str]
+    field_mapping: Dict[str, str]
+    max_age: int
+    min_event_timestamp: datetime
+    max_event_timestamp: datetime
+
+    @classmethod
+    def from_feature_table(cls, table: FeatureTable, source: BigQuerySource, entity_min_event_timestamp: datetime, entity_max_event_timestamp: datetime):
+        return BigQueryFeatureView(
+            name=table.name,
+            entities=table.entity_names,
+            features=table.feature_names,
+            project=table.project,
+            bq_ref=source.bq_ref,
+            event_timestamp_column=source.event_timestamp_column,
+            created_timestamp_column=source.event_timestamp_column,
+            field_mapping=source.field_mapping,
+            max_age=table.max_age,
+            min_event_timestamp=entity_min_event_timestamp - timedelta(seconds=table.max_age),
+            max_event_timestamp=entity_max_event_timestamp
+        )
+
+    @property
+    def entity_selections(self):
+        return [f"{self.field_mapping.get(entity, entity)} as {entity}" for entity in self.entities]
 
 
 def _map_column(df: DataFrame, col_mapping: Dict[str, str]):
@@ -717,19 +758,19 @@ def _read_and_verify_feature_table_df_from_source(
 
 def retrieve_historical_features(
     spark: SparkSession,
-    entity_source_conf: Dict,
-    feature_tables_sources_conf: List[Dict],
-    feature_tables_conf: List[Dict],
+    entity_source: Source,
+    feature_tables_sources: List[Source],
+    feature_tables: List[FeatureTable],
 ) -> DataFrame:
     """Retrieve historical features based on given configurations. The argument can be either
 
     Args:
         spark (SparkSession): Spark session.
-        entity_source_conf (Dict): Entity data source, which describe where and how to retrieve the Spark dataframe
+        entity_source (Source): Entity data source, which describe where and how to retrieve the Spark dataframe
             representing the entities.
-        feature_tables_sources_conf (Dict): List of feature tables data sources, which describe where and how to
+        feature_tables_sources (Source): List of feature tables data sources, which describe where and how to
             retrieve the feature table representing the feature tables.
-        feature_tables_conf (List[Dict]): List of feature table specification. The specification describes which
+        feature_tables (List[FeatureTable]): List of feature table specification. The specification describes which
             features should be present in the final join result, as well as the maximum age. The order of the feature
             table must correspond to that of feature_tables_sources.
 
@@ -774,12 +815,6 @@ def retrieve_historical_features(
                 },
             ]
     """
-    feature_tables = [_feature_table_from_dict(dct) for dct in feature_tables_conf]
-    feature_tables_sources = [
-        _source_from_dict(dct) for dct in feature_tables_sources_conf
-    ]
-    entity_source = _source_from_dict(entity_source_conf)
-
     entity_df = _read_and_verify_entity_df_from_source(spark, entity_source)
 
     feature_table_dfs = [
@@ -821,6 +856,44 @@ def retrieve_historical_features(
     )
 
 
+def retrieve_historical_features_bq(
+    spark: SparkSession,
+    entity_source: BigQuerySource,
+    feature_table_sources: List[BigQuerySource],
+    feature_tables: List[FeatureTable],
+) -> DataFrame:
+    loader = FileSystemLoader("templates")
+    env = Environment(loader=loader)
+    extract_timestamps_template = env.get_template("extract_timestamps.jinja2")
+    extract_timestamps_sql = extract_timestamps_template.render({"entity_source": entity_source})
+    row = spark.read.format("bigquery") \
+        .options(**entity_source.spark_read_options)\
+        .load(extract_timestamps_sql).first()
+    min_entity_event_timestamp = row.min_event_timestamp
+    max_entity_event_timestamp = row.max_event_timestamp
+    feature_views = [BigQueryFeatureView.from_feature_table(feature_table, feature_table_source, min_entity_event_timestamp, max_entity_event_timestamp)
+                     for feature_table, feature_table_source in zip(feature_tables, feature_table_sources)]
+    final_output_feature_names = []
+    for feature_view in feature_views:
+        for entity in feature_view.entities:
+            if entity not in final_output_feature_names:
+                final_output_feature_names.append(entity)
+    final_output_feature_names.append("event_timestamp")
+    for feature_view in feature_views:
+        for feature in feature_view.features:
+            final_output_feature_names.append(f"{feature_view.name}__{feature}")
+    retrieval_template = env.get_template("retrieval.jinja2")
+    retrieval_sql = retrieval_template.render({
+        "entity_source": entity_source,
+        "feature_views": feature_views,
+        "final_output_feature_names": final_output_feature_names
+    })
+
+    return spark.read.format("bigquery") \
+        .options(**entity_source.spark_read_options)\
+        .load(retrieval_sql)
+
+
 def start_job(
     spark: SparkSession,
     entity_source_conf: Dict,
@@ -828,17 +901,21 @@ def start_job(
     feature_tables_conf: List[Dict],
     destination_conf: Dict,
 ):
-    result = retrieve_historical_features(
-        spark, entity_source_conf, feature_tables_sources_conf, feature_tables_conf
-    )
+    feature_tables = [feature_table_from_dict(dct) for dct in feature_tables_conf]
+    feature_tables_sources = [
+        source_from_dict(dct) for dct in feature_tables_sources_conf
+    ]
+    entity_source = source_from_dict(entity_source_conf)
+    if isinstance(entity_source, BigQuerySource) and all([isinstance(source, BigQuerySource) for source in
+                                                          feature_tables_sources]):
+        feature_tables_sources = [cast(BigQuerySource, source) for source in feature_tables_sources]
+        result = retrieve_historical_features_bq(spark, entity_source, feature_tables_sources, feature_tables)
+    else:
+        result = retrieve_historical_features(
+            spark, entity_source, feature_tables_sources, feature_tables
+        )
 
     destination = FileDestination(**destination_conf)
-    if destination.format == "tfrecord":
-        entity_source = _source_from_dict(entity_source_conf)
-        result = result.withColumn(
-            entity_source.event_timestamp_column,
-            col(entity_source.event_timestamp_column).cast(LongType()),
-        )
 
     result.write.format(destination.format).mode("overwrite").save(destination.path)
 
@@ -866,7 +943,7 @@ def _get_args():
     return parser.parse_args()
 
 
-def _feature_table_from_dict(dct: Dict[str, Any]) -> FeatureTable:
+def feature_table_from_dict(dct: Dict[str, Any]) -> FeatureTable:
     assert (
         dct.get("maxAge") is not None and dct["maxAge"] > 0
     ), "FeatureTable.maxAge must not be None and should be a positive number"
@@ -891,6 +968,9 @@ if __name__ == "__main__":
         spark.sparkContext.setCheckpointDir(args.checkpoint)
     if args.bq:
         bq_conf = json.loads(args.bq)
+        bq_source = entity_source_conf.get("bq")
+        if bq_source is not None:
+            entity_source_conf["bq"]["materialization"] = bq_conf.get("materialization")
         for source_conf in feature_tables_sources_conf:
             bq_source = source_conf.get("bq")
             if bq_source is not None:
