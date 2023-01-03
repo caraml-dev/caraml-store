@@ -8,8 +8,8 @@ AUTHOR = "caraml-dev"
 REQUIRES_PYTHON = ">=3.7.0"
 
 REQUIRED = [
-    "grpcio==1.50.0",
-    "protobuf==4.21.9"
+    "grpcio>=1.50.0",
+    "protobuf>=4.21.9"
 ]
 
 # Add Support for parsing tags that have a prefix containing '/' (ie 'sdk/go') to setuptools_scm.
