@@ -1,6 +1,9 @@
-import grpc
+from typing import Any, Dict, List, Optional
 from datetime import datetime
 from dataclasses import dataclass
+
+import grpc
+
 from feast.core.CoreService_pb2_grpc import CoreServiceStub
 from feast.core.CoreService_pb2 import (
     ListOnlineStoresRequest,
@@ -8,6 +11,10 @@ from feast.core.CoreService_pb2 import (
     GetFeatureTableRequest,
 )
 from feast.core.FeatureTable_pb2 import FeatureTableSpec
+from feast.feature import build_feature_references
+from feast.online_response import infer_online_entity_rows, OnlineResponse
+from feast.serving.ServingService_pb2_grpc import ServingServiceStub
+from feast.serving.ServingService_pb2 import GetOnlineFeaturesRequest, GetOnlineFeaturesResponse
 from feast_spark.api.JobService_pb2 import (
     StartOfflineToOnlineIngestionJobRequest,
     StartOfflineToOnlineIngestionJobResponse,
@@ -16,11 +23,14 @@ from feast_spark.api.JobService_pb2 import (
 )
 from feast_spark.api.JobService_pb2_grpc import JobServiceStub
 
+
 @dataclass
 class Client:
-    registry_url: str
+    registry_url: str = None
+    serving_url: str = None
     project: str = None
     _core_service_stub: CoreServiceStub = None
+    _serving_service_stub: ServingServiceStub = None
     _job_service_stub: JobServiceStub = None
 
     @property
@@ -30,6 +40,9 @@ class Client:
 
         Returns: CoreServiceStub
         """
+        if not self.registry_url:
+            raise ValueError("registry_url has not been set")
+
         if not self._core_service_stub:
             channel = grpc.insecure_channel(self.registry_url)
             self._core_service_stub = CoreServiceStub(channel)
@@ -42,14 +55,28 @@ class Client:
 
         Returns: JobServiceStub
         """
+        if not self.registry_url:
+            raise ValueError("registry_url has not been set")
+
         if not self._job_service_stub:
             channel = grpc.insecure_channel(self.registry_url)
             self._job_service_stub = JobServiceStub(channel)
         return self._job_service_stub
 
-#  Wrapper methods over rpc services
+    @property
+    def _serving_service(self):
+        """
+        Creates or returns the gRPC Feast Serving Service Stub
 
-# Registry/core services"""
+        Returns: ServingServiceStub
+        """
+        if not self.serving_url:
+            raise ValueError("serving_url has not been set")
+
+        if not self._serving_service_stub:
+            channel = grpc.insecure_channel(self.serving_url)
+            self._serving_service_stub = ServingServiceStub(channel)
+        return self._serving_service_stub
 
     def get_feature_table(self, name: str, project: str = None) -> FeatureTableSpec:
         """
@@ -66,12 +93,9 @@ class Client:
         if project is None:
             project = self.project
 
-        try:
-            response = self._core_service.GetFeatureTable(
-                GetFeatureTableRequest(project=project, name=name.strip()),
-            )
-        except grpc.RpcError:
-            raise
+        response = self._core_service.GetFeatureTable(
+            GetFeatureTableRequest(project=project, name=name.strip()),
+        )
         return response.table.spec
 
     def list_online_stores(self) -> ListOnlineStoresResponse:
@@ -79,13 +103,37 @@ class Client:
         List online stores
         Returns: ListOnlineStoresResponse
         """
-        try:
-            response = self._core_service.ListOnlineStores(ListOnlineStoresRequest())
-        except grpc.RpcError:
-            raise
-        return response
+        return self._core_service.ListOnlineStores(ListOnlineStoresRequest())
 
-# Job services
+    def get_online_features(
+        self,
+        feature_refs: List[str],
+        entity_rows: List[Dict[str, Any]],
+        project: Optional[str] = None,
+    ) -> OnlineResponse:
+        """
+        Retrieves the latest online feature data from Feast Serving.
+        Args:
+            feature_refs: List of feature references that will be returned for each entity.
+                Each feature reference should have the following format:
+                "feature_table:feature" where "feature_table" & "feature" refer to
+                the feature and feature table names respectively.
+                Only the feature name is required.
+            entity_rows: A list of dictionaries where each key-value is an entity-name, entity-value pair.
+            project: Optionally specify the the project override. If specified, uses given project for retrieval.
+                Overrides the projects specified in Feature References if also are specified.
+        Returns:
+            OnlineResponse containing the feature data in records.
+            Each EntityRow provided will yield one record, which contains
+            data fields with data value and field status metadata (if included)
+        """
+        return OnlineResponse(self._serving_service.GetOnlineFeatures(
+            GetOnlineFeaturesRequest(
+                features=build_feature_references(feature_ref_strs=feature_refs),
+                entity_rows=infer_online_entity_rows(entity_rows),
+                project=project if project is not None else self.project,
+            )
+        ))
 
     def start_offline_to_online_ingestion(
         self, feature_table: str, start: datetime, end: datetime, project: str = None, delta_ingestion: bool = False
@@ -109,11 +157,7 @@ class Client:
         )
         request.start_date.FromDatetime(start)
         request.end_date.FromDatetime(end)
-        try:
-            response = self._job_service.StartOfflineToOnlineIngestionJob(request)
-        except grpc.RpcError:
-            raise
-        return response
+        return self._job_service.StartOfflineToOnlineIngestionJob(request)
 
     def get_job(self, job_id: str) -> Job:
         """
@@ -124,8 +168,5 @@ class Client:
         Returns: Job protobuf object
         """
         request = GetJobRequest(job_id=job_id)
-        try:
-            response = self._job_service.GetJob(request)
-        except grpc.RpcError:
-            raise
+        response = self._job_service.GetJob(request)
         return response.job
