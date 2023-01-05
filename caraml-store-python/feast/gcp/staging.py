@@ -26,11 +26,14 @@ def stage_entities_to_bq(
 
     load_job_config = bigquery.LoadJobConfig(
         time_partitioning=bigquery.TimePartitioning(
-            type_=bigquery.TimePartitioningType.DAY, field="event_timestamp",
+            type_=bigquery.TimePartitioningType.DAY,
+            field="event_timestamp",
         )
     )
     load_job: bigquery.LoadJob = bq_client.load_table_from_dataframe(
-        entity_source, destination, job_config=load_job_config,
+        entity_source,
+        destination,
+        job_config=load_job_config,
     )
     load_job.result()  # wait until complete
 

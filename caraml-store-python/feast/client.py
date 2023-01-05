@@ -22,7 +22,7 @@ from feast_spark.api.JobService_pb2 import (
     GetHistoricalFeaturesRequest,
     GetHistoricalFeaturesResponse,
     GetJobRequest,
-    Job
+    Job,
 )
 from feast_spark.api.JobService_pb2_grpc import JobServiceStub
 
@@ -125,16 +125,23 @@ class Client:
             Each EntityRow provided will yield one record, which contains
             data fields with data value and field status metadata (if included)
         """
-        return OnlineResponse(self._serving_service.GetOnlineFeatures(
-            GetOnlineFeaturesRequest(
-                features=build_feature_references(feature_ref_strs=feature_refs),
-                entity_rows=infer_online_entity_rows(entity_rows),
-                project=project,
+        return OnlineResponse(
+            self._serving_service.GetOnlineFeatures(
+                GetOnlineFeaturesRequest(
+                    features=build_feature_references(feature_ref_strs=feature_refs),
+                    entity_rows=infer_online_entity_rows(entity_rows),
+                    project=project,
+                )
             )
-        ))
+        )
 
     def start_offline_to_online_ingestion(
-        self, feature_table: str, start: datetime, end: datetime, project: str, delta_ingestion: bool = False
+        self,
+        feature_table: str,
+        start: datetime,
+        end: datetime,
+        project: str,
+        delta_ingestion: bool = False,
     ) -> StartOfflineToOnlineIngestionJobResponse:
         """
         Start offline to online ingestion job
