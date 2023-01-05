@@ -2,7 +2,10 @@ from typing import List, Dict, Any, cast, Type
 
 from google.protobuf.json_format import MessageToDict
 
-from feast.serving.ServingService_pb2 import GetOnlineFeaturesRequest, GetOnlineFeaturesResponse
+from feast.serving.ServingService_pb2 import (
+    GetOnlineFeaturesRequest,
+    GetOnlineFeaturesResponse,
+)
 from feast.types.Value_pb2 import Value, ValueType
 
 
@@ -40,7 +43,9 @@ class OnlineResponse:
         return features_dict
 
 
-def infer_online_entity_rows(entity_rows: List[Dict[str, Any]]) -> List[GetOnlineFeaturesRequest.EntityRow]:
+def infer_online_entity_rows(
+    entity_rows: List[Dict[str, Any]]
+) -> List[GetOnlineFeaturesRequest.EntityRow]:
     """
     Builds a list of EntityRow protos from Python native type format passed by user.
     Args:

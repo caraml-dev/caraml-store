@@ -5,12 +5,19 @@ NAME = "caraml-store"
 DESCRIPTION = "Python SDK for caraml-store"
 URL = "https://github.com/caraml-dev/caraml-store"
 AUTHOR = "caraml-dev"
-REQUIRES_PYTHON = ">=3.7.0"
+REQUIRES_PYTHON = ">=3.8.0"
 
 REQUIRED = [
     "grpcio>=1.50.0",
     "protobuf>=4.21.9"
 ]
+
+EXTRA_REQUIRED = {
+    "gcp": [
+        "pandas>=1.4.4",
+        "google-cloud-bigquery>=3.0.0",
+    ]
+}
 
 # Add Support for parsing tags that have a prefix containing '/' (ie 'sdk/go') to setuptools_scm.
 # Regex modified from default tag regex in:
@@ -29,6 +36,7 @@ setup(
     url=URL,
     packages=find_packages(exclude=("tests",)),
     install_requires=REQUIRED,
+    extra_requires=EXTRA_REQUIRED,
     use_scm_version={"root": "..", "relative_to": __file__, "tag_regex": TAG_REGEX},
     setup_requires=["setuptools_scm"],
     # https://stackoverflow.com/questions/28509965/setuptools-development-requirements
@@ -40,6 +48,6 @@ setup(
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
 )
