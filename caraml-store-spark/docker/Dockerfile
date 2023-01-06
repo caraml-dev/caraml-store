@@ -12,5 +12,6 @@ RUN pip install Jinja2==3.1.2
 RUN mkdir -p /dev
 
 ADD caraml-spark-application-with-dependencies.jar /opt/spark/jars
+ADD templates /opt/spark/work-dir/templates
 ADD historical_feature_retrieval_job.py /opt/spark/work-dir
 
