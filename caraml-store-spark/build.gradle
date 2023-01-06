@@ -81,6 +81,12 @@ docker {
     dependsOn shadowJar
     dockerfile file('docker/Dockerfile')
     files shadowJar.outputs, "$rootDir/caraml-store-pyspark/scripts"
+    copySpec.with {
+        from("$rootDir/caraml-store-pyspark") {
+            include 'templates/**'
+            into 'templates'
+        }
+    }
     name "${containerRegistry == null ? "" : containerRegistry + "/"}${project.name}:${version}"
 }
 
