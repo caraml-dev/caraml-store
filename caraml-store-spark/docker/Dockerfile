@@ -1,7 +1,7 @@
 FROM apache/spark-py:v3.1.3
 
 ARG GCS_CONNECTOR_VERSION=2.2.5
-ARG BQ_CONNECTOR_VERSION=0.18.1
+ARG BQ_CONNECTOR_VERSION=0.27.1
 
 USER root
 ADD https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop2-${GCS_CONNECTOR_VERSION}.jar /opt/spark/jars
