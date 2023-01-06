@@ -2,3 +2,6 @@ grpcio-tools==1.50.0
 google-cloud-bigquery==3.0.0
 protobuf==4.21.9
 pandas==1.4.4
+PyYAML==6.0
+croniter==1.*
+black==22.12.0

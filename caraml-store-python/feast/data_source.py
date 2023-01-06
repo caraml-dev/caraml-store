@@ -376,3 +376,161 @@ class BigQuerySource(DataSource):
         data_source_proto.date_partition_column = self.date_partition_column
 
         return data_source_proto
+
+
+class KafkaOptions:
+    """
+    DataSource Kafka options used to source features from Kafka messages
+    """
+
+    def __init__(
+        self,
+        bootstrap_servers: str,
+        message_format: StreamFormat,
+        topic: str,
+    ):
+        self._bootstrap_servers = bootstrap_servers
+        self._message_format = message_format
+        self._topic = topic
+
+    @property
+    def bootstrap_servers(self):
+        """
+        Returns a comma-separated list of Kafka bootstrap servers
+        """
+        return self._bootstrap_servers
+
+    @bootstrap_servers.setter
+    def bootstrap_servers(self, bootstrap_servers):
+        """
+        Sets a comma-separated list of Kafka bootstrap servers
+        """
+        self._bootstrap_servers = bootstrap_servers
+
+    @property
+    def message_format(self):
+        """
+        Returns the data format that is used to encode the feature data in Kafka messages
+        """
+        return self._message_format
+
+    @message_format.setter
+    def message_format(self, message_format):
+        """
+        Sets the data format that is used to encode the feature data in Kafka messages
+        """
+        self._message_format = message_format
+
+    @property
+    def topic(self):
+        """
+        Returns the Kafka topic to collect feature data from
+        """
+        return self._topic
+
+    @topic.setter
+    def topic(self, topic):
+        """
+        Sets the Kafka topic to collect feature data from
+        """
+        self._topic = topic
+
+    @classmethod
+    def from_proto(cls, kafka_options_proto: DataSourceProto.KafkaOptions):
+        """
+        Creates a KafkaOptions from a protobuf representation of a kafka option
+        Args:
+            kafka_options_proto: A protobuf representation of a DataSource
+        Returns:
+            Returns a BigQueryOptions object based on the kafka_options protobuf
+        """
+
+        kafka_options = cls(
+            bootstrap_servers=kafka_options_proto.bootstrap_servers,
+            message_format=StreamFormat.from_proto(kafka_options_proto.message_format),
+            topic=kafka_options_proto.topic,
+        )
+
+        return kafka_options
+
+    def to_proto(self) -> DataSourceProto.KafkaOptions:
+        """
+        Converts an KafkaOptionsProto object to its protobuf representation.
+        Returns:
+            KafkaOptionsProto protobuf
+        """
+
+        kafka_options_proto = DataSourceProto.KafkaOptions(
+            bootstrap_servers=self.bootstrap_servers,
+            message_format=self.message_format.to_proto(),
+            topic=self.topic,
+        )
+
+        return kafka_options_proto
+
+
+class KafkaSource(DataSource):
+    def __init__(
+        self,
+        event_timestamp_column: str,
+        bootstrap_servers: str,
+        message_format: StreamFormat,
+        topic: str,
+        created_timestamp_column: Optional[str] = "",
+        field_mapping: Optional[Dict[str, str]] = dict(),
+        date_partition_column: Optional[str] = "",
+    ):
+        super().__init__(
+            event_timestamp_column,
+            created_timestamp_column,
+            field_mapping,
+            date_partition_column,
+        )
+        self._kafka_options = KafkaOptions(
+            bootstrap_servers=bootstrap_servers,
+            message_format=message_format,
+            topic=topic,
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, KafkaSource):
+            raise TypeError(
+                "Comparisons should only involve KafkaSource class objects."
+            )
+
+        if (
+            self.kafka_options.bootstrap_servers
+            != other.kafka_options.bootstrap_servers
+            or self.kafka_options.message_format != other.kafka_options.message_format
+            or self.kafka_options.topic != other.kafka_options.topic
+        ):
+            return False
+
+        return True
+
+    @property
+    def kafka_options(self):
+        """
+        Returns the kafka options of this data source
+        """
+        return self._kafka_options
+
+    @kafka_options.setter
+    def kafka_options(self, kafka_options):
+        """
+        Sets the kafka options of this data source
+        """
+        self._kafka_options = kafka_options
+
+    def to_proto(self) -> DataSourceProto:
+        data_source_proto = DataSourceProto(
+            type=DataSourceProto.STREAM_KAFKA,
+            field_mapping=self.field_mapping,
+            kafka_options=self.kafka_options.to_proto(),
+        )
+
+        data_source_proto.event_timestamp_column = self.event_timestamp_column
+        data_source_proto.created_timestamp_column = self.created_timestamp_column
+        data_source_proto.date_partition_column = self.date_partition_column
+
+        return data_source_proto

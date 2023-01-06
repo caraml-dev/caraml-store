@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from feast.core.DataFormat_pb2 import FileFormat as FileFormatProto
+from feast.core.DataFormat_pb2 import StreamFormat as StreamFormatProto
 
 
 class FileFormat(ABC):
@@ -46,3 +47,68 @@ class ParquetFormat(FileFormat):
 
     def __str__(self):
         return "parquet"
+
+
+class StreamFormat(ABC):
+    """
+    Defines an abtracts streaming data format used to encode feature data in streams
+    """
+
+    @abstractmethod
+    def to_proto(self):
+        """
+        Convert this StreamFormat into its protobuf representation.
+        """
+        pass
+
+    def __eq__(self, other):
+        return self.to_proto() == other.to_proto()
+
+    @classmethod
+    def from_proto(cls, proto):
+        """
+        Construct this StreamFormat from its protobuf representation.
+        """
+        fmt = proto.WhichOneof("format")
+        if fmt == "avro_format":
+            return AvroFormat(schema_json=proto.avro_format.schema_json)
+        if fmt == "proto_format":
+            return ProtoFormat(class_path=proto.proto_format.class_path)
+        raise NotImplementedError(f"StreamFormat is unsupported: {fmt}")
+
+
+class AvroFormat(StreamFormat):
+    """
+    Defines the Avro streaming data format that encodes data in Avro format
+    """
+
+    def __init__(self, schema_json: str):
+        """
+        Construct a new Avro data format.
+        Args:
+            schema_json: Avro schema definition in JSON
+        """
+        self.schema_json = schema_json
+
+    def to_proto(self):
+        proto = StreamFormatProto.AvroFormat(schema_json=self.schema_json)
+        return StreamFormatProto(avro_format=proto)
+
+
+class ProtoFormat(StreamFormat):
+    """
+    Defines the Protobuf data format
+    """
+
+    def __init__(self, class_path: str):
+        """
+        Construct a new Protobuf data format.
+        Args:
+            class_path: Class path to the Java Protobuf class that can be used to decode protobuf messages.;
+        """
+        self.class_path = class_path
+
+    def to_proto(self):
+        return StreamFormatProto(
+            proto_format=StreamFormatProto.ProtoFormat(class_path=self.class_path)
+        )

@@ -1,18 +1,26 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 from datetime import datetime
 from dataclasses import dataclass
 
 import grpc
+from croniter import croniter
 
 from feast.core.CoreService_pb2_grpc import CoreServiceStub
 from feast.core.CoreService_pb2 import (
     ListOnlineStoresRequest,
     ListOnlineStoresResponse,
     GetFeatureTableRequest,
+    ApplyFeatureTableRequest,
+    ListProjectsRequest,
+    ListFeatureTablesRequest,
+    GetEntityRequest,
+    ListEntitiesRequest,
+    ApplyEntityRequest,
 )
-from feast.core.FeatureTable_pb2 import FeatureTableSpec
 from feast.data_source import FileSource, BigQuerySource
+from feast.entity import Entity
 from feast.feature import build_feature_references
+from feast.feature_table import FeatureTable
 from feast.online_response import infer_online_entity_rows, OnlineResponse
 from feast.serving.ServingService_pb2_grpc import ServingServiceStub
 from feast.serving.ServingService_pb2 import GetOnlineFeaturesRequest
@@ -23,6 +31,7 @@ from feast_spark.api.JobService_pb2 import (
     GetHistoricalFeaturesResponse,
     GetJobRequest,
     Job,
+    ScheduleOfflineToOnlineIngestionJobRequest,
 )
 from feast_spark.api.JobService_pb2_grpc import JobServiceStub
 
@@ -80,7 +89,113 @@ class Client:
             self._serving_service_stub = ServingServiceStub(channel)
         return self._serving_service_stub
 
-    def get_feature_table(self, name: str, project: str) -> FeatureTableSpec:
+    def list_projects(self) -> List[str]:
+        """
+        List all active Feast projects
+        Returns:
+            List of project names
+        """
+
+        response = self._core_service.ListProjects(
+            ListProjectsRequest(),
+        )
+        return list(response.projects)
+
+    def apply_entity(self, entity: Entity, project: str):
+        """
+        Registers a single entity with Feast
+        Args:
+            entity: Entity that will be registered
+            project: Project name
+        """
+
+        entity.is_valid()
+        entity_proto = entity.to_spec_proto()
+
+        # Convert the entity to a request and send to Feast Core
+        apply_entity_response = self._core_service.ApplyEntity(
+            ApplyEntityRequest(project=project, spec=entity_proto),
+        )
+
+        # Extract the returned entity
+        applied_entity = Entity.from_proto(apply_entity_response.entity)
+
+        # Deep copy from the returned entity to the local entity
+        entity._update_from_entity(applied_entity)
+
+    def list_entities(
+        self, project: str = None, labels: Optional[Dict[str, str]] = None
+    ) -> List[Entity]:
+        """
+        Retrieve a list of entities from Feast Core
+        Args:
+            project: Filter entities based on project name
+            labels: User-defined labels that these entities are associated with
+        Returns:
+            List of entities
+        """
+
+        filter = ListEntitiesRequest.Filter(project=project, labels=labels or dict())
+
+        # Get latest entities from Feast Core
+        entity_protos = self._core_service.ListEntities(
+            ListEntitiesRequest(filter=filter),
+        )
+
+        # Extract entities and return
+        entities = []
+        for entity_proto in entity_protos.entities:
+            entity = Entity.from_proto(entity_proto)
+            entity._client = self
+            entities.append(entity)
+        return entities
+
+    def get_entity(self, name: str, project: str) -> Entity:
+        """
+        Retrieves an entity.
+        Args:
+            project: Feast project that this entity belongs to
+            name: Name of entity
+        Returns:
+            Returns either the specified entity, or raises an exception if
+            none is found
+        """
+
+        get_entity_response = self._core_service.GetEntity(
+            GetEntityRequest(project=project, name=name.strip()),
+        )
+        entity = Entity.from_proto(get_entity_response.entity)
+
+        return entity
+
+    def list_feature_tables(
+        self, project: str, labels: Optional[Dict[str, str]] = None
+    ) -> List[FeatureTable]:
+        """
+        Retrieve a list of feature tables from Feast Core
+        Args:
+            project: Filter feature tables based on project name
+            labels: Filter by feature table labels
+        Returns:
+            List of feature tables
+        """
+
+        # Get latest feature tables from Feast Core
+        feature_table_protos = self._core_service.ListFeatureTables(
+            filter=ListFeatureTablesRequest.Filter(
+                project=project, labels=labels or dict()
+            )
+        )
+
+        # Extract feature tables and return
+        feature_tables = []
+        for feature_table_proto in feature_table_protos.tables:
+            feature_table = FeatureTable.from_proto(feature_table_proto)
+            feature_table._client = self
+            feature_tables.append(feature_table)
+        return feature_tables
+
+    def get_feature_table(self, name: str, project: str) -> FeatureTable:
         """
         Retrieves a feature table.
 
@@ -95,7 +210,19 @@ class Client:
         response = self._core_service.GetFeatureTable(
             GetFeatureTableRequest(project=project, name=name.strip()),
         )
-        return response.table.spec
+        return FeatureTable.from_proto(response.table)
+
+    def apply_feature_table(self, table: FeatureTable, project: str):
+        """
+        Apply a feature table.
+
+        Args:
+            table: Feature table spec
+            project: Feast project that this feature table belongs to
+        """
+        self._core_service.ApplyFeatureTable(
+            ApplyFeatureTableRequest(project=project, table_spec=table.to_spec_proto())
+        )
 
     def list_online_stores(self) -> ListOnlineStoresResponse:
         """
@@ -160,6 +287,35 @@ class Client:
         request.start_date.FromDatetime(start)
         request.end_date.FromDatetime(end)
         return self._job_service.StartOfflineToOnlineIngestionJob(request)
+
+    def schedule_offline_to_online_ingestion(
+        self,
+        feature_table: str,
+        project: str,
+        ingestion_timespan: int,
+        cron_schedule: str,
+    ):
+        """
+        Launch Scheduled Ingestion Job from Batch Source to Online Store for given feature table
+
+        Args:
+            feature_table:  FeatureTable that will be ingested into the online store
+            project: Project name
+            ingestion_timespan: Days of data which will be ingestion per job. The boundaries
+                on which to filter the source are [end of day of execution date - ingestion_timespan (days) ,
+                end of day of execution date)
+            cron_schedule: Cron schedule expression
+
+        """
+        if not croniter.is_valid(cron_schedule):
+            raise RuntimeError(f"{cron_schedule} is not a valid cron expression")
+        request = ScheduleOfflineToOnlineIngestionJobRequest(
+            project=project,
+            table_name=feature_table,
+            ingestion_timespan=ingestion_timespan,
+            cron_schedule=cron_schedule,
+        )
+        self._job_service.ScheduleOfflineToOnlineIngestionJob(request)
 
     def get_historical_features(
         self,
