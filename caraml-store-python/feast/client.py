@@ -182,8 +182,10 @@ class Client:
 
         # Get latest feature tables from Feast Core
         feature_table_protos = self._core_service.ListFeatureTables(
-            filter=ListFeatureTablesRequest.Filter(
-                project=project, labels=labels or dict()
+            ListFeatureTablesRequest(
+                filter=ListFeatureTablesRequest.Filter(
+                    project=project, labels=labels or dict()
+                )
             )
         )
 
