@@ -2,7 +2,7 @@ import enum
 from typing import Dict, Optional
 
 from feast.core.DataSource_pb2 import DataSource as DataSourceProto
-from feast.data_format import FileFormat
+from feast.data_format import FileFormat, StreamFormat
 
 
 class SourceType(enum.Enum):
@@ -247,6 +247,22 @@ class DataSource:
             data_source_obj = BigQuerySource(
                 field_mapping=data_source.field_mapping,
                 table_ref=data_source.bigquery_options.table_ref,
+                event_timestamp_column=data_source.event_timestamp_column,
+                created_timestamp_column=data_source.created_timestamp_column,
+                date_partition_column=data_source.date_partition_column,
+            )
+        elif (
+            data_source.kafka_options.bootstrap_servers
+            and data_source.kafka_options.topic
+            and data_source.kafka_options.message_format
+        ):
+            data_source_obj = KafkaSource(
+                field_mapping=data_source.field_mapping,
+                bootstrap_servers=data_source.kafka_options.bootstrap_servers,
+                message_format=StreamFormat.from_proto(
+                    data_source.kafka_options.message_format
+                ),
+                topic=data_source.kafka_options.topic,
                 event_timestamp_column=data_source.event_timestamp_column,
                 created_timestamp_column=data_source.created_timestamp_column,
                 date_partition_column=data_source.date_partition_column,
