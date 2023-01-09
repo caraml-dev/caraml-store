@@ -38,7 +38,7 @@ setup(
     url=URL,
     packages=find_packages(exclude=("tests",)),
     install_requires=REQUIRED,
-    extra_requires=EXTRA_REQUIRED,
+    extras_require=EXTRA_REQUIRED,
     use_scm_version={"root": "..", "relative_to": __file__, "tag_regex": TAG_REGEX},
     setup_requires=["setuptools_scm"],
     # https://stackoverflow.com/questions/28509965/setuptools-development-requirements
