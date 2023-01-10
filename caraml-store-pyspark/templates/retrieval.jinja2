@@ -79,7 +79,7 @@ FROM `{{ entity_source.bq_ref }}`
     ){% if loop.last %}{% else %}, {% endif %}
 {% endfor %}
 
-SELECT {{ final_output_feature_names | join(', ')}}
+SELECT * EXCEPT ({% for feature_view in feature_views %} {{ feature_view.name }}__entity_row_unique_id, {% endfor %} entity_timestamp)
 FROM entity_dataframe
 {% for feature_view in feature_views %}
     LEFT JOIN (

@@ -873,20 +873,10 @@ def retrieve_historical_features_bq(
     max_entity_event_timestamp = row.max_event_timestamp
     feature_views = [BigQueryFeatureView.from_feature_table(feature_table, feature_table_source, min_entity_event_timestamp, max_entity_event_timestamp)
                      for feature_table, feature_table_source in zip(feature_tables, feature_table_sources)]
-    final_output_feature_names = []
-    for feature_view in feature_views:
-        for entity in feature_view.entities:
-            if entity not in final_output_feature_names:
-                final_output_feature_names.append(entity)
-    final_output_feature_names.append("event_timestamp")
-    for feature_view in feature_views:
-        for feature in feature_view.features:
-            final_output_feature_names.append(f"{feature_view.name}__{feature}")
     retrieval_template = env.get_template("retrieval.jinja2")
     retrieval_sql = retrieval_template.render({
         "entity_source": entity_source,
         "feature_views": feature_views,
-        "final_output_feature_names": final_output_feature_names
     })
 
     return spark.read.format("bigquery") \
