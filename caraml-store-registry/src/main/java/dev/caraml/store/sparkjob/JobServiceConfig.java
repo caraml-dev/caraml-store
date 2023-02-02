@@ -15,9 +15,9 @@ public class JobServiceConfig {
 
   private String namespace;
   private CommonJobProperties common;
-  private List<IngestionJobProperties> streamIngestion = new ArrayList<>();
-  private List<IngestionJobProperties> batchIngestion = new ArrayList<>();
-  private HistoricalRetrievalJobProperties historicalRetrieval;
+  private List<IngestionJobTemplate> streamIngestion = new ArrayList<>();
+  private List<IngestionJobTemplate> batchIngestion = new ArrayList<>();
+  private HistoricalRetrievalJobTemplate historicalRetrieval;
   private DefaultStore defaultStore;
   private DeltaIngestionDataset deltaIngestionDataset;
 }

@@ -68,15 +68,15 @@ public class JobServiceTest {
 
   @Test
   public void shouldCreateBatchIngestionJob() throws IOException, ParseException {
-    List<IngestionJobProperties> jobs = new ArrayList<>();
+    List<IngestionJobTemplate> jobs = new ArrayList<>();
     JobServiceConfig properties = new JobServiceConfig();
     properties.setNamespace("spark-operator");
     properties.setBatchIngestion(jobs);
     properties.setCommon(new CommonJobProperties("sparkImage:latest"));
     properties.setDefaultStore(new DefaultStore("store", "store"));
     properties.setDeltaIngestionDataset(new DeltaIngestionDataset("bq-project", "bq-dataset"));
-    IngestionJobProperties batchJobProperty =
-        new IngestionJobProperties("store", new SparkApplicationSpec());
+    IngestionJobTemplate batchJobProperty =
+        new IngestionJobTemplate("store", new SparkApplicationSpec());
     jobs.add(batchJobProperty);
     JobService jobservice = new JobService(properties, entityRepository, tableRepository, api);
     FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder();
@@ -145,14 +145,14 @@ public class JobServiceTest {
 
   @Test
   public void shouldCreateStreamingJob() throws IOException, SparkOperatorApiException {
-    List<IngestionJobProperties> jobs = new ArrayList<>();
+    List<IngestionJobTemplate> jobs = new ArrayList<>();
     JobServiceConfig properties = new JobServiceConfig();
     properties.setNamespace("spark-operator");
     properties.setStreamIngestion(jobs);
     properties.setCommon(new CommonJobProperties("sparkImage:latest"));
     properties.setDefaultStore(new DefaultStore("store", "store"));
-    IngestionJobProperties streamJobProperty =
-        new IngestionJobProperties("store", new SparkApplicationSpec());
+    IngestionJobTemplate streamJobProperty =
+        new IngestionJobTemplate("store", new SparkApplicationSpec());
     jobs.add(streamJobProperty);
     JobService jobservice = new JobService(properties, entityRepository, tableRepository, api);
     FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder();
