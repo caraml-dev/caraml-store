@@ -19,6 +19,7 @@ import dev.caraml.store.sparkjob.crd.ScheduledSparkApplication;
 import dev.caraml.store.sparkjob.crd.ScheduledSparkApplicationSpec;
 import dev.caraml.store.sparkjob.crd.SparkApplication;
 import dev.caraml.store.sparkjob.crd.SparkApplicationSpec;
+import dev.caraml.store.sparkjob.hash.HashUtils;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import java.util.HashMap;
 import java.util.List;
@@ -41,9 +42,9 @@ public class JobService {
   private final String namespace;
   private final String sparkImage;
   private final DefaultStore defaultStore;
-  private final Map<JobType, Map<String, IngestionJobProperties>>
+  private final Map<JobType, Map<String, IngestionJobTemplate>>
       ingestionJobTemplateByTypeAndStoreName = new HashMap<>();
-  private final HistoricalRetrievalJobProperties retrievalJobProperties;
+  private final HistoricalRetrievalJobTemplate retrievalJobTemplate;
   private final DeltaIngestionDataset deltaIngestionDataset;
   private final EntityRepository entityRepository;
   private final FeatureTableRepository tableRepository;
@@ -62,12 +63,12 @@ public class JobService {
     ingestionJobTemplateByTypeAndStoreName.put(
         JobType.STREAM_INGESTION_JOB,
         config.getStreamIngestion().stream()
-            .collect(Collectors.toMap(IngestionJobProperties::store, Function.identity())));
+            .collect(Collectors.toMap(IngestionJobTemplate::store, Function.identity())));
     ingestionJobTemplateByTypeAndStoreName.put(
         JobType.BATCH_INGESTION_JOB,
         config.getBatchIngestion().stream()
-            .collect(Collectors.toMap(IngestionJobProperties::store, Function.identity())));
-    retrievalJobProperties = config.getHistoricalRetrieval();
+            .collect(Collectors.toMap(IngestionJobTemplate::store, Function.identity())));
+    retrievalJobTemplate = config.getHistoricalRetrieval();
     deltaIngestionDataset = config.getDeltaIngestionDataset();
     this.entityRepository = entityRepository;
     this.tableRepository = tableRepository;
@@ -86,15 +87,8 @@ public class JobService {
 
   private String getIngestionJobId(JobType jobType, String project, FeatureTableSpec spec) {
     return "caraml-"
-        + DigestUtils.md5Hex(
-                String.join(
-                    "-",
-                    jobType.toString(),
-                    project,
-                    spec.getName(),
-                    getDefaultStoreIfAbsent(spec, jobType)))
-            .substring(0, JOB_ID_LENGTH)
-            .toLowerCase();
+        + HashUtils.ingestionJobHash(
+            jobType, project, spec.getName(), getDefaultStoreIfAbsent(spec, jobType));
   }
 
   private String getRetrievalJobId() {
@@ -180,12 +174,6 @@ public class JobService {
         : onlineStoreName;
   }
 
-  private SparkApplicationSpec newSparkApplicationSpecCopy(SparkApplicationSpec spec) {
-    SparkApplicationSpec copiedSpec = spec.deepCopy();
-    copiedSpec.setImage(sparkImage);
-    return copiedSpec;
-  }
-
   public Job createOrUpdateStreamingIngestionJob(String project, FeatureTableSpec spec) {
     Map<String, String> entityNameToType = getEntityToTypeMap(project, spec);
     List<String> arguments =
@@ -237,19 +225,20 @@ public class JobService {
                   throw new FeatureTableNotFoundException(project, featureTableName);
                 });
     String onlineStoreName = getDefaultStoreIfAbsent(featureTableSpec, JobType.BATCH_INGESTION_JOB);
-    IngestionJobProperties batchIngestionJobTemplate =
+    IngestionJobTemplate batchIngestionJobTemplate =
         ingestionJobTemplateByTypeAndStoreName
             .get(JobType.BATCH_INGESTION_JOB)
             .get(onlineStoreName);
     if (batchIngestionJobTemplate == null) {
       throw new IllegalArgumentException(
-          String.format("Job properties not found for store name: %s", onlineStoreName));
+          String.format("Job template not found for store name: %s", onlineStoreName));
     }
 
     String ingestionJobId =
         getIngestionJobId(JobType.BATCH_INGESTION_JOB, project, featureTableSpec);
     Optional<ScheduledSparkApplication> existingScheduledApplication =
         sparkOperatorApi.getScheduledSparkApplication(namespace, ingestionJobId);
+
     ScheduledSparkApplication scheduledSparkApplication =
         existingScheduledApplication.orElseGet(
             () -> {
@@ -271,8 +260,8 @@ public class JobService {
                       StringUtils.truncate(featureTableName, LABEL_CHARACTERS_LIMIT)));
               return scheduledApp;
             });
-    SparkApplicationSpec appSpec =
-        newSparkApplicationSpecCopy(batchIngestionJobTemplate.sparkApplicationSpec());
+    SparkApplicationSpec appSpec = batchIngestionJobTemplate.render(project, featureTableName);
+    appSpec.setImage(sparkImage);
     Map<String, String> entityNameToType = getEntityToTypeMap(project, featureTableSpec);
     List<String> arguments =
         new ScheduledBatchIngestionArgumentAdapter(
@@ -292,17 +281,17 @@ public class JobService {
   private Job createOrUpdateIngestionJob(
       JobType jobType, String project, FeatureTableSpec spec, List<String> additionalArguments) {
 
-    Map<String, IngestionJobProperties> jobTemplateByStoreName =
+    Map<String, IngestionJobTemplate> jobTemplateByStoreName =
         ingestionJobTemplateByTypeAndStoreName.get(jobType);
     if (jobTemplateByStoreName == null) {
       throw new IllegalArgumentException(
-          String.format("Job properties not found for job type: %s", jobType.toString()));
+          String.format("Job template not found for job type: %s", jobType.toString()));
     }
     String onlineStoreName = getDefaultStoreIfAbsent(spec, jobType);
-    IngestionJobProperties jobProperties = jobTemplateByStoreName.get(onlineStoreName);
-    if (jobProperties == null) {
+    IngestionJobTemplate jobTemplate = jobTemplateByStoreName.get(onlineStoreName);
+    if (jobTemplate == null) {
       throw new IllegalArgumentException(
-          String.format("Job properties not found for store name: %s", onlineStoreName));
+          String.format("Job template not found for store name: %s", onlineStoreName));
     }
 
     String ingestionJobId = getIngestionJobId(jobType, project, spec);
@@ -329,7 +318,9 @@ public class JobService {
                       StringUtils.truncate(spec.getName(), LABEL_CHARACTERS_LIMIT)));
               return app;
             });
-    sparkApplication.setSpec(newSparkApplicationSpecCopy(jobProperties.sparkApplicationSpec()));
+    SparkApplicationSpec newSparkApplicationSpec = jobTemplate.render(project, spec.getName());
+    newSparkApplicationSpec.setImage(sparkImage);
+    sparkApplication.setSpec(newSparkApplicationSpec);
     sparkApplication.getSpec().addArguments(additionalArguments);
 
     SparkApplication updatedApplication =
@@ -345,7 +336,7 @@ public class JobService {
       DataSource entitySource,
       String outputFormat,
       String outputUri) {
-    if (retrievalJobProperties == null || retrievalJobProperties.sparkApplicationSpec() == null) {
+    if (retrievalJobTemplate == null || retrievalJobTemplate.sparkApplicationSpec() == null) {
       throw new IllegalArgumentException(
           "Historical retrieval job properties have not been configured");
     }
@@ -384,7 +375,9 @@ public class JobService {
     app.getMetadata().setName(getRetrievalJobId());
     app.getMetadata().setNamespace(namespace);
     app.addLabels(Map.of(JOB_TYPE_LABEL, JobType.RETRIEVAL_JOB.toString(), PROJECT_LABEL, project));
-    app.setSpec(newSparkApplicationSpecCopy(retrievalJobProperties.sparkApplicationSpec()));
+    SparkApplicationSpec newSparkApplicationSpec = retrievalJobTemplate.render(project);
+    newSparkApplicationSpec.setImage(sparkImage);
+    app.setSpec(newSparkApplicationSpec);
     Map<String, String> entityNameToType = getEntityToTypeMap(project, featureTableSpecs);
     List<String> arguments =
         new HistoricalRetrievalArgumentAdapter(
