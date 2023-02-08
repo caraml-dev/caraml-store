@@ -896,14 +896,9 @@ def start_job(
         source_from_dict(dct) for dct in feature_tables_sources_conf
     ]
     entity_source = source_from_dict(entity_source_conf)
-    if isinstance(entity_source, BigQuerySource) and all([isinstance(source, BigQuerySource) for source in
-                                                          feature_tables_sources]):
-        feature_tables_sources = [cast(BigQuerySource, source) for source in feature_tables_sources]
-        result = retrieve_historical_features_bq(spark, entity_source, feature_tables_sources, feature_tables)
-    else:
-        result = retrieve_historical_features(
-            spark, entity_source, feature_tables_sources, feature_tables
-        )
+    result = retrieve_historical_features(
+        spark, entity_source, feature_tables_sources, feature_tables
+    )
 
     destination = FileDestination(**destination_conf)
 
