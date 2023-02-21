@@ -65,6 +65,7 @@ caraml:
       projectId: gcp-project-name
       instanceId: bigtable-instance
       appProfileId: default
+      enableClientSideMetrics: false
 
 grpc:
   server:

@@ -21,16 +21,21 @@ public class BigTableStoreConfig {
   private String instanceId;
   private String appProfileId;
 
+  private Boolean enableClientSideMetrics;
+
   @Bean
   public OnlineRetriever getRetriever() {
     try {
-      BigtableDataClient client =
-          BigtableDataClient.create(
-              BigtableDataSettings.newBuilder()
-                  .setProjectId(projectId)
-                  .setInstanceId(instanceId)
-                  .setAppProfileId(appProfileId)
-                  .build());
+      BigtableDataSettings settings =
+          BigtableDataSettings.newBuilder()
+              .setProjectId(projectId)
+              .setInstanceId(instanceId)
+              .setAppProfileId(appProfileId)
+              .build();
+      if (enableClientSideMetrics) {
+        BigtableDataSettings.enableBuiltinMetrics();
+      }
+      BigtableDataClient client = BigtableDataClient.create(settings);
       return new BigTableOnlineRetriever(client);
     } catch (IOException e) {
       throw new RuntimeException(e);
