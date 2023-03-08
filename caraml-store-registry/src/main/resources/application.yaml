@@ -3,6 +3,21 @@ caraml:
     # Whether to create/update streaming ingestion jobs on feature table creation/update
     syncIngestionJobOnSpecUpdate: true
 
+  # Enable integration with MLP server
+  mlp:
+    enabled: true
+    endpoint: "http://localhost:9090/api"
+    connectionTimeOutMs: 3000
+    requestTimeOutMs: 1500
+    authEnabled: false
+
+  resilience4j:
+    retry:
+      instances:
+        listProjects:
+          maxRetryAttempts: 3
+          waitDuration: 500ms
+
   kubernetes:
     # Whether to use in-cluster Kubernetes configuration or default kube config.
     inCluster: false

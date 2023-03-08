@@ -43,17 +43,20 @@ public class RegistryService {
   private final FeatureTableRepository tableRepository;
   private final ProjectRepository projectRepository;
   private final OnlineStoreRepository onlineStoreRepository;
+  private final ProjectValidator projectValidator;
 
   @Autowired
   public RegistryService(
       EntityRepository entityRepository,
       FeatureTableRepository tableRepository,
       ProjectRepository projectRepository,
-      OnlineStoreRepository onlineStoreRepository) {
+      OnlineStoreRepository onlineStoreRepository,
+      ProjectValidator projectValidator) {
     this.entityRepository = entityRepository;
     this.tableRepository = tableRepository;
     this.projectRepository = projectRepository;
     this.onlineStoreRepository = onlineStoreRepository;
+    this.projectValidator = projectValidator;
   }
 
   /**
@@ -178,6 +181,22 @@ public class RegistryService {
     return response.build();
   }
 
+  private Project getOrCreateNewProject(String projectName) {
+    // Find project or create new one if it does not exist
+    Optional<Project> existingProject = projectRepository.findById(projectName);
+    if (existingProject.isEmpty()) {
+      Matchers.checkValidCharactersAllowDash(projectName, "project");
+      projectValidator.validateProject(projectName);
+    }
+    Project project = existingProject.orElse(new Project(projectName));
+
+    // Ensure that the project retrieved from repository is not archived
+    if (project.isArchived()) {
+      throw new IllegalArgumentException(String.format("Project is archived: %s", projectName));
+    }
+    return project;
+  }
+
   /**
    * Creates or updates an entity in the repository.
    *
@@ -190,24 +209,12 @@ public class RegistryService {
    */
   @Transactional
   public ApplyEntityResponse applyEntity(EntityProto.EntitySpec newEntitySpec, String projectName) {
-    // Autofill default project if not specified
-    if (projectName == null || projectName.isEmpty()) {
-      projectName = Project.DEFAULT_NAME;
-    }
-
-    Matchers.checkValidCharactersAllowDash(projectName, "project");
+    projectName = resolveProjectName(projectName);
 
     // Validate incoming entity
     EntityValidator.validateSpec(newEntitySpec);
 
-    // Find project or create new one if it does not exist
-    Project project = projectRepository.findById(projectName).orElse(new Project(projectName));
-
-    // Ensure that the project retrieved from repository is not archived
-    if (project.isArchived()) {
-      throw new IllegalArgumentException(String.format("Project is archived: %s", projectName));
-    }
-
+    Project project = getOrCreateNewProject(projectName);
     // Retrieve existing Entity
     Entity entity =
         entityRepository.findEntityByNameAndProject_Name(newEntitySpec.getName(), projectName);
@@ -274,15 +281,6 @@ public class RegistryService {
     // Check that specification provided is valid
     FeatureTableSpec applySpec = request.getTableSpec();
     FeatureTableValidator.validateSpec(applySpec);
-
-    // Prevent apply if the project is archived.
-    Project project = projectRepository.findById(projectName).orElse(new Project(projectName));
-    if (project.isArchived()) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Cannot apply Feature Table to archived Project: (table: %s, project: %s)",
-              applySpec.getName(), projectName));
-    }
 
     // Create or update depending on whether there is an existing Feature Table
     Optional<FeatureTable> existingTable =
@@ -476,6 +474,7 @@ public class RegistryService {
     if (projectRepository.existsById(name)) {
       throw new IllegalArgumentException(String.format("Project already exists: %s", name));
     }
+    projectValidator.validateProject(name);
     Project project = new Project(name);
     projectRepository.saveAndFlush(project);
   }
