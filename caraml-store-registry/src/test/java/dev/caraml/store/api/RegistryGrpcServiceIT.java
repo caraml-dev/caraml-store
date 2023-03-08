@@ -15,6 +15,8 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
 
 import com.google.protobuf.Duration;
 import dev.caraml.store.base.BaseIT;
@@ -41,6 +43,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockserver.client.MockServerClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -63,6 +66,18 @@ public class RegistryGrpcServiceIT extends BaseIT {
 
   @BeforeEach
   public void initState() {
+    MockServerClient mockServerClient =
+        new MockServerClient(mockServerContainer.getHost(), mockServerContainer.getServerPort());
+    mockServerClient
+        .when(request().withPath("/v1/projects"))
+        .respond(
+            response()
+                .withBody(
+                    "[{\"id\": 1, \"name\": \"default\", \"team\": \"team\", \"stream\": \"stream\"},"
+                        + "{\"id\": 2, \"name\": \"project1\", \"team\": \"team\", \"stream\": \"stream\"},"
+                        + "{\"id\": 3, \"name\": \"project2\", \"team\": \"team\", \"stream\": \"stream\"},"
+                        + "{\"id\": 4, \"name\": \"archived\", \"team\": \"team\", \"stream\": \"stream\"},"
+                        + "{\"id\": 5, \"name\": \"new_project\", \"team\": \"team\", \"stream\": \"stream\"}]"));
 
     EntityProto.EntitySpec entitySpec1 =
         DataGenerator.createEntitySpec(

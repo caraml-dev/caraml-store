@@ -12,14 +12,17 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.TestInstance;
+import org.mockserver.client.MockServerClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.MockServerContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * Base Integration Test class. Setups postgres container. Configures related properties and beans.
@@ -35,6 +38,13 @@ public class BaseIT {
   public static PostgreSQLContainer<?> postgreSQLContainer =
       new PostgreSQLContainer<>("postgres:14.3");
 
+  public static final DockerImageName MOCKSERVER_IMAGE =
+      DockerImageName.parse("mockserver/mockserver")
+          .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
+
+  @Container
+  public static MockServerContainer mockServerContainer = new MockServerContainer(MOCKSERVER_IMAGE);
+
   /**
    * Configure Spring Application to use postgres and kafka rolled out in containers
    *
@@ -47,6 +57,7 @@ public class BaseIT {
     registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
     registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
     registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
+    registry.add("caraml.mlp.endpoint", mockServerContainer::getEndpoint);
   }
 
   /**
