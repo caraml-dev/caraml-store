@@ -16,6 +16,7 @@ import dev.caraml.store.protobuf.core.FeatureProto;
 import dev.caraml.store.protobuf.core.FeatureProto.FeatureSpec;
 import dev.caraml.store.protobuf.core.FeatureTableProto.FeatureTableSpec;
 import dev.caraml.store.protobuf.core.OnlineStoreProto;
+import dev.caraml.store.protobuf.core.SparkOverrideProto.SparkOverride;
 import dev.caraml.store.protobuf.serving.ServingServiceProto.FeatureReference;
 import dev.caraml.store.protobuf.serving.ServingServiceProto.GetOnlineFeaturesRequest.EntityRow;
 import dev.caraml.store.protobuf.types.ValueProto;
@@ -137,6 +138,7 @@ public class DataGenerator {
             FileOptions.newBuilder()
                 .setFileFormat(createParquetFormat())
                 .setFileUrl(fileURL)
+                .setSparkOverride(SparkOverride.getDefaultInstance())
                 .build())
         .setEventTimestampColumn(timestampColumn)
         .setDatePartitionColumn(datePartitionColumn)
@@ -148,7 +150,10 @@ public class DataGenerator {
     return DataSource.newBuilder()
         .setType(DataSource.SourceType.BATCH_BIGQUERY)
         .setBigqueryOptions(
-            DataSource.BigQueryOptions.newBuilder().setTableRef(bigQueryTableRef).build())
+            DataSource.BigQueryOptions.newBuilder()
+                .setTableRef(bigQueryTableRef)
+                .setSparkOverride(SparkOverride.getDefaultInstance())
+                .build())
         .setEventTimestampColumn(timestampColumn)
         .setDatePartitionColumn(datePartitionColumn)
         .build();
@@ -163,6 +168,7 @@ public class DataGenerator {
                 .setTopic(topic)
                 .setBootstrapServers(servers)
                 .setMessageFormat(createProtoFormat("class.path"))
+                .setSparkOverride(SparkOverride.getDefaultInstance())
                 .build())
         .setEventTimestampColumn(timestampColumn)
         .build();

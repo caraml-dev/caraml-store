@@ -1,0 +1,19 @@
+syntax = "proto3";
+package feast.core;
+
+option java_package = "dev.caraml.store.protobuf.core";
+option java_outer_classname = "SparkOverrideProto";
+
+message SparkOverride {
+  // Override CPU requested for driver
+  int32 driver_cpu = 1;
+
+  // Override memory requested for driver
+  string driver_memory = 2;
+
+  // Override CPU requested for executor
+  int32 executor_cpu = 3;
+
+  // Override memory requested for executor
+  string executor_memory = 4;
+}

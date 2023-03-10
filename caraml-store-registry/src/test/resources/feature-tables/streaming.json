@@ -19,6 +19,10 @@
         "protoFormat": {
           "classPath": "com.example.FeastFeature"
         }
+      },
+      "sparkOverride": {
+        "driverCpu": 2,
+        "executorMemory": "3g"
       }
     }
   }

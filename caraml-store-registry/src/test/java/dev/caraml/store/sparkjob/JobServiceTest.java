@@ -16,10 +16,7 @@ import dev.caraml.store.feature.FeatureTableRepository;
 import dev.caraml.store.protobuf.core.FeatureTableProto.FeatureTableSpec;
 import dev.caraml.store.protobuf.core.OnlineStoreProto;
 import dev.caraml.store.protobuf.types.ValueProto;
-import dev.caraml.store.sparkjob.crd.SparkApplication;
-import dev.caraml.store.sparkjob.crd.SparkApplicationSpec;
-import dev.caraml.store.sparkjob.crd.SparkApplicationState;
-import dev.caraml.store.sparkjob.crd.SparkApplicationStatus;
+import dev.caraml.store.sparkjob.crd.*;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import java.io.IOException;
 import java.io.InputStream;
@@ -151,8 +148,17 @@ public class JobServiceTest {
     properties.setStreamIngestion(jobs);
     properties.setCommon(new CommonJobProperties("sparkImage:latest"));
     properties.setDefaultStore(new DefaultStore("store", "store"));
+    SparkApplicationSpec templateSparkApplicationSpec = new SparkApplicationSpec();
+    SparkDriverSpec templateDriverSpec = new SparkDriverSpec();
+    SparkExecutorSpec templateExecutorSpec = new SparkExecutorSpec();
+    templateDriverSpec.setCores(1);
+    templateDriverSpec.setMemory("1g");
+    templateExecutorSpec.setCores(2);
+    templateExecutorSpec.setMemory("2g");
+    templateSparkApplicationSpec.setDriver(templateDriverSpec);
+    templateSparkApplicationSpec.setExecutor(templateExecutorSpec);
     IngestionJobTemplate streamJobProperty =
-        new IngestionJobTemplate("store", new SparkApplicationSpec());
+        new IngestionJobTemplate("store", templateSparkApplicationSpec);
     jobs.add(streamJobProperty);
     JobService jobservice = new JobService(properties, entityRepository, tableRepository, api);
     FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder();
@@ -183,6 +189,14 @@ public class JobServiceTest {
     expectedMetadata.setName("caraml-f6c31d965f86ccf2");
     expectedSparkApplication.setMetadata(expectedMetadata);
     SparkApplicationSpec expectedSparkApplicationSpec = new SparkApplicationSpec();
+    SparkDriverSpec expectedDriverSpec = new SparkDriverSpec();
+    expectedDriverSpec.setCores(2);
+    expectedDriverSpec.setMemory("1g");
+    expectedSparkApplicationSpec.setDriver(expectedDriverSpec);
+    SparkExecutorSpec expectedExecutorSpec = new SparkExecutorSpec();
+    expectedExecutorSpec.setCores(2);
+    expectedExecutorSpec.setMemory("3g");
+    expectedSparkApplicationSpec.setExecutor(expectedExecutorSpec);
     expectedSparkApplicationSpec.setImage("sparkImage:latest");
     expectedSparkApplicationSpec.addArguments(
         List.of(

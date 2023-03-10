@@ -10,8 +10,8 @@ import dev.caraml.store.protobuf.core.DataSourceProto;
 import dev.caraml.store.protobuf.core.DataSourceProto.DataSource.BigQueryOptions;
 import dev.caraml.store.protobuf.core.DataSourceProto.DataSource.FileOptions;
 import dev.caraml.store.protobuf.core.DataSourceProto.DataSource.KafkaOptions;
-import dev.caraml.store.protobuf.core.DataSourceProto.DataSource.KinesisOptions;
 import dev.caraml.store.protobuf.core.DataSourceProto.DataSource.SourceType;
+import dev.caraml.store.protobuf.core.SparkOverrideProto.SparkOverride;
 import java.util.HashMap;
 import java.util.Map;
 import javax.persistence.Column;
@@ -78,14 +78,21 @@ public class DataSource {
       case BATCH_FILE -> {
         dataSourceConfigMap.put("file_url", spec.getFileOptions().getFileUrl());
         dataSourceConfigMap.put("file_format", printJSON(spec.getFileOptions().getFileFormat()));
+        populateDatasourceConfigMapWithSparkOverride(
+            dataSourceConfigMap, spec.getFileOptions().getSparkOverride());
       }
-      case BATCH_BIGQUERY -> dataSourceConfigMap.put(
-          "table_ref", spec.getBigqueryOptions().getTableRef());
+      case BATCH_BIGQUERY -> {
+        dataSourceConfigMap.put("table_ref", spec.getBigqueryOptions().getTableRef());
+        populateDatasourceConfigMapWithSparkOverride(
+            dataSourceConfigMap, spec.getBigqueryOptions().getSparkOverride());
+      }
       case STREAM_KAFKA -> {
         dataSourceConfigMap.put("bootstrap_servers", spec.getKafkaOptions().getBootstrapServers());
         dataSourceConfigMap.put(
             "message_format", printJSON(spec.getKafkaOptions().getMessageFormat()));
         dataSourceConfigMap.put("topic", spec.getKafkaOptions().getTopic());
+        populateDatasourceConfigMapWithSparkOverride(
+            dataSourceConfigMap, spec.getKafkaOptions().getSparkOverride());
       }
       default -> throw new UnsupportedOperationException(
           String.format("Unsupported Feature Store Type: %s", spec.getType()));
@@ -105,6 +112,36 @@ public class DataSource {
     return source;
   }
 
+  private static SparkOverride parseDatasourceConfigMapToSparkOverride(
+      Map<String, String> dataSourceConfigMap) {
+    SparkOverride.Builder sparkOverride = SparkOverride.newBuilder();
+    sparkOverride.setDriverMemory(dataSourceConfigMap.getOrDefault("driver_memory", ""));
+    sparkOverride.setExecutorMemory(dataSourceConfigMap.getOrDefault("executor_memory", ""));
+    sparkOverride.setDriverCpu(
+        Integer.parseInt(dataSourceConfigMap.getOrDefault("driver_cpu", "0")));
+    sparkOverride.setExecutorCpu(
+        Integer.parseInt(dataSourceConfigMap.getOrDefault("executor_cpu", "0")));
+    return sparkOverride.build();
+  }
+
+  private static void populateDatasourceConfigMapWithSparkOverride(
+      Map<String, String> dataSourceConfigMap, SparkOverride sparkOverride) {
+    if (!sparkOverride.getDriverMemory().isEmpty()) {
+      dataSourceConfigMap.put("driver_memory", sparkOverride.getDriverMemory());
+    }
+    if (!sparkOverride.getExecutorMemory().isEmpty()) {
+      dataSourceConfigMap.put("executor_memory", sparkOverride.getExecutorMemory());
+    }
+    if (sparkOverride.getDriverCpu() > 0) {
+      dataSourceConfigMap.put(
+          "driver_cpu", Integer.valueOf(sparkOverride.getDriverCpu()).toString());
+    }
+    if (sparkOverride.getExecutorCpu() > 0) {
+      dataSourceConfigMap.put(
+          "executor_cpu", Integer.valueOf(sparkOverride.getExecutorCpu()).toString());
+    }
+  }
+
   /** Convert this DataSource to its Protobuf representation. */
   public DataSourceProto.DataSource toProto() {
     DataSourceProto.DataSource.Builder spec = DataSourceProto.DataSource.newBuilder();
@@ -114,46 +151,34 @@ public class DataSource {
     Map<String, String> dataSourceConfigMap =
         TypeConversion.convertJsonStringToMap(getConfigJSON());
     switch (getType()) {
-      case BATCH_FILE:
+      case BATCH_FILE -> {
         FileOptions.Builder fileOptions = FileOptions.newBuilder();
         fileOptions.setFileUrl(dataSourceConfigMap.get("file_url"));
-
         FileFormat.Builder fileFormat = FileFormat.newBuilder();
         parseMessage(dataSourceConfigMap.get("file_format"), fileFormat);
         fileOptions.setFileFormat(fileFormat.build());
-
+        fileOptions.setSparkOverride(parseDatasourceConfigMapToSparkOverride(dataSourceConfigMap));
         spec.setFileOptions(fileOptions.build());
-        break;
-      case BATCH_BIGQUERY:
+      }
+      case BATCH_BIGQUERY -> {
         BigQueryOptions.Builder bigQueryOptions = BigQueryOptions.newBuilder();
         bigQueryOptions.setTableRef(dataSourceConfigMap.get("table_ref"));
+        bigQueryOptions.setSparkOverride(
+            parseDatasourceConfigMapToSparkOverride(dataSourceConfigMap));
         spec.setBigqueryOptions(bigQueryOptions.build());
-        break;
-      case STREAM_KAFKA:
+      }
+      case STREAM_KAFKA -> {
         KafkaOptions.Builder kafkaOptions = KafkaOptions.newBuilder();
         kafkaOptions.setBootstrapServers(dataSourceConfigMap.get("bootstrap_servers"));
         kafkaOptions.setTopic(dataSourceConfigMap.get("topic"));
-
         StreamFormat.Builder messageFormat = StreamFormat.newBuilder();
         parseMessage(dataSourceConfigMap.get("message_format"), messageFormat);
         kafkaOptions.setMessageFormat(messageFormat.build());
-
+        kafkaOptions.setSparkOverride(parseDatasourceConfigMapToSparkOverride(dataSourceConfigMap));
         spec.setKafkaOptions(kafkaOptions.build());
-        break;
-      case STREAM_KINESIS:
-        KinesisOptions.Builder kinesisOptions = KinesisOptions.newBuilder();
-        kinesisOptions.setRegion(dataSourceConfigMap.get("region"));
-        kinesisOptions.setStreamName(dataSourceConfigMap.get("stream_name"));
-
-        StreamFormat.Builder recordFormat = StreamFormat.newBuilder();
-        parseMessage(dataSourceConfigMap.get("record_format"), recordFormat);
-        kinesisOptions.setRecordFormat(recordFormat.build());
-
-        spec.setKinesisOptions(kinesisOptions.build());
-        break;
-      default:
-        throw new UnsupportedOperationException(
-            String.format("Unsupported Feature Store Type: %s", getType()));
+      }
+      default -> throw new UnsupportedOperationException(
+          String.format("Unsupported Feature Store Type: %s", getType()));
     }
 
     // Parse field mapping and options from JSON
