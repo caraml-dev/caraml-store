@@ -5,6 +5,7 @@ option java_outer_classname = "DataSourceProto";
 option java_package = "dev.caraml.store.protobuf.core";
 
 import "feast/core/DataFormat.proto";
+import "feast/core/SparkOverride.proto";
 
 // Defines a Data Source that can be used source Feature data
 message DataSource {
@@ -14,7 +15,6 @@ message DataSource {
     BATCH_FILE = 1;
     BATCH_BIGQUERY = 2;
     STREAM_KAFKA = 3;
-    STREAM_KINESIS = 4;
   }
   SourceType type = 1;
 
@@ -41,12 +41,18 @@ message DataSource {
     // gs://path/to/file for GCP GCS storage
     // file:///path/to/file for local storage
     string file_url  = 2;
+
+    // Allow users to override some configuration for the ingestion jobs.
+    SparkOverride spark_override = 3;
   }
 
   // Defines options for DataSource that sources features from a BigQuery Query
   message BigQueryOptions {
     // Full table reference in the form of [project:dataset.table]
     string table_ref = 1;
+
+    // Allow users to override some configuration for the ingestion jobs.
+    SparkOverride spark_override = 2;
   }
 
   // Defines options for DataSource that sources features from Kafka messages.
@@ -61,21 +67,9 @@ message DataSource {
 
     // Defines the stream data format encoding feature/entity data in Kafka messages.
     StreamFormat message_format = 3;
-  }
 
-  // Defines options for DataSource that sources features from Kinesis records.
-  // Each record should be a Protobuf that can be decoded with the generated
-  // Java Protobuf class at the given class path
-  message KinesisOptions {
-    // AWS region of the Kinesis stream
-    string region = 1;
-
-    // Name of the Kinesis stream to obtain feature data from.
-    string stream_name = 2;
-
-    // Defines the data format encoding the feature/entity data in Kinesis records.
-    // Kinesis Data Sources support Avro and Proto as data formats.
-    StreamFormat record_format = 3;
+    // Allow users to override some configuration for the ingestion jobs.
+    SparkOverride spark_override = 4;
   }
 
   // DataSource options.
@@ -83,6 +77,5 @@ message DataSource {
     FileOptions file_options = 11;
     BigQueryOptions bigquery_options = 12;
     KafkaOptions kafka_options = 13;
-    KinesisOptions kinesis_options = 14;
   }
 }

@@ -14,11 +14,13 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class FileFormat(google.protobuf.message.Message):
     """Defines the file format encoding the features/entity data in files"""
 
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class ParquetFormat(google.protobuf.message.Message):
         """Defines options for the Parquet data format"""
 
@@ -42,11 +44,13 @@ class FileFormat(google.protobuf.message.Message):
 
 global___FileFormat = FileFormat
 
+@typing_extensions.final
 class StreamFormat(google.protobuf.message.Message):
     """Defines the data format encoding features/entity data in data streams"""
 
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class ProtoFormat(google.protobuf.message.Message):
         """Defines options for the protobuf data format"""
 
@@ -64,6 +68,7 @@ class StreamFormat(google.protobuf.message.Message):
         ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["class_path", b"class_path"]) -> None: ...
 
+    @typing_extensions.final
     class AvroFormat(google.protobuf.message.Message):
         """Defines options for the avro data format"""
 

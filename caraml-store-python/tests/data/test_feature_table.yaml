@@ -1,0 +1,29 @@
+spec:
+  entities:
+    - merchant
+
+  features:
+    - name: avg_transaction
+      valueType: DOUBLE
+
+  name: transaction
+
+  batchSource:
+    bigqueryOptions:
+      tableRef: project:dataset.table
+    eventTimestampColumn: datetime
+    type: BATCH_BIGQUERY
+
+  streamSource:
+    type: STREAM_KAFKA
+    eventTimestampColumn: "event_timestamp"
+    kafkaOptions:
+      bootstrapServers: localhost:6668
+      topic: "transaction_topic"
+      messageFormat:
+        protoFormat:
+          classPath: "com.transaction.Message"
+
+  onlineStore:
+    name: bigtable
+    type: BIGTABLE

@@ -22,6 +22,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class GetEntityRequest(google.protobuf.message.Message):
     """Request for a single entity"""
 
@@ -43,6 +44,7 @@ class GetEntityRequest(google.protobuf.message.Message):
 
 global___GetEntityRequest = GetEntityRequest
 
+@typing_extensions.final
 class GetEntityResponse(google.protobuf.message.Message):
     """Response containing a single entity"""
 
@@ -61,14 +63,17 @@ class GetEntityResponse(google.protobuf.message.Message):
 
 global___GetEntityResponse = GetEntityResponse
 
+@typing_extensions.final
 class ListEntitiesRequest(google.protobuf.message.Message):
     """Retrieves details for all versions of a specific entity"""
 
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Filter(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+        @typing_extensions.final
         class LabelsEntry(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -117,6 +122,7 @@ class ListEntitiesRequest(google.protobuf.message.Message):
 
 global___ListEntitiesRequest = ListEntitiesRequest
 
+@typing_extensions.final
 class ListEntitiesResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -132,12 +138,15 @@ class ListEntitiesResponse(google.protobuf.message.Message):
 
 global___ListEntitiesResponse = ListEntitiesResponse
 
+@typing_extensions.final
 class ListFeaturesRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Filter(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+        @typing_extensions.final
         class LabelsEntry(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -193,9 +202,11 @@ class ListFeaturesRequest(google.protobuf.message.Message):
 
 global___ListFeaturesRequest = ListFeaturesRequest
 
+@typing_extensions.final
 class ListFeaturesResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class FeaturesEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -225,6 +236,7 @@ class ListFeaturesResponse(google.protobuf.message.Message):
 
 global___ListFeaturesResponse = ListFeaturesResponse
 
+@typing_extensions.final
 class ApplyEntityRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -248,6 +260,7 @@ class ApplyEntityRequest(google.protobuf.message.Message):
 
 global___ApplyEntityRequest = ApplyEntityRequest
 
+@typing_extensions.final
 class ApplyEntityResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -264,6 +277,7 @@ class ApplyEntityResponse(google.protobuf.message.Message):
 
 global___ApplyEntityResponse = ApplyEntityResponse
 
+@typing_extensions.final
 class GetFeastCoreVersionRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -273,6 +287,7 @@ class GetFeastCoreVersionRequest(google.protobuf.message.Message):
 
 global___GetFeastCoreVersionRequest = GetFeastCoreVersionRequest
 
+@typing_extensions.final
 class GetFeastCoreVersionResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -287,6 +302,7 @@ class GetFeastCoreVersionResponse(google.protobuf.message.Message):
 
 global___GetFeastCoreVersionResponse = GetFeastCoreVersionResponse
 
+@typing_extensions.final
 class CreateProjectRequest(google.protobuf.message.Message):
     """Request to create a project"""
 
@@ -304,6 +320,7 @@ class CreateProjectRequest(google.protobuf.message.Message):
 
 global___CreateProjectRequest = CreateProjectRequest
 
+@typing_extensions.final
 class CreateProjectResponse(google.protobuf.message.Message):
     """Response for creation of a project"""
 
@@ -315,6 +332,7 @@ class CreateProjectResponse(google.protobuf.message.Message):
 
 global___CreateProjectResponse = CreateProjectResponse
 
+@typing_extensions.final
 class ArchiveProjectRequest(google.protobuf.message.Message):
     """Request for the archival of a project"""
 
@@ -332,6 +350,7 @@ class ArchiveProjectRequest(google.protobuf.message.Message):
 
 global___ArchiveProjectRequest = ArchiveProjectRequest
 
+@typing_extensions.final
 class ArchiveProjectResponse(google.protobuf.message.Message):
     """Response for archival of a project"""
 
@@ -343,6 +362,7 @@ class ArchiveProjectResponse(google.protobuf.message.Message):
 
 global___ArchiveProjectResponse = ArchiveProjectResponse
 
+@typing_extensions.final
 class ListProjectsRequest(google.protobuf.message.Message):
     """Request for listing of projects"""
 
@@ -354,6 +374,7 @@ class ListProjectsRequest(google.protobuf.message.Message):
 
 global___ListProjectsRequest = ListProjectsRequest
 
+@typing_extensions.final
 class ListProjectsResponse(google.protobuf.message.Message):
     """Response for listing of projects"""
 
@@ -372,6 +393,7 @@ class ListProjectsResponse(google.protobuf.message.Message):
 
 global___ListProjectsResponse = ListProjectsResponse
 
+@typing_extensions.final
 class ApplyFeatureTableRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -395,6 +417,7 @@ class ApplyFeatureTableRequest(google.protobuf.message.Message):
 
 global___ApplyFeatureTableRequest = ApplyFeatureTableRequest
 
+@typing_extensions.final
 class ApplyFeatureTableResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -411,6 +434,7 @@ class ApplyFeatureTableResponse(google.protobuf.message.Message):
 
 global___ApplyFeatureTableResponse = ApplyFeatureTableResponse
 
+@typing_extensions.final
 class GetFeatureTableRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -432,6 +456,7 @@ class GetFeatureTableRequest(google.protobuf.message.Message):
 
 global___GetFeatureTableRequest = GetFeatureTableRequest
 
+@typing_extensions.final
 class GetFeatureTableResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -449,12 +474,15 @@ class GetFeatureTableResponse(google.protobuf.message.Message):
 
 global___GetFeatureTableResponse = GetFeatureTableResponse
 
+@typing_extensions.final
 class ListFeatureTablesRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Filter(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+        @typing_extensions.final
         class LabelsEntry(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -503,6 +531,7 @@ class ListFeatureTablesRequest(google.protobuf.message.Message):
 
 global___ListFeatureTablesRequest = ListFeatureTablesRequest
 
+@typing_extensions.final
 class ListFeatureTablesResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -519,6 +548,7 @@ class ListFeatureTablesResponse(google.protobuf.message.Message):
 
 global___ListFeatureTablesResponse = ListFeatureTablesResponse
 
+@typing_extensions.final
 class DeleteFeatureTableRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -540,6 +570,7 @@ class DeleteFeatureTableRequest(google.protobuf.message.Message):
 
 global___DeleteFeatureTableRequest = DeleteFeatureTableRequest
 
+@typing_extensions.final
 class DeleteFeatureTableResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -549,6 +580,7 @@ class DeleteFeatureTableResponse(google.protobuf.message.Message):
 
 global___DeleteFeatureTableResponse = DeleteFeatureTableResponse
 
+@typing_extensions.final
 class ListOnlineStoresRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -558,6 +590,7 @@ class ListOnlineStoresRequest(google.protobuf.message.Message):
 
 global___ListOnlineStoresRequest = ListOnlineStoresRequest
 
+@typing_extensions.final
 class ListOnlineStoresResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -573,6 +606,7 @@ class ListOnlineStoresResponse(google.protobuf.message.Message):
 
 global___ListOnlineStoresResponse = ListOnlineStoresResponse
 
+@typing_extensions.final
 class GetOnlineStoreRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -587,6 +621,7 @@ class GetOnlineStoreRequest(google.protobuf.message.Message):
 
 global___GetOnlineStoreRequest = GetOnlineStoreRequest
 
+@typing_extensions.final
 class GetOnlineStoreResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -623,6 +658,7 @@ class GetOnlineStoreResponse(google.protobuf.message.Message):
 
 global___GetOnlineStoreResponse = GetOnlineStoreResponse
 
+@typing_extensions.final
 class RegisterOnlineStoreRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -639,6 +675,7 @@ class RegisterOnlineStoreRequest(google.protobuf.message.Message):
 
 global___RegisterOnlineStoreRequest = RegisterOnlineStoreRequest
 
+@typing_extensions.final
 class RegisterOnlineStoreResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -679,6 +716,7 @@ class RegisterOnlineStoreResponse(google.protobuf.message.Message):
 
 global___RegisterOnlineStoreResponse = RegisterOnlineStoreResponse
 
+@typing_extensions.final
 class ArchiveOnlineStoreRequest(google.protobuf.message.Message):
     """Request for the archival of an online store"""
 
@@ -696,6 +734,7 @@ class ArchiveOnlineStoreRequest(google.protobuf.message.Message):
 
 global___ArchiveOnlineStoreRequest = ArchiveOnlineStoreRequest
 
+@typing_extensions.final
 class ArchiveOnlineStoreResponse(google.protobuf.message.Message):
     """Response for archival of an online store"""
 

@@ -24,7 +24,7 @@ class _FieldStatus:
     ValueType = typing.NewType("ValueType", builtins.int)
     V: typing_extensions.TypeAlias = ValueType
 
-class _FieldStatusEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_FieldStatus.ValueType], builtins.type):  # noqa: F821
+class _FieldStatusEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_FieldStatus.ValueType], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
     INVALID: _FieldStatus.ValueType  # 0
     """Status is unset for this field."""
@@ -69,6 +69,7 @@ INGESTION_FAILURE: FieldStatus.ValueType  # 5
 """Values could be found for entity key, but are null and is due to ingestion failures"""
 global___FieldStatus = FieldStatus
 
+@typing_extensions.final
 class GetFeastServingInfoRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -78,6 +79,7 @@ class GetFeastServingInfoRequest(google.protobuf.message.Message):
 
 global___GetFeastServingInfoRequest = GetFeastServingInfoRequest
 
+@typing_extensions.final
 class GetFeastServingInfoResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -93,6 +95,7 @@ class GetFeastServingInfoResponse(google.protobuf.message.Message):
 
 global___GetFeastServingInfoResponse = GetFeastServingInfoResponse
 
+@typing_extensions.final
 class FeatureReference(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -112,12 +115,15 @@ class FeatureReference(google.protobuf.message.Message):
 
 global___FeatureReference = FeatureReference
 
+@typing_extensions.final
 class GetOnlineFeaturesRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class EntityRow(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+        @typing_extensions.final
         class FieldsEntry(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -182,12 +188,15 @@ class GetOnlineFeaturesRequest(google.protobuf.message.Message):
 
 global___GetOnlineFeaturesRequest = GetOnlineFeaturesRequest
 
+@typing_extensions.final
 class GetOnlineFeaturesResponseV2(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class FieldValues(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+        @typing_extensions.final
         class FieldsEntry(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -205,6 +214,7 @@ class GetOnlineFeaturesResponseV2(google.protobuf.message.Message):
             def HasField(self, field_name: typing_extensions.Literal["value", b"value"]) -> builtins.bool: ...
             def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
 
+        @typing_extensions.final
         class StatusesEntry(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -251,9 +261,11 @@ class GetOnlineFeaturesResponseV2(google.protobuf.message.Message):
 
 global___GetOnlineFeaturesResponseV2 = GetOnlineFeaturesResponseV2
 
+@typing_extensions.final
 class GetOnlineFeaturesResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class FieldVector(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -291,6 +303,7 @@ class GetOnlineFeaturesResponse(google.protobuf.message.Message):
 
 global___GetOnlineFeaturesResponse = GetOnlineFeaturesResponse
 
+@typing_extensions.final
 class GetOnlineFeaturesResponseMetadata(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -307,6 +320,7 @@ class GetOnlineFeaturesResponseMetadata(google.protobuf.message.Message):
 
 global___GetOnlineFeaturesResponseMetadata = GetOnlineFeaturesResponseMetadata
 
+@typing_extensions.final
 class FieldList(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 

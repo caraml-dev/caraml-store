@@ -5,6 +5,7 @@ isort:skip_file
 import builtins
 import collections.abc
 import feast.core.DataFormat_pb2
+import feast.core.SparkOverride_pb2
 import google.protobuf.descriptor
 import google.protobuf.internal.containers
 import google.protobuf.internal.enum_type_wrapper
@@ -19,6 +20,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class DataSource(google.protobuf.message.Message):
     """Defines a Data Source that can be used source Feature data"""
 
@@ -34,7 +36,6 @@ class DataSource(google.protobuf.message.Message):
         BATCH_FILE: DataSource._SourceType.ValueType  # 1
         BATCH_BIGQUERY: DataSource._SourceType.ValueType  # 2
         STREAM_KAFKA: DataSource._SourceType.ValueType  # 3
-        STREAM_KINESIS: DataSource._SourceType.ValueType  # 4
 
     class SourceType(_SourceType, metaclass=_SourceTypeEnumTypeWrapper):
         """Type of Data Source."""
@@ -43,8 +44,8 @@ class DataSource(google.protobuf.message.Message):
     BATCH_FILE: DataSource.SourceType.ValueType  # 1
     BATCH_BIGQUERY: DataSource.SourceType.ValueType  # 2
     STREAM_KAFKA: DataSource.SourceType.ValueType  # 3
-    STREAM_KINESIS: DataSource.SourceType.ValueType  # 4
 
+    @typing_extensions.final
     class FieldMappingEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -60,6 +61,7 @@ class DataSource(google.protobuf.message.Message):
         ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
 
+    @typing_extensions.final
     class FileOptions(google.protobuf.message.Message):
         """Defines options for DataSource that sources features from a file"""
 
@@ -67,6 +69,7 @@ class DataSource(google.protobuf.message.Message):
 
         FILE_FORMAT_FIELD_NUMBER: builtins.int
         FILE_URL_FIELD_NUMBER: builtins.int
+        SPARK_OVERRIDE_FIELD_NUMBER: builtins.int
         @property
         def file_format(self) -> feast.core.DataFormat_pb2.FileFormat: ...
         file_url: builtins.str
@@ -75,30 +78,42 @@ class DataSource(google.protobuf.message.Message):
         gs://path/to/file for GCP GCS storage
         file:///path/to/file for local storage
         """
+        @property
+        def spark_override(self) -> feast.core.SparkOverride_pb2.SparkOverride:
+            """Allow users to override some configuration for the ingestion jobs."""
         def __init__(
             self,
             *,
             file_format: feast.core.DataFormat_pb2.FileFormat | None = ...,
             file_url: builtins.str = ...,
+            spark_override: feast.core.SparkOverride_pb2.SparkOverride | None = ...,
         ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["file_format", b"file_format"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["file_format", b"file_format", "file_url", b"file_url"]) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["file_format", b"file_format", "spark_override", b"spark_override"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["file_format", b"file_format", "file_url", b"file_url", "spark_override", b"spark_override"]) -> None: ...
 
+    @typing_extensions.final
     class BigQueryOptions(google.protobuf.message.Message):
         """Defines options for DataSource that sources features from a BigQuery Query"""
 
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
         TABLE_REF_FIELD_NUMBER: builtins.int
+        SPARK_OVERRIDE_FIELD_NUMBER: builtins.int
         table_ref: builtins.str
         """Full table reference in the form of [project:dataset.table]"""
+        @property
+        def spark_override(self) -> feast.core.SparkOverride_pb2.SparkOverride:
+            """Allow users to override some configuration for the ingestion jobs."""
         def __init__(
             self,
             *,
             table_ref: builtins.str = ...,
+            spark_override: feast.core.SparkOverride_pb2.SparkOverride | None = ...,
         ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["table_ref", b"table_ref"]) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["spark_override", b"spark_override"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["spark_override", b"spark_override", "table_ref", b"table_ref"]) -> None: ...
 
+    @typing_extensions.final
     class KafkaOptions(google.protobuf.message.Message):
         """Defines options for DataSource that sources features from Kafka messages.
         Each message should be a Protobuf that can be decoded with the generated
@@ -110,6 +125,7 @@ class DataSource(google.protobuf.message.Message):
         BOOTSTRAP_SERVERS_FIELD_NUMBER: builtins.int
         TOPIC_FIELD_NUMBER: builtins.int
         MESSAGE_FORMAT_FIELD_NUMBER: builtins.int
+        SPARK_OVERRIDE_FIELD_NUMBER: builtins.int
         bootstrap_servers: builtins.str
         """Comma separated list of Kafka bootstrap servers. Used for feature tables without a defined source host[:port]]"""
         topic: builtins.str
@@ -117,45 +133,19 @@ class DataSource(google.protobuf.message.Message):
         @property
         def message_format(self) -> feast.core.DataFormat_pb2.StreamFormat:
             """Defines the stream data format encoding feature/entity data in Kafka messages."""
+        @property
+        def spark_override(self) -> feast.core.SparkOverride_pb2.SparkOverride:
+            """Allow users to override some configuration for the ingestion jobs."""
         def __init__(
             self,
             *,
             bootstrap_servers: builtins.str = ...,
             topic: builtins.str = ...,
             message_format: feast.core.DataFormat_pb2.StreamFormat | None = ...,
+            spark_override: feast.core.SparkOverride_pb2.SparkOverride | None = ...,
         ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["message_format", b"message_format"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["bootstrap_servers", b"bootstrap_servers", "message_format", b"message_format", "topic", b"topic"]) -> None: ...
-
-    class KinesisOptions(google.protobuf.message.Message):
-        """Defines options for DataSource that sources features from Kinesis records.
-        Each record should be a Protobuf that can be decoded with the generated
-        Java Protobuf class at the given class path
-        """
-
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor
-
-        REGION_FIELD_NUMBER: builtins.int
-        STREAM_NAME_FIELD_NUMBER: builtins.int
-        RECORD_FORMAT_FIELD_NUMBER: builtins.int
-        region: builtins.str
-        """AWS region of the Kinesis stream"""
-        stream_name: builtins.str
-        """Name of the Kinesis stream to obtain feature data from."""
-        @property
-        def record_format(self) -> feast.core.DataFormat_pb2.StreamFormat:
-            """Defines the data format encoding the feature/entity data in Kinesis records.
-            Kinesis Data Sources support Avro and Proto as data formats.
-            """
-        def __init__(
-            self,
-            *,
-            region: builtins.str = ...,
-            stream_name: builtins.str = ...,
-            record_format: feast.core.DataFormat_pb2.StreamFormat | None = ...,
-        ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["record_format", b"record_format"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["record_format", b"record_format", "region", b"region", "stream_name", b"stream_name"]) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["message_format", b"message_format", "spark_override", b"spark_override"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["bootstrap_servers", b"bootstrap_servers", "message_format", b"message_format", "spark_override", b"spark_override", "topic", b"topic"]) -> None: ...
 
     TYPE_FIELD_NUMBER: builtins.int
     FIELD_MAPPING_FIELD_NUMBER: builtins.int
@@ -165,7 +155,6 @@ class DataSource(google.protobuf.message.Message):
     FILE_OPTIONS_FIELD_NUMBER: builtins.int
     BIGQUERY_OPTIONS_FIELD_NUMBER: builtins.int
     KAFKA_OPTIONS_FIELD_NUMBER: builtins.int
-    KINESIS_OPTIONS_FIELD_NUMBER: builtins.int
     type: global___DataSource.SourceType.ValueType
     @property
     def field_mapping(self) -> google.protobuf.internal.containers.ScalarMap[builtins.str, builtins.str]:
@@ -186,8 +175,6 @@ class DataSource(google.protobuf.message.Message):
     def bigquery_options(self) -> global___DataSource.BigQueryOptions: ...
     @property
     def kafka_options(self) -> global___DataSource.KafkaOptions: ...
-    @property
-    def kinesis_options(self) -> global___DataSource.KinesisOptions: ...
     def __init__(
         self,
         *,
@@ -199,10 +186,9 @@ class DataSource(google.protobuf.message.Message):
         file_options: global___DataSource.FileOptions | None = ...,
         bigquery_options: global___DataSource.BigQueryOptions | None = ...,
         kafka_options: global___DataSource.KafkaOptions | None = ...,
-        kinesis_options: global___DataSource.KinesisOptions | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["bigquery_options", b"bigquery_options", "file_options", b"file_options", "kafka_options", b"kafka_options", "kinesis_options", b"kinesis_options", "options", b"options"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["bigquery_options", b"bigquery_options", "created_timestamp_column", b"created_timestamp_column", "date_partition_column", b"date_partition_column", "event_timestamp_column", b"event_timestamp_column", "field_mapping", b"field_mapping", "file_options", b"file_options", "kafka_options", b"kafka_options", "kinesis_options", b"kinesis_options", "options", b"options", "type", b"type"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["options", b"options"]) -> typing_extensions.Literal["file_options", "bigquery_options", "kafka_options", "kinesis_options"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["bigquery_options", b"bigquery_options", "file_options", b"file_options", "kafka_options", b"kafka_options", "options", b"options"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["bigquery_options", b"bigquery_options", "created_timestamp_column", b"created_timestamp_column", "date_partition_column", b"date_partition_column", "event_timestamp_column", b"event_timestamp_column", "field_mapping", b"field_mapping", "file_options", b"file_options", "kafka_options", b"kafka_options", "options", b"options", "type", b"type"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["options", b"options"]) -> typing_extensions.Literal["file_options", "bigquery_options", "kafka_options"] | None: ...
 
 global___DataSource = DataSource

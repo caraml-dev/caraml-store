@@ -8,6 +8,7 @@ import dev.caraml.store.feature.FeatureTableRepository;
 import dev.caraml.store.protobuf.core.DataSourceProto.DataSource;
 import dev.caraml.store.protobuf.core.FeatureProto.FeatureSpec;
 import dev.caraml.store.protobuf.core.FeatureTableProto.FeatureTableSpec;
+import dev.caraml.store.protobuf.core.SparkOverrideProto.SparkOverride;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.Job;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobStatus;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobType;
@@ -320,6 +321,20 @@ public class JobService {
             });
     SparkApplicationSpec newSparkApplicationSpec = jobTemplate.render(project, spec.getName());
     newSparkApplicationSpec.setImage(sparkImage);
+
+    DataSource dataSource =
+        jobType == JobType.BATCH_INGESTION_JOB ? spec.getBatchSource() : spec.getStreamSource();
+    SparkOverride sparkOverride =
+        switch (dataSource.getType()) {
+          case BATCH_FILE -> dataSource.getFileOptions().getSparkOverride();
+          case BATCH_BIGQUERY -> dataSource.getBigqueryOptions().getSparkOverride();
+          case STREAM_KAFKA -> dataSource.getKafkaOptions().getSparkOverride();
+          default -> throw new IllegalArgumentException(
+              String.format("%s is not a valid data source", dataSource.getType()));
+        };
+
+    overrideSparkApplicationSpecWithUserProvidedConfiguration(
+        newSparkApplicationSpec, sparkOverride);
     sparkApplication.setSpec(newSparkApplicationSpec);
     sparkApplication.getSpec().addArguments(additionalArguments);
 
@@ -328,6 +343,22 @@ public class JobService {
             ? sparkOperatorApi.update(sparkApplication)
             : sparkOperatorApi.create(sparkApplication);
     return sparkApplicationToJob(updatedApplication);
+  }
+
+  private void overrideSparkApplicationSpecWithUserProvidedConfiguration(
+      SparkApplicationSpec spec, SparkOverride sparkOverride) {
+    if (sparkOverride.getDriverCpu() > 0) {
+      spec.getDriver().setCores(sparkOverride.getDriverCpu());
+    }
+    if (sparkOverride.getExecutorCpu() > 0) {
+      spec.getExecutor().setCores(sparkOverride.getDriverCpu());
+    }
+    if (!sparkOverride.getDriverMemory().isEmpty()) {
+      spec.getDriver().setMemory(sparkOverride.getDriverMemory());
+    }
+    if (!sparkOverride.getExecutorMemory().isEmpty()) {
+      spec.getExecutor().setMemory(sparkOverride.getExecutorMemory());
+    }
   }
 
   public Job createRetrievalJob(

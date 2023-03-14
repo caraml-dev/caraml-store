@@ -38,11 +38,11 @@ from feast_spark.api.JobService_pb2_grpc import JobServiceStub
 
 @dataclass
 class Client:
-    registry_url: str = None
-    serving_url: str = None
-    _core_service_stub: CoreServiceStub = None
-    _serving_service_stub: ServingServiceStub = None
-    _job_service_stub: JobServiceStub = None
+    registry_url: Optional[str] = None
+    serving_url: Optional[str] = None
+    _core_service_stub: Optional[CoreServiceStub] = None
+    _serving_service_stub: Optional[ServingServiceStub] = None
+    _job_service_stub: Optional[JobServiceStub] = None
 
     @property
     def _core_service(self):
@@ -124,7 +124,7 @@ class Client:
         entity._update_from_entity(applied_entity)
 
     def list_entities(
-        self, project: str = None, labels: Optional[Dict[str, str]] = None
+        self, project: str = "", labels: Optional[Dict[str, str]] = None
     ) -> List[Entity]:
         """
         Retrieve a list of entities from Feast Core
