@@ -21,6 +21,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class FeatureTable(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -43,9 +44,11 @@ class FeatureTable(google.protobuf.message.Message):
 
 global___FeatureTable = FeatureTable
 
+@typing_extensions.final
 class FeatureTableSpec(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class LabelsEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -129,6 +132,7 @@ class FeatureTableSpec(google.protobuf.message.Message):
 
 global___FeatureTableSpec = FeatureTableSpec
 
+@typing_extensions.final
 class FeatureTableMeta(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 

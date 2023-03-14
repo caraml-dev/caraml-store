@@ -20,7 +20,7 @@ class _StoreType:
     ValueType = typing.NewType("ValueType", builtins.int)
     V: typing_extensions.TypeAlias = ValueType
 
-class _StoreTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_StoreType.ValueType], builtins.type):  # noqa: F821
+class _StoreTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_StoreType.ValueType], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
     UNSET: _StoreType.ValueType  # 0
     """Unset"""
@@ -39,6 +39,7 @@ REDIS: StoreType.ValueType  # 2
 """redis in-memory database"""
 global___StoreType = StoreType
 
+@typing_extensions.final
 class OnlineStore(google.protobuf.message.Message):
     """OnlineStore provides a location where Feast reads and writes feature values.
     Feature values will be written to the Store in the form of FeatureRow elements.

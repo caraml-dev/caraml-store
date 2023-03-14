@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, cast, Type
+from typing import List, Dict, Any, cast, Type, Union
 
 from google.protobuf.json_format import MessageToDict
 

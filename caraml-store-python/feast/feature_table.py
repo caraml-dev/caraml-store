@@ -10,9 +10,8 @@ from feast.core.FeatureTable_pb2 import FeatureTableMeta as FeatureTableMetaProt
 from feast.core.FeatureTable_pb2 import FeatureTableSpec as FeatureTableSpecProto
 from feast.data_source import (
     BigQuerySource,
-    DataSource,
     FileSource,
-    KafkaSource,
+    KafkaSource, new_batch_source_from_proto, new_stream_source_from_proto,
 )
 from feast.feature import Feature
 from feast.loaders.file import yaml_loader
@@ -30,7 +29,7 @@ class FeatureTable:
         name: str,
         entities: List[str],
         features: List[Feature],
-        batch_source: Union[BigQuerySource, FileSource] = None,
+        batch_source: Optional[Union[BigQuerySource, FileSource]] = None,
         stream_source: Optional[KafkaSource] = None,
         max_age: Optional[Duration] = None,
         labels: Optional[MutableMapping[str, str]] = None,
@@ -130,7 +129,7 @@ class FeatureTable:
         return self._batch_source
 
     @batch_source.setter
-    def batch_source(self, batch_source: Union[BigQuerySource, FileSource]):
+    def batch_source(self, batch_source: Optional[Union[BigQuerySource, FileSource]]):
         """
         Sets the batch source of this feature table
         """
@@ -283,11 +282,11 @@ class FeatureTable:
                 and feature_table_proto.spec.max_age.nanos == 0
                 else feature_table_proto.spec.max_age
             ),
-            batch_source=DataSource.from_proto(feature_table_proto.spec.batch_source),
+            batch_source=None if not feature_table_proto.spec.batch_source.ByteSize() else new_batch_source_from_proto(feature_table_proto.spec.batch_source),
             stream_source=(
                 None
                 if not feature_table_proto.spec.stream_source.ByteSize()
-                else DataSource.from_proto(feature_table_proto.spec.stream_source)
+                else new_stream_source_from_proto(feature_table_proto.spec.stream_source)
             ),
             online_store=OnlineStore.from_proto(feature_table_proto.spec.online_store),
         )
@@ -316,17 +315,9 @@ class FeatureTable:
                 for feature in self.features
             ],
             labels=self.labels,
-            max_age=self.max_age,
-            batch_source=(
-                self.batch_source.to_proto()
-                if issubclass(type(self.batch_source), DataSource)
-                else self.batch_source
-            ),
-            stream_source=(
-                self.stream_source.to_proto()
-                if issubclass(type(self.stream_source), DataSource)
-                else self.stream_source
-            ),
+            max_age=None if self.max_age else self.max_age,
+            batch_source=self.batch_source.to_proto(),
+            stream_source=None if self.stream_source is None else self.stream_source.to_proto(),
             online_store=self.online_store.to_proto()
             if self.online_store is not None
             else None,
@@ -353,13 +344,13 @@ class FeatureTable:
             max_age=self.max_age,
             batch_source=(
                 self.batch_source.to_proto()
-                if issubclass(type(self.batch_source), DataSource)
-                else self.batch_source
+                if self.batch_source is not None
+                else None
             ),
             stream_source=(
                 self.stream_source.to_proto()
-                if issubclass(type(self.stream_source), DataSource)
-                else self.stream_source
+                if self.stream_source is not None
+                else None
             ),
             online_store=self.online_store.to_proto()
             if self.online_store is not None

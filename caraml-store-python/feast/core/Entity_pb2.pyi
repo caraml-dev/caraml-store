@@ -18,6 +18,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class Entity(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -40,9 +41,11 @@ class Entity(google.protobuf.message.Message):
 
 global___Entity = Entity
 
+@typing_extensions.final
 class EntitySpec(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class LabelsEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -83,6 +86,7 @@ class EntitySpec(google.protobuf.message.Message):
 
 global___EntitySpec = EntitySpec
 
+@typing_extensions.final
 class EntityMeta(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 

@@ -18,6 +18,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class ValueType(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -66,6 +67,7 @@ class ValueType(google.protobuf.message.Message):
 
 global___ValueType = ValueType
 
+@typing_extensions.final
 class Value(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -128,6 +130,7 @@ class Value(google.protobuf.message.Message):
 
 global___Value = Value
 
+@typing_extensions.final
 class BytesList(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -143,6 +146,7 @@ class BytesList(google.protobuf.message.Message):
 
 global___BytesList = BytesList
 
+@typing_extensions.final
 class StringList(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -158,6 +162,7 @@ class StringList(google.protobuf.message.Message):
 
 global___StringList = StringList
 
+@typing_extensions.final
 class Int32List(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -173,6 +178,7 @@ class Int32List(google.protobuf.message.Message):
 
 global___Int32List = Int32List
 
+@typing_extensions.final
 class Int64List(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -188,6 +194,7 @@ class Int64List(google.protobuf.message.Message):
 
 global___Int64List = Int64List
 
+@typing_extensions.final
 class DoubleList(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -203,6 +210,7 @@ class DoubleList(google.protobuf.message.Message):
 
 global___DoubleList = DoubleList
 
+@typing_extensions.final
 class FloatList(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -218,6 +226,7 @@ class FloatList(google.protobuf.message.Message):
 
 global___FloatList = FloatList
 
+@typing_extensions.final
 class BoolList(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 

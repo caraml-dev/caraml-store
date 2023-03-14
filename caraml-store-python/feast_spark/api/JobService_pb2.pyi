@@ -24,7 +24,7 @@ class _JobType:
     ValueType = typing.NewType("ValueType", builtins.int)
     V: typing_extensions.TypeAlias = ValueType
 
-class _JobTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_JobType.ValueType], builtins.type):  # noqa: F821
+class _JobTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_JobType.ValueType], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
     INVALID_JOB: _JobType.ValueType  # 0
     BATCH_INGESTION_JOB: _JobType.ValueType  # 1
@@ -43,7 +43,7 @@ class _JobStatus:
     ValueType = typing.NewType("ValueType", builtins.int)
     V: typing_extensions.TypeAlias = ValueType
 
-class _JobStatusEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_JobStatus.ValueType], builtins.type):  # noqa: F821
+class _JobStatusEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_JobStatus.ValueType], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
     JOB_STATUS_INVALID: _JobStatus.ValueType  # 0
     JOB_STATUS_PENDING: _JobStatus.ValueType  # 1
@@ -68,9 +68,11 @@ JOB_STATUS_ERROR: JobStatus.ValueType  # 4
 """The Job has encountered an error while processing its task"""
 global___JobStatus = JobStatus
 
+@typing_extensions.final
 class Job(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class RetrievalJobMeta(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -83,6 +85,7 @@ class Job(google.protobuf.message.Message):
         ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["output_location", b"output_location"]) -> None: ...
 
+    @typing_extensions.final
     class OfflineToOnlineMeta(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -95,6 +98,7 @@ class Job(google.protobuf.message.Message):
         ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["table_name", b"table_name"]) -> None: ...
 
+    @typing_extensions.final
     class StreamToOnlineMeta(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -158,6 +162,7 @@ class Job(google.protobuf.message.Message):
 
 global___Job = Job
 
+@typing_extensions.final
 class StartOfflineToOnlineIngestionJobRequest(google.protobuf.message.Message):
     """Ingest data from offline store into online store"""
 
@@ -193,6 +198,7 @@ class StartOfflineToOnlineIngestionJobRequest(google.protobuf.message.Message):
 
 global___StartOfflineToOnlineIngestionJobRequest = StartOfflineToOnlineIngestionJobRequest
 
+@typing_extensions.final
 class StartOfflineToOnlineIngestionJobResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -222,6 +228,7 @@ class StartOfflineToOnlineIngestionJobResponse(google.protobuf.message.Message):
 
 global___StartOfflineToOnlineIngestionJobResponse = StartOfflineToOnlineIngestionJobResponse
 
+@typing_extensions.final
 class ScheduleOfflineToOnlineIngestionJobRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -248,6 +255,7 @@ class ScheduleOfflineToOnlineIngestionJobRequest(google.protobuf.message.Message
 
 global___ScheduleOfflineToOnlineIngestionJobRequest = ScheduleOfflineToOnlineIngestionJobRequest
 
+@typing_extensions.final
 class ScheduleOfflineToOnlineIngestionJobResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -257,6 +265,7 @@ class ScheduleOfflineToOnlineIngestionJobResponse(google.protobuf.message.Messag
 
 global___ScheduleOfflineToOnlineIngestionJobResponse = ScheduleOfflineToOnlineIngestionJobResponse
 
+@typing_extensions.final
 class UnscheduleOfflineToOnlineIngestionJobRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -274,6 +283,7 @@ class UnscheduleOfflineToOnlineIngestionJobRequest(google.protobuf.message.Messa
 
 global___UnscheduleOfflineToOnlineIngestionJobRequest = UnscheduleOfflineToOnlineIngestionJobRequest
 
+@typing_extensions.final
 class UnscheduleOfflineToOnlineIngestionJobResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -283,6 +293,7 @@ class UnscheduleOfflineToOnlineIngestionJobResponse(google.protobuf.message.Mess
 
 global___UnscheduleOfflineToOnlineIngestionJobResponse = UnscheduleOfflineToOnlineIngestionJobResponse
 
+@typing_extensions.final
 class GetHistoricalFeaturesRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -327,6 +338,7 @@ class GetHistoricalFeaturesRequest(google.protobuf.message.Message):
 
 global___GetHistoricalFeaturesRequest = GetHistoricalFeaturesRequest
 
+@typing_extensions.final
 class GetHistoricalFeaturesResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -356,6 +368,7 @@ class GetHistoricalFeaturesResponse(google.protobuf.message.Message):
 
 global___GetHistoricalFeaturesResponse = GetHistoricalFeaturesResponse
 
+@typing_extensions.final
 class ListJobsRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -376,6 +389,7 @@ class ListJobsRequest(google.protobuf.message.Message):
 
 global___ListJobsRequest = ListJobsRequest
 
+@typing_extensions.final
 class ListJobsResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -391,6 +405,7 @@ class ListJobsResponse(google.protobuf.message.Message):
 
 global___ListJobsResponse = ListJobsResponse
 
+@typing_extensions.final
 class GetJobRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -405,6 +420,7 @@ class GetJobRequest(google.protobuf.message.Message):
 
 global___GetJobRequest = GetJobRequest
 
+@typing_extensions.final
 class GetJobResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -421,6 +437,7 @@ class GetJobResponse(google.protobuf.message.Message):
 
 global___GetJobResponse = GetJobResponse
 
+@typing_extensions.final
 class CancelJobRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -435,6 +452,7 @@ class CancelJobRequest(google.protobuf.message.Message):
 
 global___CancelJobRequest = CancelJobRequest
 
+@typing_extensions.final
 class CancelJobResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -444,6 +462,7 @@ class CancelJobResponse(google.protobuf.message.Message):
 
 global___CancelJobResponse = CancelJobResponse
 
+@typing_extensions.final
 class GetHealthMetricsRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -462,6 +481,7 @@ class GetHealthMetricsRequest(google.protobuf.message.Message):
 
 global___GetHealthMetricsRequest = GetHealthMetricsRequest
 
+@typing_extensions.final
 class GetHealthMetricsResponse(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
