@@ -15,10 +15,6 @@ object BasePipeline {
     // workaround for issue with arrow & netty
     // see https://github.com/apache/arrow/tree/master/java#java-properties
     System.setProperty("io.netty.tryReflectionSetAccessible", "true")
-    // suppress SubscriptionState logs
-    Logger.getRootLogger.setLevel(Level.ERROR)
-    Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
-    Logger.getLogger("org.apache.kafka").setLevel(Level.WARN)
 
     val conf = new SparkConf()
 
