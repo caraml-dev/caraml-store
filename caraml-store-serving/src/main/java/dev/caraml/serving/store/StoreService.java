@@ -56,6 +56,10 @@ public class StoreService {
   }
 
   public GetOnlineFeaturesResponseV2 getOnlineFeaturesV2(GetOnlineFeaturesRequest request) {
+    if(request.getEntityRowsList().isEmpty()) {
+      throw new IllegalArgumentException("Entity rows cannot be empty");
+    }
+
     RetrievedOnlineFeatures retrievedOnlineFeatures = retrieveOnlineFeatures(request);
     // Build response field values from entityValuesMap and entityStatusesMap
     // Response field values should be in the same order as the entityRows provided by the user.
@@ -73,6 +77,9 @@ public class StoreService {
   }
 
   public GetOnlineFeaturesResponse getOnlineFeatures(GetOnlineFeaturesRequest request) {
+    if(request.getEntityRowsList().isEmpty()) {
+      throw new IllegalArgumentException("Entity rows cannot be empty");
+    }
 
     RetrievedOnlineFeatures retrievedOnlineFeatures = this.retrieveOnlineFeatures(request);
 
