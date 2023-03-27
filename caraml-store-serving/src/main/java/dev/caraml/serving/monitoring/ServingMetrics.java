@@ -61,11 +61,18 @@ public class ServingMetrics<ReqT, RespT> implements Metrics<ReqT, RespT> {
         .toList();
   }
 
+  private Counter newKeyRetrievalCounter(String project) {
+    return Counter.builder("caraml_serving_key_retrieval_count")
+        .tag("project", project)
+        .register(registry);
+  }
+
   @Override
   public void onRequestReceived(ReqT requestMessage) {
     if (requestMessage instanceof GetOnlineFeaturesRequest featureRequest) {
       String project = featureRequest.getProject();
       newServingRequestCounter(project).increment();
+      newKeyRetrievalCounter(project).increment(featureRequest.getEntityRowsCount());
       newEntityCounters(featureRequest)
           .forEach(counter -> counter.increment(featureRequest.getEntityRowsCount()));
     }
