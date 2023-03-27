@@ -56,7 +56,7 @@ public class StoreService {
   }
 
   public GetOnlineFeaturesResponseV2 getOnlineFeaturesV2(GetOnlineFeaturesRequest request) {
-    if(request.getEntityRowsList().isEmpty()) {
+    if (request.getEntityRowsList().isEmpty()) {
       throw new IllegalArgumentException("Entity rows cannot be empty");
     }
 
@@ -77,7 +77,7 @@ public class StoreService {
   }
 
   public GetOnlineFeaturesResponse getOnlineFeatures(GetOnlineFeaturesRequest request) {
-    if(request.getEntityRowsList().isEmpty()) {
+    if (request.getEntityRowsList().isEmpty()) {
       throw new IllegalArgumentException("Entity rows cannot be empty");
     }
 
