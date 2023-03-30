@@ -19,7 +19,11 @@ case class RedisConfig(
     ssl: Boolean = false,
     properties: RedisWriteProperties = RedisWriteProperties()
 ) extends StoreConfig
-case class RedisWriteProperties(maxJitterSeconds: Int = 3600, pipelineSize: Int = 250)
+case class RedisWriteProperties(
+    maxJitterSeconds: Int = 3600,
+    pipelineSize: Int = 250,
+    ttlSeconds: Long = 0L
+)
 case class BigTableConfig(projectId: String, instanceId: String) extends StoreConfig
 
 sealed trait MetricConfig
@@ -107,6 +111,7 @@ case class ExpectationSpec(
 case class IngestionJobConfig(
     mode: Modes = Modes.Offline,
     featureTable: FeatureTable = null,
+    entityMaxAge: Option[Long] = None,
     source: Source = null,
     startTime: DateTime = DateTime.now(),
     endTime: DateTime = DateTime.now(),

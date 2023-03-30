@@ -9,6 +9,14 @@
     }
   ],
   "name": "streaming_feature_table",
+  "batchSource": {
+    "type": "BATCH_BIGQUERY",
+    "eventTimestampColumn": "event_timestamp",
+    "bigqueryOptions" : {
+      "tableRef": "project:dataset.table"
+    }
+  },
+  "maxAge": "100s",
   "streamSource": {
     "type": "STREAM_KAFKA",
     "eventTimestampColumn": "event_timestamp",

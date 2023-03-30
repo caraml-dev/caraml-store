@@ -95,6 +95,7 @@ public class JobServiceTest {
     when(tableRepository.findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
             "batch_feature_table", project))
         .thenReturn(Optional.of(featureTable));
+    when(tableRepository.findAllByProject_Name(project)).thenReturn(List.of(featureTable));
     SparkApplication expectedSparkApplication = new SparkApplication();
     V1ObjectMeta expectedMetadata = new V1ObjectMeta();
     expectedMetadata.setLabels(
@@ -112,13 +113,15 @@ public class JobServiceTest {
     expectedSparkApplicationSpec.addArguments(
         List.of(
             "--feature-table",
-            "{\"project\":\"project\",\"name\":\"batch_feature_table\",\"labels\":{},\"maxAge\":0,\"entities\":[{\"name\":\"entity1\",\"type\":\"STRING\"}],\"features\":[{\"name\":\"feature1\",\"type\":\"INT64\"}]}",
+            "{\"project\":\"project\",\"name\":\"batch_feature_table\",\"labels\":{},\"maxAge\":100,\"entities\":[{\"name\":\"entity1\",\"type\":\"STRING\"}],\"features\":[{\"name\":\"feature1\",\"type\":\"INT64\"}]}",
             "--source",
             "{\"bq\":{\"project\":\"project\",\"dataset\":\"dataset\",\"table\":\"table\",\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}",
             "--start",
             "2022-08-01T01:00:00Z",
             "--end",
-            "2022-08-02T01:00:00Z"));
+            "2022-08-02T01:00:00Z",
+            "--entity-max-age",
+            "100"));
     expectedSparkApplication.setSpec(expectedSparkApplicationSpec);
     jobservice.createOrUpdateBatchIngestionJob(
         project, "batch_feature_table", ingestionStart, ingestionEnd, false);
@@ -128,13 +131,15 @@ public class JobServiceTest {
     expectedSparkApplicationSpec.setArguments(
         List.of(
             "--feature-table",
-            "{\"project\":\"project\",\"name\":\"batch_feature_table\",\"labels\":{},\"maxAge\":0,\"entities\":[{\"name\":\"entity1\",\"type\":\"STRING\"}],\"features\":[{\"name\":\"feature1\",\"type\":\"INT64\"}]}",
+            "{\"project\":\"project\",\"name\":\"batch_feature_table\",\"labels\":{},\"maxAge\":100,\"entities\":[{\"name\":\"entity1\",\"type\":\"STRING\"}],\"features\":[{\"name\":\"feature1\",\"type\":\"INT64\"}]}",
             "--source",
             "{\"bq\":{\"project\":\"bq-project\",\"dataset\":\"bq-dataset\",\"table\":\"project_batch_feature_table_delta\",\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}",
             "--start",
             "2022-08-01T01:00:00Z",
             "--end",
-            "2022-08-02T01:00:00Z"));
+            "2022-08-02T01:00:00Z",
+            "--entity-max-age",
+            "100"));
     jobservice.createOrUpdateBatchIngestionJob(
         project, "batch_feature_table", ingestionStart, ingestionEnd, true);
     verify(api, times(1)).create(expectedSparkApplication);
@@ -175,6 +180,9 @@ public class JobServiceTest {
     when(entityRepository.findEntityByNameAndProject_Name("entity1", project))
         .thenReturn(
             new Entity("entity1", "", ValueProto.ValueType.Enum.STRING, Collections.emptyMap()));
+    List<FeatureTable> featureTables =
+        List.of(FeatureTable.fromProto(project, spec, entityRepository));
+    when(tableRepository.findAllByProject_Name(project)).thenReturn(featureTables);
     jobservice.createOrUpdateStreamingIngestionJob(project, spec);
     SparkApplication expectedSparkApplication = new SparkApplication();
     V1ObjectMeta expectedMetadata = new V1ObjectMeta();
@@ -201,9 +209,11 @@ public class JobServiceTest {
     expectedSparkApplicationSpec.addArguments(
         List.of(
             "--feature-table",
-            "{\"project\":\"project\",\"name\":\"streaming_feature_table\",\"labels\":{},\"maxAge\":0,\"entities\":[{\"name\":\"entity1\",\"type\":\"STRING\"}],\"features\":[{\"name\":\"feature1\",\"type\":\"FLOAT\"}]}",
+            "{\"project\":\"project\",\"name\":\"streaming_feature_table\",\"labels\":{},\"maxAge\":100,\"entities\":[{\"name\":\"entity1\",\"type\":\"STRING\"}],\"features\":[{\"name\":\"feature1\",\"type\":\"FLOAT\"}]}",
             "--source",
-            "{\"kafka\":{\"bootstrapServers\":\"kafka:9102\",\"topic\":\"topic\",\"format\":{\"classPath\":\"com.example.FeastFeature\",\"jsonClass\":\"ProtoFormat\"},\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}"));
+            "{\"kafka\":{\"bootstrapServers\":\"kafka:9102\",\"topic\":\"topic\",\"format\":{\"classPath\":\"com.example.FeastFeature\",\"jsonClass\":\"ProtoFormat\"},\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}",
+            "--entity-max-age",
+            "100"));
     expectedSparkApplication.setSpec(expectedSparkApplicationSpec);
     verify(api, times(1)).create(expectedSparkApplication);
   }

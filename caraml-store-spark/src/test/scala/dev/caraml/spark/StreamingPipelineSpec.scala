@@ -145,71 +145,38 @@ class StreamingPipelineSpec extends SparkSpec with ForAllTestContainer {
     }
   }
 
-  "Streaming pipeline" should "store messages from kafka to redis with expiry time equal to the largest of (event_timestamp + max_age) for all feature " +
-    "tables associated with the entity" in new Scope {
-      val maxAge = 86400
-      val configWithMaxAge = config.copy(
-        source = kafkaSource,
-        featureTable = config.featureTable.copy(maxAge = Some(maxAge))
-      )
-      val query = StreamingPipeline.createPipeline(sparkSession, configWithMaxAge).get
-      query.processAllAvailable() // to init kafka consumer
+  "Streaming pipeline" should "store messages from kafka to redis with expiry time equal to entity max age" in new Scope {
+    val maxAge       = 86400L
+    val entityMaxAge = 1728000L
+    val configWithMaxAge = config.copy(
+      source = kafkaSource,
+      featureTable = config.featureTable.copy(maxAge = Some(maxAge)),
+      entityMaxAge = Some(entityMaxAge)
+    )
+    val query = StreamingPipeline.createPipeline(sparkSession, configWithMaxAge).get
+    query.processAllAvailable() // to init kafka consumer
 
-      val rows = generateDistinctRows(rowGenerator, 100, groupByEntity)
+    val rows = generateDistinctRows(rowGenerator, 100, groupByEntity)
 
-      val ingestionTimeUnix = System.currentTimeMillis()
-      rows.foreach(sendToKafka(kafkaSource.topic, _))
+    rows.foreach(sendToKafka(kafkaSource.topic, _))
 
-      query.processAllAvailable()
+    query.processAllAvailable()
 
-      rows.foreach { r =>
-        val encodedEntityKey = encodeEntityKey(r, config.featureTable)
-        val storedValues     = jedis.hgetAll(encodedEntityKey).asScala.toMap
-        storedValues should beStoredRow(
-          Map(
-            featureKeyEncoder("unique_drivers") -> r.getUniqueDrivers,
-            murmurHashHexString("_ts:driver-fs") -> new java.sql.Timestamp(
-              r.getEventTimestamp.getSeconds * 1000
-            ),
-            "_ex" -> new java.sql.Timestamp(
-              (r.getEventTimestamp.getSeconds + maxAge) * 1000
-            )
+    rows.foreach { r =>
+      val encodedEntityKey = encodeEntityKey(r, config.featureTable)
+      val storedValues     = jedis.hgetAll(encodedEntityKey).asScala.toMap
+      storedValues should beStoredRow(
+        Map(
+          featureKeyEncoder("unique_drivers") -> r.getUniqueDrivers,
+          murmurHashHexString("_ts:driver-fs") -> new java.sql.Timestamp(
+            r.getEventTimestamp.getSeconds * 1000
           )
         )
-        val keyTTL = jedis.ttl(encodedEntityKey).toLong
-        keyTTL should (be <= (r.getEventTimestamp.getSeconds + maxAge - ingestionTimeUnix / 1000) and be > 0L)
-      }
-
-      val kafkaSourceSecondFeatureTable = kafkaSource.copy(topic = "topic-2")
-      val configWithSecondFeatureTable = config.copy(
-        source = kafkaSourceSecondFeatureTable,
-        featureTable = config.featureTable.copy(name = "driver-fs-2")
       )
-      val querySecondFeatureTable =
-        StreamingPipeline.createPipeline(sparkSession, configWithSecondFeatureTable).get
-      querySecondFeatureTable.processAllAvailable() // to init kafka consumer
-      rows.foreach(sendToKafka(kafkaSourceSecondFeatureTable.topic, _))
-      querySecondFeatureTable.processAllAvailable()
-
-      val featureKeyEncoderSecondFeatureTable: String => String =
-        encodeFeatureKey(configWithSecondFeatureTable.featureTable)
-      rows.foreach { r =>
-        val encodedEntityKey = encodeEntityKey(r, config.featureTable)
-        val storedValues     = jedis.hgetAll(encodedEntityKey).asScala.toMap
-        storedValues should beStoredRow(
-          Map(
-            featureKeyEncoder("unique_drivers")                   -> r.getUniqueDrivers,
-            featureKeyEncoderSecondFeatureTable("unique_drivers") -> r.getUniqueDrivers,
-            murmurHashHexString("_ts:driver-fs") -> new java.sql.Timestamp(
-              r.getEventTimestamp.getSeconds * 1000
-            )
-          )
-        )
-        val keyTTL = jedis.ttl(encodedEntityKey).toInt
-        keyTTL shouldEqual -1
-      }
-
+      val keyTTL = jedis.ttl(encodedEntityKey).toLong
+      keyTTL should (be <= entityMaxAge and be > maxAge)
     }
+  }
 
   "Streaming pipeline" should "store invalid proto messages to deadletter path" in new Scope {
     val configWithDeadletter = config.copy(

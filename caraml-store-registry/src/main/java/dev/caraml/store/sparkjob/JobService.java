@@ -3,6 +3,7 @@ package dev.caraml.store.sparkjob;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import dev.caraml.store.feature.EntityRepository;
+import dev.caraml.store.feature.FeatureTable;
 import dev.caraml.store.feature.FeatureTableNotFoundException;
 import dev.caraml.store.feature.FeatureTableRepository;
 import dev.caraml.store.protobuf.core.DataSourceProto.DataSource;
@@ -22,10 +23,7 @@ import dev.caraml.store.sparkjob.crd.SparkApplication;
 import dev.caraml.store.sparkjob.crd.SparkApplicationSpec;
 import dev.caraml.store.sparkjob.hash.HashUtils;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -177,9 +175,23 @@ public class JobService {
 
   public Job createOrUpdateStreamingIngestionJob(String project, FeatureTableSpec spec) {
     Map<String, String> entityNameToType = getEntityToTypeMap(project, spec);
+    Long entityMaxAge = computeMaxEntityAge(project, spec.getEntitiesList());
     List<String> arguments =
-        new StreamIngestionArgumentAdapter(project, spec, entityNameToType).getArguments();
+        new StreamIngestionArgumentAdapter(project, spec, entityNameToType, entityMaxAge)
+            .getArguments();
     return createOrUpdateIngestionJob(JobType.STREAM_INGESTION_JOB, project, spec, arguments);
+  }
+
+  public Long computeMaxEntityAge(String project, List<String> entity) {
+    return tableRepository.findAllByProject_Name(project).stream()
+        .filter(ft -> ft.hasAllEntities(entity))
+        .map(FeatureTable::getMaxAgeSecs)
+        .max(Comparator.comparingLong(Long::valueOf))
+        .orElseThrow(
+            () ->
+                new IllegalArgumentException(
+                    String.format(
+                        "No feature tables refers to %s in project %s", entity, project)));
   }
 
   public Job createOrUpdateBatchIngestionJob(
@@ -198,6 +210,7 @@ public class JobService {
                 () -> {
                   throw new FeatureTableNotFoundException(project, featureTableName);
                 });
+
     Map<String, String> entityNameToType = getEntityToTypeMap(project, spec);
 
     if (deltaIngestion && spec.getBatchSource().getType() == DataSource.SourceType.BATCH_BIGQUERY) {
@@ -209,8 +222,10 @@ public class JobService {
       spec = specBuilder.build();
     }
 
+    Long maxEntityAge = computeMaxEntityAge(project, spec.getEntitiesList());
     List<String> arguments =
-        new BatchIngestionArgumentAdapter(project, spec, entityNameToType, startTime, endTime)
+        new BatchIngestionArgumentAdapter(
+                project, spec, entityNameToType, startTime, endTime, maxEntityAge)
             .getArguments();
     return createOrUpdateIngestionJob(JobType.BATCH_INGESTION_JOB, project, spec, arguments);
   }
@@ -264,9 +279,10 @@ public class JobService {
     SparkApplicationSpec appSpec = batchIngestionJobTemplate.render(project, featureTableName);
     appSpec.setImage(sparkImage);
     Map<String, String> entityNameToType = getEntityToTypeMap(project, featureTableSpec);
+    Long entityMaxAge = computeMaxEntityAge(project, featureTableSpec.getEntitiesList());
     List<String> arguments =
         new ScheduledBatchIngestionArgumentAdapter(
-                project, featureTableSpec, entityNameToType, ingestionTimespan)
+                project, featureTableSpec, entityNameToType, ingestionTimespan, entityMaxAge)
             .getArguments();
     appSpec.addArguments(arguments);
     ScheduledSparkApplicationSpec scheduledAppSpec =

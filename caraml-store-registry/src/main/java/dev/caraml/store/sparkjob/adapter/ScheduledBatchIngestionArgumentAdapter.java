@@ -15,6 +15,7 @@ public class ScheduledBatchIngestionArgumentAdapter implements SparkApplicationA
   private final FeatureTableSpec spec;
   private final Map<String, String> entityNameToType;
   private final Integer ingestionTimespan;
+  private final Long entityMaxAge;
 
   @Override
   public List<String> getArguments() {
@@ -28,6 +29,7 @@ public class ScheduledBatchIngestionArgumentAdapter implements SparkApplicationA
           Stream.of("--source", new DataSourceConverter().convert(spec.getBatchSource()));
       Stream<String> timeSpanArguments =
           Stream.of("--ingestion-timespan", ingestionTimespan.toString());
+      Stream<String> entityMaxAgeArguments = Stream.of("--entity-max-age", entityMaxAge.toString());
       return Stream.of(featureTableArguments, sourceArguments, timeSpanArguments)
           .flatMap(Function.identity())
           .toList();

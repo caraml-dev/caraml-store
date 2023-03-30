@@ -18,6 +18,7 @@ public class BatchIngestionArgumentAdapter implements SparkApplicationArgumentAd
   private final Map<String, String> entityNameToType;
   private final Timestamp startTime;
   private final Timestamp endTime;
+  private final Long maxEntityAge;
 
   @Override
   public List<String> getArguments() {
@@ -32,7 +33,9 @@ public class BatchIngestionArgumentAdapter implements SparkApplicationArgumentAd
       Stream<String> timestampArguments =
           Stream.of(
               "--start", Timestamps.toString(startTime), "--end", Timestamps.toString(endTime));
-      return Stream.of(featureTableArguments, sourceArguments, timestampArguments)
+      Stream<String> entityMaxAgeArguments = Stream.of("--entity-max-age", maxEntityAge.toString());
+      return Stream.of(
+              featureTableArguments, sourceArguments, timestampArguments, entityMaxAgeArguments)
           .flatMap(Function.identity())
           .toList();
     } catch (JsonProcessingException e) {

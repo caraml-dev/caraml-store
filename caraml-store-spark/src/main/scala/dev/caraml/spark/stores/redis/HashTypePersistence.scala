@@ -22,8 +22,7 @@ import scala.collection.JavaConverters._
 class HashTypePersistence(config: SparkRedisConfig) extends Persistence with Serializable {
 
   private def encodeRow(
-      value: Row,
-      expiryTimestamp: Option[java.sql.Timestamp]
+      value: Row
   ): Map[Array[Byte], Array[Byte]] = {
     val fields = value.schema.fields.map(_.name)
     val types  = value.schema.fields.map(f => (f.name, f.dataType)).toMap
@@ -49,18 +48,7 @@ class HashTypePersistence(config: SparkRedisConfig) extends Persistence with Ser
       )
     )
 
-    expiryTimestamp match {
-      case Some(expiry) =>
-        val expiryTimestampHash = Seq(
-          (
-            expiryTimestampHashKey(config.namespace),
-            encodeValue(expiry, TimestampType)
-          )
-        )
-        values ++ timestampHash ++ expiryTimestampHash
-      case None => values ++ timestampHash
-    }
-
+    values ++ timestampHash
   }
 
   private def encodeValue(value: Any, `type`: DataType): Array[Byte] = {
@@ -78,46 +66,20 @@ class HashTypePersistence(config: SparkRedisConfig) extends Persistence with Ser
       .asBytes
   }
 
-  private def expiryTimestampHashKey(namespace: String): Array[Byte] = {
-    config.expiryPrefix.getBytes()
-  }
-
-  private def decodeTimestamp(encodedTimestamp: Array[Byte]): java.sql.Timestamp = {
-    new java.sql.Timestamp(Timestamp.parseFrom(encodedTimestamp).getSeconds * 1000)
-  }
-
   override def save(
       pipeline: PipelineBinaryCommands,
       key: Array[Byte],
       row: Row,
-      expiryTimestamp: Option[java.sql.Timestamp]
+      ttlSeconds: Long,
+      maxJitterSeconds: Int
   ): Unit = {
-    val value = encodeRow(row, expiryTimestamp).asJava
+    val value = encodeRow(row).asJava
     pipeline.hset(key, value)
-
-    expiryTimestamp match {
-      case Some(expiry) =>
-        pipeline.expireAt(key, expiry.getTime / 1000)
-      case None =>
-        pipeline.persist(key)
+    if (ttlSeconds > 0) {
+      val ttlSecondsWithJitter =
+        if (maxJitterSeconds > 0) ttlSeconds + scala.util.Random.nextInt(maxJitterSeconds)
+        else ttlSeconds
+      pipeline.expire(key, ttlSecondsWithJitter)
     }
-  }
-
-  override def get(
-      pipeline: PipelineBinaryCommands,
-      key: Array[Byte]
-  ): Response[util.Map[Array[Byte], Array[Byte]]] = {
-    pipeline.hgetAll(key)
-  }
-
-  override def storedTimestamp(
-      value: util.Map[Array[Byte], Array[Byte]]
-  ): Option[java.sql.Timestamp] = {
-    value.asScala.toMap
-      .map { case (key, value) =>
-        (wrapByteArray(key), value)
-      }
-      .get(timestampHashKey(config.namespace))
-      .map(value => decodeTimestamp(value))
   }
 }

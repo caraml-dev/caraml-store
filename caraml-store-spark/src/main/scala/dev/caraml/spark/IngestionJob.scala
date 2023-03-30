@@ -68,6 +68,10 @@ object IngestionJob {
       .action((x, c) => c.copy(endTime = DateTime.parse(x)))
       .text("End timestamp for offline ingestion")
 
+    opt[String](name = "entity-max-age")
+      .action((x, c) => c.copy(entityMaxAge = Some(x.toLong)))
+      .text("Maximum max age for all the feature table sharing the same entities")
+
     opt[String](name = "ingestion-timespan")
       .action((x, c) => {
         val currentTimeUTC = new DateTime(DateTimeZone.UTC);
