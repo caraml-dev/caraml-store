@@ -1,8 +1,9 @@
 package dev.caraml.store.testutils.util;
 
+import dev.caraml.store.protobuf.core.FeatureProto;
 import dev.caraml.store.protobuf.core.FeatureTableProto.FeatureTableSpec;
 import dev.caraml.store.protobuf.core.OnlineStoreProto;
-import java.util.HashSet;
+import java.util.Comparator;
 
 public class TestUtil {
 
@@ -25,9 +26,13 @@ public class TestUtil {
     spec =
         spec.toBuilder()
             .clearFeatures()
-            .addAllFeatures(new HashSet<>(spec.getFeaturesList()))
+            .addAllFeatures(
+                spec.getFeaturesList().stream()
+                    .sorted(Comparator.comparing(FeatureProto.FeatureSpec::getName))
+                    .toList())
             .clearEntities()
-            .addAllEntities(new HashSet<>(spec.getEntitiesList()))
+            .addAllEntities(
+                spec.getEntitiesList().stream().sorted(Comparator.naturalOrder()).toList())
             .clearOnlineStore()
             .setOnlineStore(specOnlineStore)
             .build();
@@ -35,13 +40,22 @@ public class TestUtil {
     otherSpec =
         otherSpec.toBuilder()
             .clearFeatures()
-            .addAllFeatures(new HashSet<>(otherSpec.getFeaturesList()))
+            .addAllFeatures(
+                spec.getFeaturesList().stream()
+                    .sorted(Comparator.comparing(FeatureProto.FeatureSpec::getName))
+                    .toList())
             .clearEntities()
-            .addAllEntities(new HashSet<>(otherSpec.getEntitiesList()))
+            .addAllEntities(
+                spec.getEntitiesList().stream().sorted(Comparator.naturalOrder()).toList())
             .clearOnlineStore()
             .setOnlineStore(otherSpecOnlineStore)
             .build();
 
-    return spec.equals(otherSpec);
+    boolean equals = spec.equals(otherSpec);
+    if (!equals) {
+      System.out.println(spec);
+      System.out.println(otherSpec);
+    }
+    return equals;
   }
 }
