@@ -53,10 +53,10 @@ dependencies {
     implementation "org.json4s:json4s-ext_$scalaVersion:3.7.0-M5"
     testImplementation "org.scalatest:scalatest_$scalaVersion:3.2.2"
     testImplementation "org.scalacheck:scalacheck_$scalaVersion:1.14.3"
-    testImplementation "com.dimafeng:testcontainers-scala-scalatest_$scalaVersion:0.38.8"
+    testImplementation "com.dimafeng:testcontainers-scala-scalatest_$scalaVersion:0.40.12"
     // Downgraded to the version of wiremock which still use jackson 2.10.0
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.26.3'
-    testImplementation "com.dimafeng:testcontainers-scala-kafka_$scalaVersion:0.38.8"
+    testImplementation "com.dimafeng:testcontainers-scala-kafka_$scalaVersion:0.40.12"
     testRuntimeOnly 'com.vladsch.flexmark:flexmark-all:0.35.10'
 }
 application {

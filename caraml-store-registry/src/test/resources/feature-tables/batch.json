@@ -15,5 +15,6 @@
     "bigqueryOptions" : {
       "tableRef": "project:dataset.table"
     }
-  }
+  },
+  "maxAge": "100s"
 }

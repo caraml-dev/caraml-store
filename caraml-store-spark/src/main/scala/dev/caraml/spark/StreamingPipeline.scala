@@ -114,7 +114,7 @@ object StreamingPipeline extends BasePipeline with Serializable {
           .option("project_name", featureTable.project)
           .option("timestamp_column", config.source.eventTimestampColumn)
           .option("max_age", config.featureTable.maxAge.getOrElse(0L))
-          .option("entity_repartition", "false")
+          .option("entity_max_age", config.entityMaxAge.getOrElse(0L))
           .save()
 
         config.source match {
