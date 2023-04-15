@@ -38,6 +38,7 @@ public class JobServiceTest {
   @Mock private EntityRepository entityRepository;
   @Mock private FeatureTableRepository tableRepository;
   @Mock private SparkOperatorApi api;
+  @Mock private ProjectContextProvider projectContextProvider;
 
   @BeforeEach
   public void setUp() {
@@ -61,6 +62,7 @@ public class JobServiceTest {
               appWithStatus.setStatus(status);
               return appWithStatus;
             });
+    when(projectContextProvider.getContext("project")).thenReturn(Map.of("team", "some-team"));
   }
 
   @Test
@@ -75,7 +77,8 @@ public class JobServiceTest {
     IngestionJobTemplate batchJobProperty =
         new IngestionJobTemplate("store", new SparkApplicationSpec());
     jobs.add(batchJobProperty);
-    JobService jobservice = new JobService(properties, entityRepository, tableRepository, api);
+    JobService jobservice =
+        new JobService(properties, entityRepository, tableRepository, api, projectContextProvider);
     FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder();
     String project = "project";
     String jsonString;
@@ -158,6 +161,7 @@ public class JobServiceTest {
     SparkExecutorSpec templateExecutorSpec = new SparkExecutorSpec();
     templateDriverSpec.setCores(1);
     templateDriverSpec.setMemory("1g");
+    templateDriverSpec.setLabels(Map.of("team", "${team}"));
     templateExecutorSpec.setCores(2);
     templateExecutorSpec.setMemory("2g");
     templateSparkApplicationSpec.setDriver(templateDriverSpec);
@@ -165,7 +169,8 @@ public class JobServiceTest {
     IngestionJobTemplate streamJobProperty =
         new IngestionJobTemplate("store", templateSparkApplicationSpec);
     jobs.add(streamJobProperty);
-    JobService jobservice = new JobService(properties, entityRepository, tableRepository, api);
+    JobService jobservice =
+        new JobService(properties, entityRepository, tableRepository, api, projectContextProvider);
     FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder();
     String project = "project";
     String jsonString;
@@ -200,6 +205,7 @@ public class JobServiceTest {
     SparkDriverSpec expectedDriverSpec = new SparkDriverSpec();
     expectedDriverSpec.setCores(2);
     expectedDriverSpec.setMemory("1g");
+    expectedDriverSpec.setLabels(Map.of("team", "some-team"));
     expectedSparkApplicationSpec.setDriver(expectedDriverSpec);
     SparkExecutorSpec expectedExecutorSpec = new SparkExecutorSpec();
     expectedExecutorSpec.setCores(2);

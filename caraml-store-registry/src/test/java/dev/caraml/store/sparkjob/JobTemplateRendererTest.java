@@ -6,9 +6,10 @@ import dev.caraml.store.sparkjob.crd.SparkApplicationSpec;
 import dev.caraml.store.sparkjob.crd.SparkExecutorSpec;
 import io.kubernetes.client.openapi.models.*;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-class IngestionJobTemplateTest {
+class JobTemplateRendererTest {
 
   @Test
   void shouldReplaceKeyword() {
@@ -34,8 +35,10 @@ class IngestionJobTemplateTest {
     affinity.setPodAntiAffinity(antiAffinity);
     executorSpec.setAffinity(affinity);
     applicationSpec.setExecutor(executorSpec);
-    IngestionJobTemplate template = new IngestionJobTemplate("store", applicationSpec);
-    SparkApplicationSpec renderedSpec = template.render("some_project", "some_table");
+    JobTemplateRenderer renderer = new JobTemplateRenderer();
+    SparkApplicationSpec renderedSpec =
+        renderer.render(
+            applicationSpec, Map.of("project", "some_project", "featureTable", "some_table"));
     V1PodAffinityTerm renderedPodAffinityTerm =
         renderedSpec
             .getExecutor()

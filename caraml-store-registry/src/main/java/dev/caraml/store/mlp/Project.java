@@ -1,3 +1,3 @@
-package dev.caraml.store.feature.mlp;
+package dev.caraml.store.mlp;
 
 public record Project(String name, String stream, String team) {}

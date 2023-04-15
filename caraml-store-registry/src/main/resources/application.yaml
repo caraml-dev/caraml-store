@@ -6,10 +6,15 @@ caraml:
   # Enable integration with MLP server
   mlp:
     enabled: true
-    endpoint: "http://localhost:9090/api"
-    connectionTimeOutMs: 3000
-    requestTimeOutMs: 1500
-    authEnabled: false
+    client:
+      endpoint: "http://localhost:9090/api"
+      connectionTimeOutMs: 3000
+      requestTimeOutMs: 1500
+      authEnabled: false
+    context:
+      # Fallback team/stream to use in the event the MLP server is unable to return a response
+      fallbackTeam: "unknown"
+      fallbackStream: "unknown"
 
   resilience4j:
     retry:
