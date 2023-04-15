@@ -1,4 +1,4 @@
-package dev.caraml.store.feature.mlp;
+package dev.caraml.store.mlp;
 
 import static java.net.HttpURLConnection.HTTP_OK;
 

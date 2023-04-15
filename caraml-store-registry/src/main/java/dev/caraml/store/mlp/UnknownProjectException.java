@@ -1,4 +1,4 @@
-package dev.caraml.store.feature.mlp;
+package dev.caraml.store.mlp;
 
 public class UnknownProjectException extends RuntimeException {
 

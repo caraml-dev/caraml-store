@@ -1,4 +1,4 @@
-package dev.caraml.store.feature.mlp;
+package dev.caraml.store.mlp;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "caraml.mlp")
+@ConfigurationProperties(prefix = "caraml.mlp.client")
 @Getter
 @Setter
 public class ClientConfig {

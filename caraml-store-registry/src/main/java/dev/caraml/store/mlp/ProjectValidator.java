@@ -1,4 +1,4 @@
-package dev.caraml.store.feature.mlp;
+package dev.caraml.store.mlp;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ public class ProjectValidator implements dev.caraml.store.feature.ProjectValidat
 
     if (projectProvider.listProjects().stream()
         .noneMatch(project -> project.name().equals(projectName))) {
-      throw new IllegalArgumentException(
+      throw new UnknownProjectException(
           String.format(
               "%s does not exist on MLP project. Please create the project via the console.",
               projectName));

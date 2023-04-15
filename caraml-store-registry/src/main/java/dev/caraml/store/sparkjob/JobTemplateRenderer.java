@@ -5,20 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.caraml.store.sparkjob.crd.SparkApplicationSpec;
 import java.util.Map;
 
-public record HistoricalRetrievalJobTemplate(SparkApplicationSpec sparkApplicationSpec) {
+public class JobTemplateRenderer {
 
   public SparkApplicationSpec render(
-      String project, ProjectContextProvider projectContextProvider) {
+      SparkApplicationSpec templateSpec, Map<String, String> context) {
     ObjectMapper mapper = new ObjectMapper();
     try {
-      String templateString = mapper.writeValueAsString(this.sparkApplicationSpec);
-      String renderedTemplate = templateString.replaceAll("\\$\\{project}", project);
-      Map<String, String> context = projectContextProvider.getContext(project);
+      String renderedTemplate = mapper.writeValueAsString(templateSpec);
       for (String key : context.keySet()) {
         String value = context.get(key);
         renderedTemplate = renderedTemplate.replaceAll(String.format("\\$\\{%s}", key), value);
       }
-
       return mapper.readValue(renderedTemplate, SparkApplicationSpec.class);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);

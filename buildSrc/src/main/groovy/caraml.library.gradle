@@ -7,4 +7,5 @@ plugins {
 jar {
     preserveFileTimestamps false
     reproducibleFileOrder true
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
 }

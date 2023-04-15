@@ -57,7 +57,7 @@ public class BaseIT {
     registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
     registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
     registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
-    registry.add("caraml.mlp.endpoint", mockServerContainer::getEndpoint);
+    registry.add("caraml.mlp.client.endpoint", mockServerContainer::getEndpoint);
   }
 
   /**

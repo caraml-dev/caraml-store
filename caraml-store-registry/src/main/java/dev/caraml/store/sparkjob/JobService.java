@@ -47,15 +47,16 @@ public class JobService {
   private final DeltaIngestionDataset deltaIngestionDataset;
   private final EntityRepository entityRepository;
   private final FeatureTableRepository tableRepository;
-
   private final SparkOperatorApi sparkOperatorApi;
+  private final ProjectContextProvider projectContextProvider;
 
   @Autowired
   public JobService(
       JobServiceConfig config,
       EntityRepository entityRepository,
       FeatureTableRepository tableRepository,
-      SparkOperatorApi sparkOperatorApi) {
+      SparkOperatorApi sparkOperatorApi,
+      ProjectContextProvider projectContextProvider) {
     namespace = config.getNamespace();
     sparkImage = config.getCommon().sparkImage();
     defaultStore = config.getDefaultStore();
@@ -72,6 +73,7 @@ public class JobService {
     this.entityRepository = entityRepository;
     this.tableRepository = tableRepository;
     this.sparkOperatorApi = sparkOperatorApi;
+    this.projectContextProvider = projectContextProvider;
   }
 
   static final String LABEL_PREFIX = "caraml.dev/";
@@ -276,7 +278,11 @@ public class JobService {
                       StringUtils.truncate(featureTableName, LABEL_CHARACTERS_LIMIT)));
               return scheduledApp;
             });
-    SparkApplicationSpec appSpec = batchIngestionJobTemplate.render(project, featureTableName);
+    JobTemplateRenderer renderer = new JobTemplateRenderer();
+    SparkApplicationSpec appSpec =
+        renderer.render(
+            batchIngestionJobTemplate.sparkApplicationSpec(),
+            getIngestionJobContext(project, featureTableName));
     appSpec.setImage(sparkImage);
     Map<String, String> entityNameToType = getEntityToTypeMap(project, featureTableSpec);
     Long entityMaxAge = computeMaxEntityAge(project, featureTableSpec.getEntitiesList());
@@ -293,6 +299,24 @@ public class JobService {
     } else {
       sparkOperatorApi.create(scheduledSparkApplication);
     }
+  }
+
+  private Map<String, String> getIngestionJobContext(String project, String featureTableName) {
+    Map<String, String> jobContext =
+        Map.of(
+            "project", project,
+            "featureTable", featureTableName,
+            "hash", HashUtils.projectFeatureTableHash(project, featureTableName));
+    Map<String, String> projectContext = projectContextProvider.getContext(project);
+    return Stream.concat(jobContext.entrySet().stream(), projectContext.entrySet().stream())
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private Map<String, String> getHistoricalRetrievalJobContext(String project) {
+    Map<String, String> ingestionContext = Map.of("project", project);
+    Map<String, String> projectContext = projectContextProvider.getContext(project);
+    return Stream.concat(ingestionContext.entrySet().stream(), projectContext.entrySet().stream())
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private Job createOrUpdateIngestionJob(
@@ -335,7 +359,10 @@ public class JobService {
                       StringUtils.truncate(spec.getName(), LABEL_CHARACTERS_LIMIT)));
               return app;
             });
-    SparkApplicationSpec newSparkApplicationSpec = jobTemplate.render(project, spec.getName());
+    JobTemplateRenderer renderer = new JobTemplateRenderer();
+    SparkApplicationSpec newSparkApplicationSpec =
+        renderer.render(
+            jobTemplate.sparkApplicationSpec(), getIngestionJobContext(project, spec.getName()));
     newSparkApplicationSpec.setImage(sparkImage);
 
     DataSource dataSource =
@@ -422,7 +449,10 @@ public class JobService {
     app.getMetadata().setName(getRetrievalJobId());
     app.getMetadata().setNamespace(namespace);
     app.addLabels(Map.of(JOB_TYPE_LABEL, JobType.RETRIEVAL_JOB.toString(), PROJECT_LABEL, project));
-    SparkApplicationSpec newSparkApplicationSpec = retrievalJobTemplate.render(project);
+    JobTemplateRenderer renderer = new JobTemplateRenderer();
+    SparkApplicationSpec newSparkApplicationSpec =
+        renderer.render(
+            retrievalJobTemplate.sparkApplicationSpec(), getHistoricalRetrievalJobContext(project));
     newSparkApplicationSpec.setImage(sparkImage);
     app.setSpec(newSparkApplicationSpec);
     Map<String, String> entityNameToType = getEntityToTypeMap(project, featureTableSpecs);
