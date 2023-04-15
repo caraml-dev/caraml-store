@@ -36,16 +36,16 @@ run-e2e-tests: setup-e2e-tests
 PROTOC_IMAGE_VERSION=latest
 
 build-docker-protoc:
-	docker build -t protoc:${PROTOC_IMAGE_VERSION} -f caraml-store-python/Dockerfile caraml-store-python
+	docker build -t protoc:${PROTOC_IMAGE_VERSION} -f caraml-store-sdk/python/Dockerfile caraml-store-sdk/python
 
 compile-protos-py:
 	docker run -v ${PROJECT_ROOT_DIR}:/local protoc
 
 install-python-sdk-local:
-	 pip install -e caraml-store-python
+	 pip install -e caraml-store-sdk/python
 
 package-python-sdk:
-	cd caraml-store-python; \
+	cd caraml-store-sdk/python; \
 	pip install -r requirements-build.txt; \
 	rm -rf build dist; \
 	python setup.py sdist bdist_wheel

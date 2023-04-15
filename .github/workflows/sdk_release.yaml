@@ -8,7 +8,7 @@ on:
       - "sdk/v[0-9]+.[0-9]+.[0-9]+*"
     paths:
       - ".github/workflows/sdk_release.yaml"
-      - "caraml-store-python/**"
+      - "caraml-store-sdk/python/**"
 
 jobs:
   publish:
@@ -35,4 +35,4 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
-          packages_dir: caraml-store-python/dist
+          packages_dir: caraml-store-sdk/python/dist

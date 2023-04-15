@@ -12,7 +12,7 @@ PROTOS_DIR="${PROTOS_PACKAGE_PATH}/src/main/proto"
 
 cd "${PROTOS_DIR}" || { echo "Proto directory - ${PROTOS_DIR} doesn't exist !!"; exit 2; }
 
-OUT_DIR=${PROTOS_PACKAGE_PATH}/../caraml-store-python
+OUT_DIR=${PROTOS_PACKAGE_PATH}/../caraml-store-sdk/python
 mkdir -p "${OUT_DIR}"
 
 PROTO_TYPE_SUBDIRS="core serving types"
