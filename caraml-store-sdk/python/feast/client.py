@@ -13,6 +13,7 @@ from feast.core.CoreService_pb2 import (
     ApplyFeatureTableRequest,
     ListProjectsRequest,
     ListFeatureTablesRequest,
+    DeleteFeatureTableRequest,
     GetEntityRequest,
     ListEntitiesRequest,
     ApplyEntityRequest,
@@ -369,3 +370,13 @@ class Client:
         request = GetJobRequest(job_id=job_id)
         response = self._job_service.GetJob(request)
         return response.job
+
+    def delete_feature_table(self, feature_table: str, project: str):
+        """
+        Delete Feature Table
+        Args:
+            feature_table: feature table name
+            project: project name
+        """
+        request = DeleteFeatureTableRequest(name=feature_table, project=project)
+        self._core_service.DeleteFeatureTable(request)
