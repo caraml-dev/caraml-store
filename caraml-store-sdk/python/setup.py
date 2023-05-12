@@ -39,7 +39,7 @@ setup(
     packages=find_packages(exclude=("tests",)),
     install_requires=REQUIRED,
     extras_require=EXTRA_REQUIRED,
-    use_scm_version={"root": "..", "relative_to": __file__, "tag_regex": TAG_REGEX},
+    use_scm_version={"root": "../..", "relative_to": __file__, "tag_regex": TAG_REGEX},
     setup_requires=["setuptools_scm"],
     # https://stackoverflow.com/questions/28509965/setuptools-development-requirements
     # Install dev requirements with: pip install -e .[dev]
