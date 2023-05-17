@@ -66,6 +66,8 @@ caraml:
       instanceId: bigtable-instance
       appProfileId: default
       enableClientSideMetrics: false
+      # Timeout configuration for BigTable client. Set 0 to use the default client configuration.
+      timeoutMs: 0
 
 grpc:
   server:

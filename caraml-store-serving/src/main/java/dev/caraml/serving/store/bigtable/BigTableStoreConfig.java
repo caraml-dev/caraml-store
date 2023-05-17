@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.threeten.bp.Duration;
 
 @Configuration
 @ConfigurationProperties(prefix = "caraml.store.bigtable")
@@ -20,18 +21,25 @@ public class BigTableStoreConfig {
   private String projectId;
   private String instanceId;
   private String appProfileId;
-
   private Boolean enableClientSideMetrics;
+  private Long timeoutMs;
 
   @Bean
   public OnlineRetriever getRetriever() {
     try {
-      BigtableDataSettings settings =
+      BigtableDataSettings.Builder builder =
           BigtableDataSettings.newBuilder()
               .setProjectId(projectId)
               .setInstanceId(instanceId)
-              .setAppProfileId(appProfileId)
-              .build();
+              .setAppProfileId(appProfileId);
+      if (timeoutMs > 0) {
+        builder
+            .stubSettings()
+            .readRowsSettings()
+            .retrySettings()
+            .setTotalTimeout(Duration.ofMillis(timeoutMs));
+      }
+      BigtableDataSettings settings = builder.build();
       if (enableClientSideMetrics) {
         BigtableDataSettings.enableBuiltinMetrics();
       }
