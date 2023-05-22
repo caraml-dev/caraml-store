@@ -10,6 +10,9 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.IdTokenCredentials;
 import com.google.auth.oauth2.IdTokenProvider;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import io.github.resilience4j.retry.annotation.Retry;
 import java.io.IOException;
 import java.net.URI;
@@ -18,11 +21,19 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 @ConditionalOnProperty(prefix = "caraml.mlp", name = "enabled", havingValue = "true")
 public class ApiClient implements ProjectProvider {
 
@@ -31,6 +42,7 @@ public class ApiClient implements ProjectProvider {
   private final Boolean authEnabled;
   private final String authTargetAudience;
   private final Integer requestTimeOutMs;
+  private final LoadingCache<String, Optional<Project>> projectCache;
 
   @Autowired
   public ApiClient(ClientConfig config) {
@@ -42,6 +54,41 @@ public class ApiClient implements ProjectProvider {
     authEnabled = config.getAuthEnabled();
     authTargetAudience = config.getAuthTargetAudience();
     requestTimeOutMs = config.getRequestTimeOutMs();
+
+    CacheLoader<String, Optional<Project>> projectCacheLoader =
+        CacheLoader.from(this::loadProjectToCache);
+    projectCache = CacheBuilder.newBuilder().build(projectCacheLoader);
+    populateCache();
+  }
+
+  @Scheduled(
+      initialDelayString = "${caraml.mlp.cache.initialDelayMs}",
+      fixedRateString = "${caraml.mlp.cache.refreshIntervalMs}")
+  public void populateCache() {
+    try {
+      List<Project> projects = listProjects();
+      Map<String, Optional<Project>> projectKeyValues =
+          projects.stream().collect(Collectors.toMap(Project::name, Optional::of));
+      projectCache.putAll(projectKeyValues);
+    } catch (FailedRequestException e) {
+      log.warn(String.format("unable to populate cache: %s", e.getMessage()));
+    }
+  }
+
+  @Override
+  public Optional<Project> getProject(String name) {
+    try {
+      return projectCache.get(name);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @NotNull
+  public Optional<Project> loadProjectToCache(@NotNull String projectName) {
+    return listProjects().stream()
+        .filter(project -> project.name().equals(projectName))
+        .findFirst();
   }
 
   private String getIdTokenFromMetadataServer() throws IOException, InterruptedException {
@@ -88,8 +135,7 @@ public class ApiClient implements ProjectProvider {
     return response;
   }
 
-  @Override
-  public List<Project> listProjects() {
+  private List<Project> listProjects() {
 
     HttpResponse<String> response = sendListProjectRequest();
     ObjectMapper objectMapper =
@@ -103,14 +149,5 @@ public class ApiClient implements ProjectProvider {
           String.format(
               "failed to parse response from MLP console. Response body: %s", response.body()));
     }
-  }
-
-  @Override
-  public Project getProject(String name) {
-    return listProjects().stream()
-        .filter(project -> project.name().equals(name))
-        .findFirst()
-        .orElseThrow(
-            () -> new FailedRequestException(String.format("Project %s does not exist", name)));
   }
 }
