@@ -186,7 +186,12 @@ public class RegistryService {
     Optional<Project> existingProject = projectRepository.findById(projectName);
     if (existingProject.isEmpty()) {
       Matchers.checkValidCharactersAllowDash(projectName, "project");
-      projectValidator.validateProject(projectName);
+      ValidationResult validationResult = projectValidator.validate(projectName);
+      if (!validationResult.isValid()) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Project is invalid: %s, Reason: %s", projectName, validationResult.message()));
+      }
     }
     Project project = existingProject.orElse(new Project(projectName));
 
@@ -474,7 +479,7 @@ public class RegistryService {
     if (projectRepository.existsById(name)) {
       throw new IllegalArgumentException(String.format("Project already exists: %s", name));
     }
-    projectValidator.validateProject(name);
+    projectValidator.validate(name);
     Project project = new Project(name);
     projectRepository.saveAndFlush(project);
   }

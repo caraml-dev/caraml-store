@@ -8,5 +8,7 @@ import org.springframework.stereotype.Component;
 @ConditionalOnMissingBean(name = "ProjectValidator")
 public class NoOpsProjectValidator implements ProjectValidator {
   @Override
-  public void validateProject(String project) throws IllegalArgumentException {}
+  public ValidationResult validate(String project) {
+    return new ValidationResult(true, "");
+  }
 }

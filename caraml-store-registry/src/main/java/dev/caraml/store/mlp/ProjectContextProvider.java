@@ -21,11 +21,19 @@ public class ProjectContextProvider implements dev.caraml.store.sparkjob.Project
   @Override
   public Map<String, String> getContext(String projectName) {
     try {
-      Project mlpProject = projectProvider.getProject(projectName);
+      Project mlpProject =
+          projectProvider
+              .getProject(projectName)
+              .orElseThrow(
+                  () ->
+                      new IllegalArgumentException(
+                          String.format("%s is not a valid MLP project", projectName)));
       return Map.of("team", mlpProject.team(), "stream", mlpProject.stream());
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       log.warn(
-          String.format("unable to get project context for %s: %s", projectName, e.getMessage()));
+          String.format(
+              "Exception encountered while retrieving project context for %s: %s",
+              projectName, e.getMessage()));
       return Map.of("team", config.getFallbackTeam(), "stream", config.getFallbackStream());
     }
   }

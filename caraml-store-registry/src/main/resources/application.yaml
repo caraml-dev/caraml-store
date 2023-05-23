@@ -11,6 +11,11 @@ caraml:
       connectionTimeOutMs: 3000
       requestTimeOutMs: 1500
       authEnabled: false
+    cache:
+      # Initial delay before scheduling the cache refresh (in milliseconds)
+      initialDelayMs: 60000
+      # Frequency of refreshing cache (in milliseconds)
+      refreshIntervalMs: 60000
     context:
       # Fallback team/stream to use in the event the MLP server is unable to return a response
       fallbackTeam: "unknown"
