@@ -4,6 +4,7 @@ import "feast/types/Value.proto";
 
 package feast.types;
 
+option go_package = "github.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/types";
 option java_package = "dev.caraml.store.protobuf.types";
 option java_outer_classname = "FieldProto";
 

@@ -15,28 +15,13 @@ test-all:
 image:
 	./gradlew jib
 
-setup-e2e-tests:
-	pip install -r e2e_tests/requirements.txt && \
-	pip install feast==$(PYTHON_SDK_VERSION) feast-spark==$(SPARK_SDK_VERSION)
+# SDK
 
-run-e2e-tests: setup-e2e-tests
-	cd e2e_tests; \
-	pytest --verbose \
-	--color=yes \
-	--registry-url $(CARAML_STORE_REGISTRY_URL) \
-	--serving-url $(CARAML_STORE_SERVING_URL) \
-	--kafka-brokers $(KAFKA_BROKERS) \
-	--bq-project $(GCP_PROJECT) \
-	--historical-feature-output-location $(GCP_BUCKET_PATH) \
-	--store-name $(STORE_NAME) \
-	--store-type $(STORE_TYPE)
+bufbuild-image:
+	docker build -f bufbuild.Dockerfile . -t caraml-store-bufbuild:build
 
-# Python SDK
-
-PROTOC_IMAGE_VERSION=latest
-
-build-docker-protoc:
-	docker build -t protoc:${PROTOC_IMAGE_VERSION} -f caraml-store-sdk/python/Dockerfile caraml-store-sdk/python
+bufbuild-proto:
+	docker run --volume "${PWD}:/caraml-store" --workdir /caraml-store/caraml-store-protobuf/src/main/proto caraml-store-bufbuild:build generate --template buf.gen.sdk.yaml
 
 compile-protos-py:
 	docker run -v ${PROJECT_ROOT_DIR}:/local protoc

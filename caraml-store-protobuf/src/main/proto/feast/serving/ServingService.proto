@@ -5,6 +5,7 @@ package feast.serving;
 import "google/protobuf/timestamp.proto";
 import "feast/types/Value.proto";
 
+option go_package = "github.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/serving";
 option java_package = "dev.caraml.store.protobuf.serving";
 option java_outer_classname = "ServingServiceProto";
 

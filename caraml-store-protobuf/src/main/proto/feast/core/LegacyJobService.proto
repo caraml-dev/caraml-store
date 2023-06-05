@@ -4,6 +4,7 @@
 syntax = "proto3";
 package feast.core;
 
+option go_package = "github.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/core";
 option java_outer_classname = "JobServiceProto";
 option java_package = "dev.caraml.store.protobuf.compat";
 
