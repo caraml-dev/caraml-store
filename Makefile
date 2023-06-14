@@ -20,8 +20,9 @@ image:
 bufbuild-image:
 	docker build -f bufbuild.Dockerfile . -t caraml-store-bufbuild:build
 
+# LegacyJobService is required on server side for backward compatibility with old clients but not required for the new SDK
 bufbuild-proto:
-	docker run --volume "${PWD}:/caraml-store" --workdir /caraml-store/caraml-store-protobuf/src/main/proto caraml-store-bufbuild:build generate --template buf.gen.sdk.yaml
+	docker run --volume "${PWD}:/caraml-store" --workdir /caraml-store/caraml-store-protobuf/src/main/proto caraml-store-bufbuild:build generate --template buf.gen.sdk.yaml --exclude-path feast/core/LegacyJobService.proto
 
 compile-protos-py:
 	docker run -v ${PROJECT_ROOT_DIR}:/local protoc
