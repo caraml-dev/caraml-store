@@ -112,7 +112,6 @@ public class StoreService {
   }
 
   private RetrievedOnlineFeatures retrieveOnlineFeatures(GetOnlineFeaturesRequest request) {
-
     String projectName = request.getProject();
     List<FeatureReference> featureReferences = request.getFeaturesList();
 
