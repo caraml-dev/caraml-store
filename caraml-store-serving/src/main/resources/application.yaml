@@ -7,7 +7,7 @@ caraml:
       # Feature spec cache expiry (in hours after last access)
       expiry: 4
       # Initial delay before scheduling the cache refresh
-      initialDelay: 5000
+      initialDelay: 100
       # Frequency of refreshing cache (in milliseconds)
       refreshInterval: 60000
 
