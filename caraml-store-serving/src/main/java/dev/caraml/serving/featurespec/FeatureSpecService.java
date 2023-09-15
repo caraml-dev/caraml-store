@@ -85,7 +85,7 @@ public class FeatureSpecService {
   }
 
   @Scheduled(
-      initialDelayString = "{caraml.registry.cache.initialDelay}",
+      initialDelayString = "${caraml.registry.cache.initialDelay}",
       fixedRateString = "${caraml.registry.cache.refreshInterval}")
   public void scheduledPopulateCache() {
     try {
