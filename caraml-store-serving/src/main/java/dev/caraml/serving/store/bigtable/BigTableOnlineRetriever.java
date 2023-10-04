@@ -104,7 +104,7 @@ public class BigTableOnlineRetriever implements SSTableOnlineRetriever<ByteStrin
                                     value,
                                     localFeatureReferences,
                                     reusedDecoder,
-                                    rowCell.getTimestamp());
+                                    rowCell.getTimestamp() / 1000);
                           } catch (IOException e) {
                             throw new RuntimeException("Failed to decode features from BigTable");
                           }
