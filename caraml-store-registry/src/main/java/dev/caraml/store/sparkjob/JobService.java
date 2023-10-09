@@ -23,6 +23,7 @@ import dev.caraml.store.sparkjob.crd.SparkApplication;
 import dev.caraml.store.sparkjob.crd.SparkApplicationSpec;
 import dev.caraml.store.sparkjob.hash.HashUtils;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
+import java.text.ParseException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -103,6 +104,13 @@ public class JobService {
 
     JobStatus jobStatus = JobStatus.JOB_STATUS_PENDING;
     if (app.getStatus() != null) {
+      if (app.getStatus().getLastSubmissionAttemptTime() != null) {
+        try {
+          startTime = Timestamps.parse(app.getStatus().getLastSubmissionAttemptTime());
+        } catch (ParseException e) {
+          throw new RuntimeException(e);
+        }
+      }
       jobStatus =
           switch (app.getStatus().getApplicationState().getState()) {
             case "COMPLETED" -> JobStatus.JOB_STATUS_DONE;

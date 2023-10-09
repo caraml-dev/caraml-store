@@ -31,6 +31,7 @@ from feast_spark.api.JobService_pb2 import (
     GetHistoricalFeaturesRequest,
     GetHistoricalFeaturesResponse,
     GetJobRequest,
+    ListJobsRequest,
     Job,
     ScheduleOfflineToOnlineIngestionJobRequest,
 )
@@ -370,6 +371,20 @@ class Client:
         request = GetJobRequest(job_id=job_id)
         response = self._job_service.GetJob(request)
         return response.job
+
+    def list_job(self, table: str, project: str, include_terminated=True) -> List[Job]:
+        """
+        List job details
+        Args:
+            table: feature table name
+            project: feast project name
+            include_terminated: include terminated jobs
+
+        Returns: List of Job protobuf object
+        """
+        request = ListJobsRequest(table_name=table, project=project, include_terminated=include_terminated)
+        response = self._job_service.ListJobs(request)
+        return response.jobs
 
     def delete_feature_table(self, feature_table: str, project: str):
         """
