@@ -13,5 +13,8 @@ import org.springframework.context.annotation.Configuration;
 public class MonitoringConfig {
   record TimerConfig(List<Double> percentiles, Integer minBucketMs, Integer maxBucketMs) {}
 
+  record EntityCountDistributionConfig(List<Double> percentiles, Integer maxExpectedCount) {}
+
   private TimerConfig timer;
+  private EntityCountDistributionConfig entityCountDistribution;
 }
