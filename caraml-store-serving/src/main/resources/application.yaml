@@ -23,6 +23,14 @@ caraml:
       minBucketMs: 1
       # Maximum expected latency
       maxBucketMs: 200
+    entityCountDistribution:
+      # Published percentiles
+      percentiles:
+        - 0.5
+        - 0.95
+        - 0.99
+      # Maximum expected entity count
+      maxExpectedCount: 150
 
   store:
     # Active store. Possible values: [redisCluster, redis, bigtable]

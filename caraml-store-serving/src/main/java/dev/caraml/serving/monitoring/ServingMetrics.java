@@ -4,6 +4,7 @@ import dev.caraml.store.protobuf.serving.ServingServiceProto.FeatureReference;
 import dev.caraml.store.protobuf.serving.ServingServiceProto.GetOnlineFeaturesRequest;
 import io.grpc.Status;
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import java.time.Duration;
@@ -61,6 +62,24 @@ public class ServingMetrics<ReqT, RespT> implements Metrics<ReqT, RespT> {
         .toList();
   }
 
+  private List<DistributionSummary> newEntityCountHistograms(
+      GetOnlineFeaturesRequest featureRequest) {
+    return featureRequest.getFeaturesList().stream()
+        .map(FeatureReference::getFeatureTable)
+        .distinct()
+        .map(
+            table ->
+                DistributionSummary.builder("caraml_serving_entity_count_histogram")
+                    .tag("project", featureRequest.getProject())
+                    .tag("feature_table", table)
+                    .publishPercentiles(
+                        config.getEntityCountDistribution().percentiles().stream()
+                            .mapToDouble(Double::doubleValue)
+                            .toArray())
+                    .register(registry))
+        .toList();
+  }
+
   private Counter newKeyRetrievalCounter(String project) {
     return Counter.builder("caraml_serving_key_retrieval_count")
         .tag("project", project)
@@ -75,6 +94,8 @@ public class ServingMetrics<ReqT, RespT> implements Metrics<ReqT, RespT> {
       newKeyRetrievalCounter(project).increment(featureRequest.getEntityRowsCount());
       newEntityCounters(featureRequest)
           .forEach(counter -> counter.increment(featureRequest.getEntityRowsCount()));
+      newEntityCountHistograms(featureRequest)
+          .forEach(histogram -> histogram.record(featureRequest.getEntityRowsCount()));
     }
   }
 
