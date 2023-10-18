@@ -27,6 +27,8 @@ object BasePipeline {
           .set("spark.redis.ssl", ssl.toString)
           .set("spark.redis.properties.maxJitter", properties.maxJitterSeconds.toString)
           .set("spark.redis.properties.pipelineSize", properties.pipelineSize.toString)
+          .set("spark.redis.properties.enableRateLimit", properties.enableRateLimit.toString)
+          .set("spark.redis.properties.ratePerSecondLimit", properties.ratePerSecondLimit.toString)
       case BigTableConfig(projectId, instanceId) =>
         conf
           .set("spark.bigtable.projectId", projectId)

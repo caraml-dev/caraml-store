@@ -46,6 +46,7 @@ __pycache__/
 .mypy_cache/
 .pytest_cache/
 .eggs/
+*.egg-info/
 
 # Environments
 .env

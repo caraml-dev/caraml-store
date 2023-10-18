@@ -22,7 +22,9 @@ case class RedisConfig(
 case class RedisWriteProperties(
     maxJitterSeconds: Int = 3600,
     pipelineSize: Int = 250,
-    ttlSeconds: Long = 0L
+    ttlSeconds: Long = 0L,
+    enableRateLimit: Boolean = false,
+    ratePerSecondLimit: Int = 50000
 )
 case class BigTableConfig(projectId: String, instanceId: String) extends StoreConfig
 
