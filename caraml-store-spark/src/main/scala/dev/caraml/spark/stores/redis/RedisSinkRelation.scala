@@ -2,12 +2,15 @@ package dev.caraml.spark.stores.redis
 
 import dev.caraml.spark.RedisWriteProperties
 import dev.caraml.spark.utils.TypeConversion
+import io.github.bucket4j.{Bandwidth, Bucket}
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.spark.metrics.source.RedisSinkMetricSource
 import org.apache.spark.sql.sources.{BaseRelation, InsertableRelation}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.{SparkConf, SparkEnv}
+
+import java.time.Duration.ofSeconds
 
 /**
   * High-level writer to Redis. Relies on `Persistence` implementation for actual storage layout.
@@ -40,8 +43,21 @@ class RedisSinkRelation(override val sqlContext: SQLContext, config: SparkRedisC
   lazy val properties: RedisWriteProperties = RedisWriteProperties(
     maxJitterSeconds = sparkConf.get("spark.redis.properties.maxJitter").toInt,
     pipelineSize = sparkConf.get("spark.redis.properties.pipelineSize").toInt,
-    ttlSeconds = config.entityMaxAge
+    ttlSeconds = config.entityMaxAge,
+    enableRateLimit = sparkConf.get("spark.redis.properties.enableRateLimit").toBoolean,
+    ratePerSecondLimit = sparkConf.get("spark.redis.properties.ratePerSecondLimit").toInt
   )
+
+  lazy private val rateLimitBucket: Bucket = Bucket
+    .builder()
+    .addLimit(
+      Bandwidth
+        .builder()
+        .capacity(properties.ratePerSecondLimit)
+        .refillIntervally(properties.ratePerSecondLimit, ofSeconds(1))
+        .build()
+    )
+    .build()
 
   override def insert(data: DataFrame, overwrite: Boolean): Unit = {
     data.foreachPartition { partition: Iterator[Row] =>
@@ -52,6 +68,9 @@ class RedisSinkRelation(override val sqlContext: SQLContext, config: SparkRedisC
 
       // grouped iterator to only allocate memory for a portion of rows
       partition.grouped(properties.pipelineSize).foreach { batch =>
+        if (properties.enableRateLimit) {
+          rateLimitBucket.asBlocking().consume(batch.length)
+        }
         val rowsWithKey: Seq[(String, Row)] = batch.map(row => dataKeyId(row) -> row)
 
         pipelineProvider.withPipeline(pipeline => {

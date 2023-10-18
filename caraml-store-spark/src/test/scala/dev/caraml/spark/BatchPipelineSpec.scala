@@ -45,6 +45,8 @@ class BatchPipelineSpec extends SparkSpec with ForAllTestContainer {
     .set("spark.metrics.conf.*.sink.statsd.port", statsDStub.port.toString)
     .set("spark.redis.properties.maxJitter", "0")
     .set("spark.redis.properties.pipelineSize", "250")
+    .set("spark.redis.properties.enableRateLimit", "false")
+    .set("spark.redis.properties.ratePerSecondLimit", "50000")
 
   trait Scope {
     val jedis = new Jedis("localhost", container.mappedPort(6379))

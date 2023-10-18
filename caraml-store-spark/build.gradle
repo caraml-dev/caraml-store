@@ -51,6 +51,7 @@ dependencies {
         }
     }
     implementation "org.json4s:json4s-ext_$scalaVersion:3.7.0-M5"
+    implementation 'com.bucket4j:bucket4j-core:8.5.0'
     testImplementation "org.scalatest:scalatest_$scalaVersion:3.2.2"
     testImplementation "org.scalacheck:scalacheck_$scalaVersion:1.14.3"
     testImplementation "com.dimafeng:testcontainers-scala-scalatest_$scalaVersion:0.40.12"

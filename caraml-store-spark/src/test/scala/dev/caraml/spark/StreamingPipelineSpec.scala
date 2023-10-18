@@ -43,6 +43,8 @@ class StreamingPipelineSpec extends SparkSpec with ForAllTestContainer {
     .set("spark.sql.streaming.checkpointLocation", generateTempPath("checkpoint"))
     .set("spark.redis.properties.maxJitter", "0")
     .set("spark.redis.properties.pipelineSize", "250")
+    .set("spark.redis.properties.enableRateLimit", "false")
+    .set("spark.redis.properties.ratePerSecondLimit", "50000")
 
   trait KafkaPublisher {
     val props = new Properties()
