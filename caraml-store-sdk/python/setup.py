@@ -16,7 +16,7 @@ REQUIRED = [
 
 EXTRA_REQUIRED = {
     "gcp": [
-        "pandas>=1.4.4",
+        "pandas>=1.0.0",
         "google-cloud-bigquery>=3.0.0",
     ]
 }

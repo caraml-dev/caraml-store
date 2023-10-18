@@ -8,6 +8,7 @@ plugins:
     out: ../../../../caraml-store-sdk/go/protos
     opt: paths=source_relative,require_unimplemented_servers=false
   - plugin: buf.build/protocolbuffers/python:v21.12
+    opt: pyi_out=./
     out: ../../../../caraml-store-sdk/python
   - plugin: buf.build/grpc/python:v1.50.0
     out: ../../../../caraml-store-sdk/python
