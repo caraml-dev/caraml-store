@@ -48,17 +48,6 @@ class RedisSinkRelation(override val sqlContext: SQLContext, config: SparkRedisC
     ratePerSecondLimit = sparkConf.get("spark.redis.properties.ratePerSecondLimit").toInt
   )
 
-  lazy private val rateLimitBucket: Bucket = Bucket
-    .builder()
-    .addLimit(
-      Bandwidth
-        .builder()
-        .capacity(properties.ratePerSecondLimit)
-        .refillIntervally(properties.ratePerSecondLimit, ofSeconds(1))
-        .build()
-    )
-    .build()
-
   override def insert(data: DataFrame, overwrite: Boolean): Unit = {
     data.foreachPartition { partition: Iterator[Row] =>
       java.security.Security.setProperty("networkaddress.cache.ttl", "3");
@@ -69,6 +58,7 @@ class RedisSinkRelation(override val sqlContext: SQLContext, config: SparkRedisC
       // grouped iterator to only allocate memory for a portion of rows
       partition.grouped(properties.pipelineSize).foreach { batch =>
         if (properties.enableRateLimit) {
+          val rateLimitBucket = RateLimiter.get(properties)
           rateLimitBucket.asBlocking().consume(batch.length)
         }
         val rowsWithKey: Seq[(String, Row)] = batch.map(row => dataKeyId(row) -> row)
