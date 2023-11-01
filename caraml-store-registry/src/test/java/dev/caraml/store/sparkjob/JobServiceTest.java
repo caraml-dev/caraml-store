@@ -161,8 +161,11 @@ public class JobServiceTest {
     SparkExecutorSpec templateExecutorSpec = new SparkExecutorSpec();
     templateDriverSpec.setCores(1);
     templateDriverSpec.setMemory("1g");
+    templateDriverSpec.setMemoryOverhead("250m");
     templateDriverSpec.setLabels(Map.of("team", "${team}"));
     templateExecutorSpec.setCores(2);
+    templateExecutorSpec.setCoreRequest("100m");
+    templateExecutorSpec.setCoreLimit("200m");
     templateExecutorSpec.setMemory("2g");
     templateSparkApplicationSpec.setDriver(templateDriverSpec);
     templateSparkApplicationSpec.setExecutor(templateExecutorSpec);
@@ -205,10 +208,13 @@ public class JobServiceTest {
     SparkDriverSpec expectedDriverSpec = new SparkDriverSpec();
     expectedDriverSpec.setCores(2);
     expectedDriverSpec.setMemory("1g");
+    expectedDriverSpec.setMemoryOverhead("250m");
     expectedDriverSpec.setLabels(Map.of("team", "some-team"));
     expectedSparkApplicationSpec.setDriver(expectedDriverSpec);
     SparkExecutorSpec expectedExecutorSpec = new SparkExecutorSpec();
     expectedExecutorSpec.setCores(2);
+    expectedExecutorSpec.setCoreRequest("100m");
+    expectedExecutorSpec.setCoreLimit("200m");
     expectedExecutorSpec.setMemory("3g");
     expectedSparkApplicationSpec.setExecutor(expectedExecutorSpec);
     expectedSparkApplicationSpec.setImage("sparkImage:latest");
