@@ -14,9 +14,11 @@ public class SparkDriverSpec {
   private List<V1Toleration> tolerations;
   private Integer cores;
   private String coreRequest;
+  private String coreLimit;
   private String mainApplicationFile;
   private String mainClass;
   private String memory;
+  private String memoryOverhead;
   private String javaOptions;
   private Map<String, String> labels;
   private String serviceAccount;

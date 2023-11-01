@@ -14,8 +14,10 @@ public class SparkExecutorSpec {
   private List<V1Toleration> tolerations;
   private Integer cores;
   private String coreRequest;
+  private String coreLimit;
   private Integer instances;
   private String memory;
+  private String memoryOverhead;
   private String javaOptions;
   private Map<String, String> labels;
   private Map<String, String> annotations;
