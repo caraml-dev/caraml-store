@@ -9,7 +9,7 @@ REQUIRES_PYTHON = ">=3.8.0"
 
 REQUIRED = [
     "grpcio>=1.50.0",
-    "protobuf>=4.21.9",
+    "protobuf>=3.20.0",
     "PyYAML>=6.0.0",
     "croniter==1.*",
 ]
