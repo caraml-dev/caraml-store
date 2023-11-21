@@ -1,5 +1,6 @@
 from google.cloud import bigquery
 import pandas as pd
+import uuid
 
 from datetime import datetime, timedelta
 
@@ -18,7 +19,7 @@ def stage_entities_to_bq(
     bq_client: bigquery.Client = bigquery.Client()
     destination = bigquery.TableReference(
         bigquery.DatasetReference(project, dataset),
-        f"_entities_{datetime.now():%Y%m%d%H%M%s}",
+        f"_entities_{uuid.uuid4()}",
     )
 
     # prevent casting ns -> ms exception inside pyarrow
