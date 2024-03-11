@@ -13,7 +13,6 @@ from pyspark import SparkContext
 from pyspark.sql import DataFrame, SparkSession, Window
 from pyspark.sql import functions as func
 from pyspark.sql.functions import (
-    broadcast,
     col,
     expr,
     monotonically_increasing_id,
@@ -636,7 +635,7 @@ def filter_feature_table_by_time_range(
     time_range_filtered_df = (
         time_range_filtered_df.repartition(200)
         .join(
-            broadcast(entities_projected), on=feature_table.entity_names, how="inner",
+            entities_projected, on=feature_table.entity_names, how="inner",
         )
         .withColumn(
             "distance",
@@ -668,7 +667,6 @@ def _read_and_verify_entity_df_from_source(
         .options(**source.spark_read_options)
         .load(source.spark_path)
     )
-
     mapped_entity_df = _map_column(entity_df, source.field_mapping)
 
     if source.event_timestamp_column not in mapped_entity_df.columns:
