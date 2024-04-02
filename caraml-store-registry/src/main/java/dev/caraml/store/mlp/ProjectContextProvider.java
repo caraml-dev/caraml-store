@@ -34,7 +34,7 @@ public class ProjectContextProvider implements dev.caraml.store.sparkjob.Project
       contextMap.put("stream", mlpProject.stream());
 
       for (Label label : mlpProject.labels()) {
-        if (check_validity(label.key()) && check_validity(label.value())){
+        if (check_validity(label.key()) && check_validity(label.value())) {
           contextMap.put(label.key(), label.value());
         }
       }
@@ -49,7 +49,7 @@ public class ProjectContextProvider implements dev.caraml.store.sparkjob.Project
     }
   }
 
-  public boolean check_validity(String input){
+  public boolean check_validity(String input) {
     // Define the regular expression pattern
     String regex = "^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$";
 
