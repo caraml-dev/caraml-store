@@ -39,7 +39,8 @@ class JobTemplateRendererTest {
     JobTemplateRenderer renderer = new JobTemplateRenderer();
     SparkApplicationSpec renderedSpec =
         renderer.render(
-            applicationSpec, Map.of("project", "some_project", "featureTable", "some_table", "team-id", "abc"));
+            applicationSpec,
+            Map.of("project", "some_project", "featureTable", "some_table", "team-id", "abc"));
     V1PodAffinityTerm renderedPodAffinityTerm =
         renderedSpec
             .getExecutor()
