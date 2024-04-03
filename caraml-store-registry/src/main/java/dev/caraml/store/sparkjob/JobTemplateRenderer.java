@@ -16,6 +16,9 @@ public class JobTemplateRenderer {
         String value = context.get(key);
         renderedTemplate = renderedTemplate.replaceAll(String.format("\\$\\{%s}", key), value);
       }
+      // replace all unsubstituted label values with empty string
+      renderedTemplate =
+          renderedTemplate.replaceAll("\\$\\{(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])\\}", "");
       return mapper.readValue(renderedTemplate, SparkApplicationSpec.class);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
