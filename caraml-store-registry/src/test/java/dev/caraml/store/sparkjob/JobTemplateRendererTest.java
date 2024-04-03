@@ -34,11 +34,12 @@ class JobTemplateRendererTest {
     antiAffinity.addRequiredDuringSchedulingIgnoredDuringExecutionItem(podAffinityTerm);
     affinity.setPodAntiAffinity(antiAffinity);
     executorSpec.setAffinity(affinity);
+    executorSpec.setLabels(Map.of("team-id", "${team-id}", "missing-label", "${missing-label}"));
     applicationSpec.setExecutor(executorSpec);
     JobTemplateRenderer renderer = new JobTemplateRenderer();
     SparkApplicationSpec renderedSpec =
         renderer.render(
-            applicationSpec, Map.of("project", "some_project", "featureTable", "some_table"));
+            applicationSpec, Map.of("project", "some_project", "featureTable", "some_table", "team-id", "abc"));
     V1PodAffinityTerm renderedPodAffinityTerm =
         renderedSpec
             .getExecutor()
@@ -46,6 +47,9 @@ class JobTemplateRendererTest {
             .getPodAntiAffinity()
             .getRequiredDuringSchedulingIgnoredDuringExecution()
             .get(0);
+    Map<String, String> executorLabels = renderedSpec.getExecutor().getLabels();
+    assertEquals("abc", executorLabels.get("team-id"));
+    assertEquals("", executorLabels.get("missing-label"));
     List<V1LabelSelectorRequirement> renderedMatchExpressions =
         renderedPodAffinityTerm.getLabelSelector().getMatchExpressions();
     assertEquals("some_table", renderedMatchExpressions.get(0).getValues().get(0));
