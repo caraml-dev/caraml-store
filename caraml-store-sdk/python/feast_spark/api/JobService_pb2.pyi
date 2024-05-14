@@ -121,14 +121,16 @@ class Job(_message.Message):
     def __init__(self, id: _Optional[str] = ..., type: _Optional[_Union[JobType, str]] = ..., status: _Optional[_Union[JobStatus, str]] = ..., hash: _Optional[str] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., retrieval: _Optional[_Union[Job.RetrievalJobMeta, _Mapping]] = ..., batch_ingestion: _Optional[_Union[Job.OfflineToOnlineMeta, _Mapping]] = ..., stream_ingestion: _Optional[_Union[Job.StreamToOnlineMeta, _Mapping]] = ..., log_uri: _Optional[str] = ..., error_message: _Optional[str] = ...) -> None: ...
 
 class ListJobsRequest(_message.Message):
-    __slots__ = ["include_terminated", "project", "table_name"]
+    __slots__ = ["include_terminated", "job_type", "project", "table_name"]
     INCLUDE_TERMINATED_FIELD_NUMBER: _ClassVar[int]
+    JOB_TYPE_FIELD_NUMBER: _ClassVar[int]
     PROJECT_FIELD_NUMBER: _ClassVar[int]
     TABLE_NAME_FIELD_NUMBER: _ClassVar[int]
     include_terminated: bool
+    job_type: JobType
     project: str
     table_name: str
-    def __init__(self, include_terminated: bool = ..., table_name: _Optional[str] = ..., project: _Optional[str] = ...) -> None: ...
+    def __init__(self, include_terminated: bool = ..., table_name: _Optional[str] = ..., project: _Optional[str] = ..., job_type: _Optional[_Union[JobType, str]] = ...) -> None: ...
 
 class ListJobsResponse(_message.Message):
     __slots__ = ["jobs"]

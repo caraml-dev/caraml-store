@@ -473,7 +473,8 @@ public class JobService {
     return sparkApplicationToJob(sparkOperatorApi.create(app));
   }
 
-  public List<Job> listJobs(Boolean includeTerminated, String project, String tableName) {
+  public List<Job> listJobs(
+      Boolean includeTerminated, String project, String tableName, JobType jobType) {
     Stream<String> equalitySelectors =
         Map.of(
                 PROJECT_LABEL,
@@ -484,11 +485,14 @@ public class JobService {
             .stream()
             .filter(es -> !es.getValue().isEmpty())
             .map(es -> String.format("%s=%s", es.getKey(), es.getValue()));
-    String jobSets =
-        Stream.of(JobType.BATCH_INGESTION_JOB, JobType.STREAM_INGESTION_JOB, JobType.RETRIEVAL_JOB)
-            .map(Enum::toString)
-            .collect(Collectors.joining(","));
-    Stream<String> setSelectors = Stream.of(String.format("%s in (%s)", JOB_TYPE_LABEL, jobSets));
+    Stream<JobType> allJobTypes =
+        Stream.of(JobType.BATCH_INGESTION_JOB, JobType.STREAM_INGESTION_JOB, JobType.RETRIEVAL_JOB);
+    Stream<JobType> jobTypesFilter =
+        jobType == JobType.INVALID_JOB ? allJobTypes : Stream.of(jobType);
+    String jobTypesFilterString =
+        jobTypesFilter.map(Enum::toString).collect(Collectors.joining(","));
+    Stream<String> setSelectors =
+        Stream.of(String.format("%s in (%s)", JOB_TYPE_LABEL, jobTypesFilterString));
     String labelSelectors =
         Stream.concat(equalitySelectors, setSelectors).collect(Collectors.joining(","));
     Stream<Job> jobStream =

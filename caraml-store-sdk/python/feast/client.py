@@ -22,6 +22,7 @@ from feast.data_source import FileSource, BigQuerySource
 from feast.entity import Entity
 from feast.feature import build_feature_references
 from feast.feature_table import FeatureTable
+from feast.job_type import JobType
 from feast.online_response import infer_online_entity_rows, OnlineResponse
 from feast.serving.ServingService_pb2_grpc import ServingServiceStub
 from feast.serving.ServingService_pb2 import GetOnlineFeaturesRequest
@@ -372,17 +373,18 @@ class Client:
         response = self._job_service.GetJob(request)
         return response.job
 
-    def list_job(self, table: str, project: str, include_terminated=True) -> List[Job]:
+    def list_job(self, table: str, project: str, include_terminated=True, job_type: JobType = JobType.INVALID_JOB) -> List[Job]:
         """
         List job details
         Args:
             table: feature table name
             project: feast project name
             include_terminated: include terminated jobs
+            job_type: filter for specific job type. The default is INVALID_JOB, which will cause all types of jobs to be returned.
 
         Returns: List of Job protobuf object
         """
-        request = ListJobsRequest(table_name=table, project=project, include_terminated=include_terminated)
+        request = ListJobsRequest(table_name=table, project=project, include_terminated=include_terminated, job_type=job_type.to_proto())
         response = self._job_service.ListJobs(request)
         return response.jobs
 
