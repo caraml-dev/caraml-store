@@ -13,6 +13,9 @@ service JobService {
     // Start job to ingest data from offline store into online store
     rpc StartOfflineToOnlineIngestionJob (StartOfflineToOnlineIngestionJobRequest) returns (StartOfflineToOnlineIngestionJobResponse);
 
+    // Start job to ingest data from streaming source into online store
+    rpc StartStreamIngestionJob(StartStreamIngestionJobRequest) returns (StartStreamIngestionJobResponse);
+
     // Start scheduled job to ingest data from offline store into online store
     rpc ScheduleOfflineToOnlineIngestionJob (ScheduleOfflineToOnlineIngestionJobRequest) returns (ScheduleOfflineToOnlineIngestionJobResponse);
 
@@ -26,7 +29,7 @@ service JobService {
     rpc ListJobs (ListJobsRequest) returns (ListJobsResponse);
 
     // List all scheduled jobs
-    rpc ListScheduledJob (ListScheduledJobRequest) returns (ListScheduledJobResponse);
+    rpc ListScheduledJobs (ListScheduledJobsRequest) returns (ListScheduledJobsResponse);
 
     // Cancel a single job
     rpc CancelJob (CancelJobRequest) returns (CancelJobResponse);
@@ -137,6 +140,18 @@ message StartOfflineToOnlineIngestionJobResponse {
   string log_uri = 4;
 }
 
+// Ingest data from streaming source into online store
+message StartStreamIngestionJobRequest {
+  // Feature table to ingest
+  string project = 1;
+  string table_name = 2;
+}
+
+message StartStreamIngestionJobResponse {
+  // Job ID assigned by Feast
+  string id = 1;
+}
+
 message ScheduleOfflineToOnlineIngestionJobRequest {
     // Feature table to ingest
     string project = 1;
@@ -205,7 +220,7 @@ message ListJobsRequest {
   string project = 3;
 }
 
-message ListScheduledJobRequest {
+message ListScheduledJobsRequest {
   string project = 1;
   string table_name = 2;
 }
@@ -214,7 +229,7 @@ message ListJobsResponse {
   repeated Job jobs = 1;
 }
 
-message ListScheduledJobResponse {
+message ListScheduledJobsResponse {
   repeated ScheduledJob jobs = 1;
 }
 

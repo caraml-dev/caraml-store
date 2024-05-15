@@ -136,7 +136,7 @@ class ListJobsResponse(_message.Message):
     jobs: _containers.RepeatedCompositeFieldContainer[Job]
     def __init__(self, jobs: _Optional[_Iterable[_Union[Job, _Mapping]]] = ...) -> None: ...
 
-class ListScheduledJobRequest(_message.Message):
+class ListScheduledJobsRequest(_message.Message):
     __slots__ = ["project", "table_name"]
     PROJECT_FIELD_NUMBER: _ClassVar[int]
     TABLE_NAME_FIELD_NUMBER: _ClassVar[int]
@@ -144,7 +144,7 @@ class ListScheduledJobRequest(_message.Message):
     table_name: str
     def __init__(self, project: _Optional[str] = ..., table_name: _Optional[str] = ...) -> None: ...
 
-class ListScheduledJobResponse(_message.Message):
+class ListScheduledJobsResponse(_message.Message):
     __slots__ = ["jobs"]
     JOBS_FIELD_NUMBER: _ClassVar[int]
     jobs: _containers.RepeatedCompositeFieldContainer[ScheduledJob]
@@ -205,6 +205,20 @@ class StartOfflineToOnlineIngestionJobResponse(_message.Message):
     log_uri: str
     table_name: str
     def __init__(self, id: _Optional[str] = ..., job_start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., table_name: _Optional[str] = ..., log_uri: _Optional[str] = ...) -> None: ...
+
+class StartStreamIngestionJobRequest(_message.Message):
+    __slots__ = ["project", "table_name"]
+    PROJECT_FIELD_NUMBER: _ClassVar[int]
+    TABLE_NAME_FIELD_NUMBER: _ClassVar[int]
+    project: str
+    table_name: str
+    def __init__(self, project: _Optional[str] = ..., table_name: _Optional[str] = ...) -> None: ...
+
+class StartStreamIngestionJobResponse(_message.Message):
+    __slots__ = ["id"]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class UnscheduleOfflineToOnlineIngestionJobRequest(_message.Message):
     __slots__ = ["project", "table_name"]

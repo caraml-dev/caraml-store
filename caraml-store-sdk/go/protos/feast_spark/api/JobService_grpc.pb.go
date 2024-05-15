@@ -20,11 +20,12 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	JobService_StartOfflineToOnlineIngestionJob_FullMethodName      = "/feast_spark.api.JobService/StartOfflineToOnlineIngestionJob"
+	JobService_StartStreamIngestionJob_FullMethodName               = "/feast_spark.api.JobService/StartStreamIngestionJob"
 	JobService_ScheduleOfflineToOnlineIngestionJob_FullMethodName   = "/feast_spark.api.JobService/ScheduleOfflineToOnlineIngestionJob"
 	JobService_UnscheduleOfflineToOnlineIngestionJob_FullMethodName = "/feast_spark.api.JobService/UnscheduleOfflineToOnlineIngestionJob"
 	JobService_GetHistoricalFeatures_FullMethodName                 = "/feast_spark.api.JobService/GetHistoricalFeatures"
 	JobService_ListJobs_FullMethodName                              = "/feast_spark.api.JobService/ListJobs"
-	JobService_ListScheduledJob_FullMethodName                      = "/feast_spark.api.JobService/ListScheduledJob"
+	JobService_ListScheduledJobs_FullMethodName                     = "/feast_spark.api.JobService/ListScheduledJobs"
 	JobService_CancelJob_FullMethodName                             = "/feast_spark.api.JobService/CancelJob"
 	JobService_GetJob_FullMethodName                                = "/feast_spark.api.JobService/GetJob"
 	JobService_GetHealthMetrics_FullMethodName                      = "/feast_spark.api.JobService/GetHealthMetrics"
@@ -36,6 +37,8 @@ const (
 type JobServiceClient interface {
 	// Start job to ingest data from offline store into online store
 	StartOfflineToOnlineIngestionJob(ctx context.Context, in *StartOfflineToOnlineIngestionJobRequest, opts ...grpc.CallOption) (*StartOfflineToOnlineIngestionJobResponse, error)
+	// Start job to ingest data from streaming source into online store
+	StartStreamIngestionJob(ctx context.Context, in *StartStreamIngestionJobRequest, opts ...grpc.CallOption) (*StartStreamIngestionJobResponse, error)
 	// Start scheduled job to ingest data from offline store into online store
 	ScheduleOfflineToOnlineIngestionJob(ctx context.Context, in *ScheduleOfflineToOnlineIngestionJobRequest, opts ...grpc.CallOption) (*ScheduleOfflineToOnlineIngestionJobResponse, error)
 	// Unschedule job to ingest data from offline store into online store
@@ -45,7 +48,7 @@ type JobServiceClient interface {
 	// List all types of jobs
 	ListJobs(ctx context.Context, in *ListJobsRequest, opts ...grpc.CallOption) (*ListJobsResponse, error)
 	// List all scheduled jobs
-	ListScheduledJob(ctx context.Context, in *ListScheduledJobRequest, opts ...grpc.CallOption) (*ListScheduledJobResponse, error)
+	ListScheduledJobs(ctx context.Context, in *ListScheduledJobsRequest, opts ...grpc.CallOption) (*ListScheduledJobsResponse, error)
 	// Cancel a single job
 	CancelJob(ctx context.Context, in *CancelJobRequest, opts ...grpc.CallOption) (*CancelJobResponse, error)
 	// Get details of a single job
@@ -65,6 +68,15 @@ func NewJobServiceClient(cc grpc.ClientConnInterface) JobServiceClient {
 func (c *jobServiceClient) StartOfflineToOnlineIngestionJob(ctx context.Context, in *StartOfflineToOnlineIngestionJobRequest, opts ...grpc.CallOption) (*StartOfflineToOnlineIngestionJobResponse, error) {
 	out := new(StartOfflineToOnlineIngestionJobResponse)
 	err := c.cc.Invoke(ctx, JobService_StartOfflineToOnlineIngestionJob_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *jobServiceClient) StartStreamIngestionJob(ctx context.Context, in *StartStreamIngestionJobRequest, opts ...grpc.CallOption) (*StartStreamIngestionJobResponse, error) {
+	out := new(StartStreamIngestionJobResponse)
+	err := c.cc.Invoke(ctx, JobService_StartStreamIngestionJob_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -107,9 +119,9 @@ func (c *jobServiceClient) ListJobs(ctx context.Context, in *ListJobsRequest, op
 	return out, nil
 }
 
-func (c *jobServiceClient) ListScheduledJob(ctx context.Context, in *ListScheduledJobRequest, opts ...grpc.CallOption) (*ListScheduledJobResponse, error) {
-	out := new(ListScheduledJobResponse)
-	err := c.cc.Invoke(ctx, JobService_ListScheduledJob_FullMethodName, in, out, opts...)
+func (c *jobServiceClient) ListScheduledJobs(ctx context.Context, in *ListScheduledJobsRequest, opts ...grpc.CallOption) (*ListScheduledJobsResponse, error) {
+	out := new(ListScheduledJobsResponse)
+	err := c.cc.Invoke(ctx, JobService_ListScheduledJobs_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -149,6 +161,8 @@ func (c *jobServiceClient) GetHealthMetrics(ctx context.Context, in *GetHealthMe
 type JobServiceServer interface {
 	// Start job to ingest data from offline store into online store
 	StartOfflineToOnlineIngestionJob(context.Context, *StartOfflineToOnlineIngestionJobRequest) (*StartOfflineToOnlineIngestionJobResponse, error)
+	// Start job to ingest data from streaming source into online store
+	StartStreamIngestionJob(context.Context, *StartStreamIngestionJobRequest) (*StartStreamIngestionJobResponse, error)
 	// Start scheduled job to ingest data from offline store into online store
 	ScheduleOfflineToOnlineIngestionJob(context.Context, *ScheduleOfflineToOnlineIngestionJobRequest) (*ScheduleOfflineToOnlineIngestionJobResponse, error)
 	// Unschedule job to ingest data from offline store into online store
@@ -158,7 +172,7 @@ type JobServiceServer interface {
 	// List all types of jobs
 	ListJobs(context.Context, *ListJobsRequest) (*ListJobsResponse, error)
 	// List all scheduled jobs
-	ListScheduledJob(context.Context, *ListScheduledJobRequest) (*ListScheduledJobResponse, error)
+	ListScheduledJobs(context.Context, *ListScheduledJobsRequest) (*ListScheduledJobsResponse, error)
 	// Cancel a single job
 	CancelJob(context.Context, *CancelJobRequest) (*CancelJobResponse, error)
 	// Get details of a single job
@@ -174,6 +188,9 @@ type UnimplementedJobServiceServer struct {
 func (UnimplementedJobServiceServer) StartOfflineToOnlineIngestionJob(context.Context, *StartOfflineToOnlineIngestionJobRequest) (*StartOfflineToOnlineIngestionJobResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartOfflineToOnlineIngestionJob not implemented")
 }
+func (UnimplementedJobServiceServer) StartStreamIngestionJob(context.Context, *StartStreamIngestionJobRequest) (*StartStreamIngestionJobResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartStreamIngestionJob not implemented")
+}
 func (UnimplementedJobServiceServer) ScheduleOfflineToOnlineIngestionJob(context.Context, *ScheduleOfflineToOnlineIngestionJobRequest) (*ScheduleOfflineToOnlineIngestionJobResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ScheduleOfflineToOnlineIngestionJob not implemented")
 }
@@ -186,8 +203,8 @@ func (UnimplementedJobServiceServer) GetHistoricalFeatures(context.Context, *Get
 func (UnimplementedJobServiceServer) ListJobs(context.Context, *ListJobsRequest) (*ListJobsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListJobs not implemented")
 }
-func (UnimplementedJobServiceServer) ListScheduledJob(context.Context, *ListScheduledJobRequest) (*ListScheduledJobResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListScheduledJob not implemented")
+func (UnimplementedJobServiceServer) ListScheduledJobs(context.Context, *ListScheduledJobsRequest) (*ListScheduledJobsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListScheduledJobs not implemented")
 }
 func (UnimplementedJobServiceServer) CancelJob(context.Context, *CancelJobRequest) (*CancelJobResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelJob not implemented")
@@ -224,6 +241,24 @@ func _JobService_StartOfflineToOnlineIngestionJob_Handler(srv interface{}, ctx c
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(JobServiceServer).StartOfflineToOnlineIngestionJob(ctx, req.(*StartOfflineToOnlineIngestionJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _JobService_StartStreamIngestionJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartStreamIngestionJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobServiceServer).StartStreamIngestionJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobService_StartStreamIngestionJob_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobServiceServer).StartStreamIngestionJob(ctx, req.(*StartStreamIngestionJobRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -300,20 +335,20 @@ func _JobService_ListJobs_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _JobService_ListScheduledJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListScheduledJobRequest)
+func _JobService_ListScheduledJobs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListScheduledJobsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(JobServiceServer).ListScheduledJob(ctx, in)
+		return srv.(JobServiceServer).ListScheduledJobs(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: JobService_ListScheduledJob_FullMethodName,
+		FullMethod: JobService_ListScheduledJobs_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(JobServiceServer).ListScheduledJob(ctx, req.(*ListScheduledJobRequest))
+		return srv.(JobServiceServer).ListScheduledJobs(ctx, req.(*ListScheduledJobsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -384,6 +419,10 @@ var JobService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _JobService_StartOfflineToOnlineIngestionJob_Handler,
 		},
 		{
+			MethodName: "StartStreamIngestionJob",
+			Handler:    _JobService_StartStreamIngestionJob_Handler,
+		},
+		{
 			MethodName: "ScheduleOfflineToOnlineIngestionJob",
 			Handler:    _JobService_ScheduleOfflineToOnlineIngestionJob_Handler,
 		},
@@ -400,8 +439,8 @@ var JobService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _JobService_ListJobs_Handler,
 		},
 		{
-			MethodName: "ListScheduledJob",
-			Handler:    _JobService_ListScheduledJob_Handler,
+			MethodName: "ListScheduledJobs",
+			Handler:    _JobService_ListScheduledJobs_Handler,
 		},
 		{
 			MethodName: "CancelJob",

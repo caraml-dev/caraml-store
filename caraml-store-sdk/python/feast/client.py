@@ -33,7 +33,8 @@ from feast_spark.api.JobService_pb2 import (
     GetJobRequest,
     ListJobsRequest,
     Job,
-    ScheduleOfflineToOnlineIngestionJobRequest, ScheduledJob, ListScheduledJobRequest,
+    ScheduleOfflineToOnlineIngestionJobRequest, ScheduledJob, ListScheduledJobsRequest, StartStreamIngestionJobResponse,
+    StartStreamIngestionJobRequest,
 )
 from feast_spark.api.JobService_pb2_grpc import JobServiceStub
 
@@ -292,6 +293,24 @@ class Client:
         request.end_date.FromDatetime(end)
         return self._job_service.StartOfflineToOnlineIngestionJob(request)
 
+    def start_stream_ingestion(
+        self,
+        feature_table: str,
+        project: str
+    ) -> StartStreamIngestionJobResponse:
+        """
+        Starts or update a stream ingestion job for the given feature table
+        Args:
+            feature_table: feature table name
+            project: Feast project name
+
+        Returns: StartStreamIngestionJobResponse
+        """
+        request = StartStreamIngestionJobRequest(
+            project=project, table_name=feature_table
+        )
+        return self._job_service.StartStreamIngestionJob(request)
+
     def schedule_offline_to_online_ingestion(
         self,
         feature_table: str,
@@ -394,7 +413,7 @@ class Client:
             table_name: Filter by table name, if non empty
         Returns: List of Scheduled Job protobuf object
         """
-        request = ListScheduledJobRequest(project=project, table_name=table_name)
+        request = ListScheduledJobsRequest(project=project, table_name=table_name)
         response = self._job_service.ListScheduledJob(request)
         return response.jobs
 

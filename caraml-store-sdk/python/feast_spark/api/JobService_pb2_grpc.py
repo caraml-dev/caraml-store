@@ -19,6 +19,11 @@ class JobServiceStub(object):
                 request_serializer=feast__spark_dot_api_dot_JobService__pb2.StartOfflineToOnlineIngestionJobRequest.SerializeToString,
                 response_deserializer=feast__spark_dot_api_dot_JobService__pb2.StartOfflineToOnlineIngestionJobResponse.FromString,
                 )
+        self.StartStreamIngestionJob = channel.unary_unary(
+                '/feast_spark.api.JobService/StartStreamIngestionJob',
+                request_serializer=feast__spark_dot_api_dot_JobService__pb2.StartStreamIngestionJobRequest.SerializeToString,
+                response_deserializer=feast__spark_dot_api_dot_JobService__pb2.StartStreamIngestionJobResponse.FromString,
+                )
         self.ScheduleOfflineToOnlineIngestionJob = channel.unary_unary(
                 '/feast_spark.api.JobService/ScheduleOfflineToOnlineIngestionJob',
                 request_serializer=feast__spark_dot_api_dot_JobService__pb2.ScheduleOfflineToOnlineIngestionJobRequest.SerializeToString,
@@ -39,10 +44,10 @@ class JobServiceStub(object):
                 request_serializer=feast__spark_dot_api_dot_JobService__pb2.ListJobsRequest.SerializeToString,
                 response_deserializer=feast__spark_dot_api_dot_JobService__pb2.ListJobsResponse.FromString,
                 )
-        self.ListScheduledJob = channel.unary_unary(
-                '/feast_spark.api.JobService/ListScheduledJob',
-                request_serializer=feast__spark_dot_api_dot_JobService__pb2.ListScheduledJobRequest.SerializeToString,
-                response_deserializer=feast__spark_dot_api_dot_JobService__pb2.ListScheduledJobResponse.FromString,
+        self.ListScheduledJobs = channel.unary_unary(
+                '/feast_spark.api.JobService/ListScheduledJobs',
+                request_serializer=feast__spark_dot_api_dot_JobService__pb2.ListScheduledJobsRequest.SerializeToString,
+                response_deserializer=feast__spark_dot_api_dot_JobService__pb2.ListScheduledJobsResponse.FromString,
                 )
         self.CancelJob = channel.unary_unary(
                 '/feast_spark.api.JobService/CancelJob',
@@ -66,6 +71,13 @@ class JobServiceServicer(object):
 
     def StartOfflineToOnlineIngestionJob(self, request, context):
         """Start job to ingest data from offline store into online store
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def StartStreamIngestionJob(self, request, context):
+        """Start job to ingest data from streaming source into online store
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -99,7 +111,7 @@ class JobServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ListScheduledJob(self, request, context):
+    def ListScheduledJobs(self, request, context):
         """List all scheduled jobs
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -135,6 +147,11 @@ def add_JobServiceServicer_to_server(servicer, server):
                     request_deserializer=feast__spark_dot_api_dot_JobService__pb2.StartOfflineToOnlineIngestionJobRequest.FromString,
                     response_serializer=feast__spark_dot_api_dot_JobService__pb2.StartOfflineToOnlineIngestionJobResponse.SerializeToString,
             ),
+            'StartStreamIngestionJob': grpc.unary_unary_rpc_method_handler(
+                    servicer.StartStreamIngestionJob,
+                    request_deserializer=feast__spark_dot_api_dot_JobService__pb2.StartStreamIngestionJobRequest.FromString,
+                    response_serializer=feast__spark_dot_api_dot_JobService__pb2.StartStreamIngestionJobResponse.SerializeToString,
+            ),
             'ScheduleOfflineToOnlineIngestionJob': grpc.unary_unary_rpc_method_handler(
                     servicer.ScheduleOfflineToOnlineIngestionJob,
                     request_deserializer=feast__spark_dot_api_dot_JobService__pb2.ScheduleOfflineToOnlineIngestionJobRequest.FromString,
@@ -155,10 +172,10 @@ def add_JobServiceServicer_to_server(servicer, server):
                     request_deserializer=feast__spark_dot_api_dot_JobService__pb2.ListJobsRequest.FromString,
                     response_serializer=feast__spark_dot_api_dot_JobService__pb2.ListJobsResponse.SerializeToString,
             ),
-            'ListScheduledJob': grpc.unary_unary_rpc_method_handler(
-                    servicer.ListScheduledJob,
-                    request_deserializer=feast__spark_dot_api_dot_JobService__pb2.ListScheduledJobRequest.FromString,
-                    response_serializer=feast__spark_dot_api_dot_JobService__pb2.ListScheduledJobResponse.SerializeToString,
+            'ListScheduledJobs': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListScheduledJobs,
+                    request_deserializer=feast__spark_dot_api_dot_JobService__pb2.ListScheduledJobsRequest.FromString,
+                    response_serializer=feast__spark_dot_api_dot_JobService__pb2.ListScheduledJobsResponse.SerializeToString,
             ),
             'CancelJob': grpc.unary_unary_rpc_method_handler(
                     servicer.CancelJob,
@@ -199,6 +216,23 @@ class JobService(object):
         return grpc.experimental.unary_unary(request, target, '/feast_spark.api.JobService/StartOfflineToOnlineIngestionJob',
             feast__spark_dot_api_dot_JobService__pb2.StartOfflineToOnlineIngestionJobRequest.SerializeToString,
             feast__spark_dot_api_dot_JobService__pb2.StartOfflineToOnlineIngestionJobResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def StartStreamIngestionJob(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/feast_spark.api.JobService/StartStreamIngestionJob',
+            feast__spark_dot_api_dot_JobService__pb2.StartStreamIngestionJobRequest.SerializeToString,
+            feast__spark_dot_api_dot_JobService__pb2.StartStreamIngestionJobResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -271,7 +305,7 @@ class JobService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def ListScheduledJob(request,
+    def ListScheduledJobs(request,
             target,
             options=(),
             channel_credentials=None,
@@ -281,9 +315,9 @@ class JobService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/feast_spark.api.JobService/ListScheduledJob',
-            feast__spark_dot_api_dot_JobService__pb2.ListScheduledJobRequest.SerializeToString,
-            feast__spark_dot_api_dot_JobService__pb2.ListScheduledJobResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/feast_spark.api.JobService/ListScheduledJobs',
+            feast__spark_dot_api_dot_JobService__pb2.ListScheduledJobsRequest.SerializeToString,
+            feast__spark_dot_api_dot_JobService__pb2.ListScheduledJobsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
