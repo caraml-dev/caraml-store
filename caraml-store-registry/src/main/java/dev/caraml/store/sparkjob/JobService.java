@@ -488,18 +488,22 @@ public class JobService {
     return sparkApplicationToJob(sparkOperatorApi.create(app));
   }
 
-  public List<Job> listJobs(Boolean includeTerminated, String project, String tableName) {
-    Stream<String> equalitySelectors =
-        Map.of(
-                PROJECT_LABEL,
-                project,
-                FEATURE_TABLE_HASH_LABEL,
-                generateProjectTableHash(project, tableName))
-            .entrySet()
-            .stream()
-            .filter(es -> !es.getValue().isEmpty())
-            .map(es -> String.format("%s=%s", es.getKey(), es.getValue()));
-    String labelSelectors = equalitySelectors.collect(Collectors.joining(","));
+  public List<Job> listJobs(
+      Boolean includeTerminated, String project, String tableName, JobType jobType) {
+    Map<String, String> selectorMap = new HashMap<>();
+    if (!project.isEmpty()) {
+      selectorMap.put(PROJECT_LABEL, project);
+    }
+    if (!tableName.isEmpty() && !project.isEmpty()) {
+      selectorMap.put(FEATURE_TABLE_HASH_LABEL, generateProjectTableHash(project, tableName));
+    }
+    if (jobType != JobType.INVALID_JOB) {
+      selectorMap.put(JOB_TYPE_LABEL, jobType.toString());
+    }
+    String labelSelectors =
+        selectorMap.entrySet().stream()
+            .map(es -> String.format("%s=%s", es.getKey(), es.getValue()))
+            .collect(Collectors.joining(","));
     Stream<Job> jobStream =
         sparkOperatorApi.list(namespace, labelSelectors).stream().map(this::sparkApplicationToJob);
     if (!includeTerminated) {
@@ -509,17 +513,17 @@ public class JobService {
   }
 
   public List<ScheduledJob> listScheduledJobs(String project, String tableName) {
-    String labelSelectors = "";
     Map<String, String> selectorMap = new HashMap<>();
     if (!project.isEmpty()) {
       selectorMap.put(PROJECT_LABEL, project);
     }
-    if (!tableName.isEmpty()) {
-      selectorMap.put(FEATURE_TABLE_LABEL, tableName);
+    if (!tableName.isEmpty() && !project.isEmpty()) {
+      selectorMap.put(FEATURE_TABLE_HASH_LABEL, generateProjectTableHash(project, tableName));
     }
-    selectorMap.entrySet().stream()
-        .map(es -> String.format("%s=%s", es.getKey(), es.getValue()))
-        .collect(Collectors.joining(","));
+    String labelSelectors =
+        selectorMap.entrySet().stream()
+            .map(es -> String.format("%s=%s", es.getKey(), es.getValue()))
+            .collect(Collectors.joining(","));
     return sparkOperatorApi.listScheduled(namespace, labelSelectors).stream()
         .map(this::scheduledSparkApplicationToScheduledJob)
         .toList();

@@ -34,7 +34,7 @@ from feast_spark.api.JobService_pb2 import (
     ListJobsRequest,
     Job,
     ScheduleOfflineToOnlineIngestionJobRequest, ScheduledJob, ListScheduledJobsRequest, StartStreamIngestionJobResponse,
-    StartStreamIngestionJobRequest,
+    StartStreamIngestionJobRequest, JobType, INVALID_JOB,
 )
 from feast_spark.api.JobService_pb2_grpc import JobServiceStub
 
@@ -391,17 +391,18 @@ class Client:
         response = self._job_service.GetJob(request)
         return response.job
 
-    def list_job(self, table: str, project: str, include_terminated=True) -> List[Job]:
+    def list_job(self, table: str = "", project: str = "", include_terminated=True, job_type: JobType = INVALID_JOB) -> List[Job]:
         """
         List job details
         Args:
+            include_terminated: include terminated jobs
             table: feature table name
             project: feast project name
-            include_terminated: include terminated jobs
+            job_type: job type
 
         Returns: List of Job protobuf object
         """
-        request = ListJobsRequest(table_name=table, project=project, include_terminated=include_terminated)
+        request = ListJobsRequest(table_name=table, project=project, include_terminated=include_terminated, type=job_type)
         response = self._job_service.ListJobs(request)
         return response.jobs
 
