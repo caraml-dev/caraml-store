@@ -14,6 +14,8 @@ import dev.caraml.store.protobuf.jobservice.JobServiceProto.ScheduleOfflineToOnl
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.ScheduledJob;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnlineIngestionJobRequest;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnlineIngestionJobResponse;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartStreamIngestionJobRequest;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartStreamIngestionJobResponse;
 import dev.caraml.store.sparkjob.JobNotFoundException;
 import dev.caraml.store.sparkjob.JobService;
 import io.grpc.stub.StreamObserver;
@@ -49,6 +51,19 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
             .setId(job.getId())
             .setTableName(request.getTableName())
             .build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void startStreamIngestionJob(
+      StartStreamIngestionJobRequest request,
+      StreamObserver<StartStreamIngestionJobResponse> responseObserver) {
+    Job job =
+        jobService.createOrUpdateStreamingIngestionJob(
+            request.getProject(), request.getTableName());
+    StartStreamIngestionJobResponse response =
+        StartStreamIngestionJobResponse.newBuilder().setId(job.getId()).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
@@ -99,13 +114,14 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
     responseObserver.onCompleted();
   }
 
+  @Override
   public void listScheduledJobs(
-      JobServiceProto.ListScheduledJobRequest request,
-      StreamObserver<JobServiceProto.ListScheduledJobResponse> responseObserver) {
+      JobServiceProto.ListScheduledJobsRequest request,
+      StreamObserver<JobServiceProto.ListScheduledJobsResponse> responseObserver) {
     List<ScheduledJob> jobs =
         jobService.listScheduledJobs(request.getProject(), request.getTableName());
-    JobServiceProto.ListScheduledJobResponse response =
-        JobServiceProto.ListScheduledJobResponse.newBuilder().addAllJobs(jobs).build();
+    JobServiceProto.ListScheduledJobsResponse response =
+        JobServiceProto.ListScheduledJobsResponse.newBuilder().addAllJobs(jobs).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
