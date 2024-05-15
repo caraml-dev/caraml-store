@@ -21,6 +21,9 @@ public interface SparkOperatorApi {
   Optional<SparkApplication> getSparkApplication(String namespace, String name)
       throws SparkOperatorApiException;
 
+  List<ScheduledSparkApplication> listScheduled(String namespace, String labelSelector)
+      throws SparkOperatorApiException;
+
   Optional<ScheduledSparkApplication> getScheduledSparkApplication(String namespace, String name)
       throws SparkOperatorApiException;
 }

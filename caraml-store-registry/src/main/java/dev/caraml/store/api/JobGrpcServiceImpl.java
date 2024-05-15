@@ -1,6 +1,7 @@
 package dev.caraml.store.api;
 
 import dev.caraml.store.protobuf.jobservice.JobServiceGrpc;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetHistoricalFeaturesRequest;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetHistoricalFeaturesResponse;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetJobRequest;
@@ -10,6 +11,7 @@ import dev.caraml.store.protobuf.jobservice.JobServiceProto.ListJobsRequest;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.ListJobsResponse;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.ScheduleOfflineToOnlineIngestionJobRequest;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.ScheduleOfflineToOnlineIngestionJobResponse;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.ScheduledJob;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnlineIngestionJobRequest;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnlineIngestionJobResponse;
 import dev.caraml.store.sparkjob.JobNotFoundException;
@@ -93,6 +95,17 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
         jobService.listJobs(
             request.getIncludeTerminated(), request.getProject(), request.getTableName());
     ListJobsResponse response = ListJobsResponse.newBuilder().addAllJobs(jobs).build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+  }
+
+  public void listScheduledJobs(
+      JobServiceProto.ListScheduledJobRequest request,
+      StreamObserver<JobServiceProto.ListScheduledJobResponse> responseObserver) {
+    List<ScheduledJob> jobs =
+        jobService.listScheduledJobs(request.getProject(), request.getTableName());
+    JobServiceProto.ListScheduledJobResponse response =
+        JobServiceProto.ListScheduledJobResponse.newBuilder().addAllJobs(jobs).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
