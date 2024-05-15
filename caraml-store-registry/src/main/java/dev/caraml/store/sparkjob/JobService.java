@@ -13,6 +13,7 @@ import dev.caraml.store.protobuf.core.SparkOverrideProto.SparkOverride;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.Job;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobStatus;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobType;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.ScheduledJob;
 import dev.caraml.store.sparkjob.adapter.BatchIngestionArgumentAdapter;
 import dev.caraml.store.sparkjob.adapter.HistoricalRetrievalArgumentAdapter;
 import dev.caraml.store.sparkjob.adapter.ScheduledBatchIngestionArgumentAdapter;
@@ -141,6 +142,20 @@ public class JobService {
       }
     }
 
+    return builder.build();
+  }
+
+  private ScheduledJob scheduledSparkApplicationToScheduledJob(ScheduledSparkApplication app) {
+    Map<String, String> labels = app.getMetadata().getLabels();
+    List<String> args = app.getSpec().getTemplate().getArguments();
+    int ingestionTimespan = Integer.parseInt(args.get(args.size() - 1));
+    ScheduledJob.Builder builder =
+        ScheduledJob.newBuilder()
+            .setId(app.getMetadata().getName())
+            .setTableName(labels.getOrDefault(FEATURE_TABLE_LABEL, ""))
+            .setProject(labels.getOrDefault(PROJECT_LABEL, ""))
+            .setCronSchedule(app.getSpec().getSchedule())
+            .setIngestionTimespan(ingestionTimespan);
     return builder.build();
   }
 
@@ -484,19 +499,30 @@ public class JobService {
             .stream()
             .filter(es -> !es.getValue().isEmpty())
             .map(es -> String.format("%s=%s", es.getKey(), es.getValue()));
-    String jobSets =
-        Stream.of(JobType.BATCH_INGESTION_JOB, JobType.STREAM_INGESTION_JOB, JobType.RETRIEVAL_JOB)
-            .map(Enum::toString)
-            .collect(Collectors.joining(","));
-    Stream<String> setSelectors = Stream.of(String.format("%s in (%s)", JOB_TYPE_LABEL, jobSets));
-    String labelSelectors =
-        Stream.concat(equalitySelectors, setSelectors).collect(Collectors.joining(","));
+    String labelSelectors = equalitySelectors.collect(Collectors.joining(","));
     Stream<Job> jobStream =
         sparkOperatorApi.list(namespace, labelSelectors).stream().map(this::sparkApplicationToJob);
     if (!includeTerminated) {
       jobStream = jobStream.filter(job -> job.getStatus() == JobStatus.JOB_STATUS_RUNNING);
     }
     return jobStream.toList();
+  }
+
+  public List<ScheduledJob> listScheduledJobs(String project, String tableName) {
+    String labelSelectors = "";
+    Map<String, String> selectorMap = new HashMap<>();
+    if (!project.isEmpty()) {
+      selectorMap.put(PROJECT_LABEL, project);
+    }
+    if (!tableName.isEmpty()) {
+      selectorMap.put(FEATURE_TABLE_LABEL, tableName);
+    }
+    selectorMap.entrySet().stream()
+        .map(es -> String.format("%s=%s", es.getKey(), es.getValue()))
+        .collect(Collectors.joining(","));
+    return sparkOperatorApi.listScheduled(namespace, labelSelectors).stream()
+        .map(this::scheduledSparkApplicationToScheduledJob)
+        .toList();
   }
 
   public Optional<Job> getJob(String id) {

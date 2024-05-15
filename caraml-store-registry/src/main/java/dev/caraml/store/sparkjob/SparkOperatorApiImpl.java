@@ -90,7 +90,9 @@ public class SparkOperatorApiImpl implements SparkOperatorApi {
   public List<SparkApplication> list(String namespace, String labelSelector)
       throws SparkOperatorApiException {
     ListOptions options = new ListOptions();
-    options.setLabelSelector(labelSelector);
+    if (!labelSelector.isEmpty()) {
+      options.setLabelSelector(labelSelector);
+    }
     try {
       return sparkApplicationApi
           .list(namespace, options)
@@ -110,6 +112,24 @@ public class SparkOperatorApiImpl implements SparkOperatorApi {
       case 200, 404 -> Optional.ofNullable(resp.getObject());
       default -> throw new SparkOperatorApiException(resp.getStatus().toString());
     };
+  }
+
+  @Override
+  public List<ScheduledSparkApplication> listScheduled(String namespace, String labelSelector)
+      throws SparkOperatorApiException {
+    ListOptions options = new ListOptions();
+    if (!labelSelector.isEmpty()) {
+      options.setLabelSelector(labelSelector);
+    }
+    try {
+      return scheduledSparkApplicationApi
+          .list(namespace, options)
+          .throwsApiException()
+          .getObject()
+          .getItems();
+    } catch (ApiException e) {
+      throw new SparkOperatorApiException(e.getMessage());
+    }
   }
 
   @Override

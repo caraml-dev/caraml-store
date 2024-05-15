@@ -25,6 +25,9 @@ service JobService {
     // List all types of jobs
     rpc ListJobs (ListJobsRequest) returns (ListJobsResponse);
 
+    // List all scheduled jobs
+    rpc ListScheduledJob (ListScheduledJobRequest) returns (ListScheduledJobResponse);
+
     // Cancel a single job
     rpc CancelJob (CancelJobRequest) returns (CancelJobResponse);
 
@@ -53,6 +56,17 @@ enum JobStatus {
 	JOB_STATUS_DONE = 3;
        // The Job has encountered an error while processing its task
 	JOB_STATUS_ERROR = 4;
+}
+
+message ScheduledJob {
+  // Identifier of the Job
+  string id = 1;
+  string table_name = 2;
+  string project = 3;
+  // Timespan of the ingested data per job, in days. The data from  end of the day - timespan till end of the day will be ingested. Eg. if the job execution date is 10/4/2021, and ingestion timespan is 2, then data from 9/4/2021 00:00 to 10/4/2021 23:59 (inclusive) will be ingested.
+  int32 ingestion_timespan = 4;
+  // Crontab string. Eg. 0 13 * * *
+  string cron_schedule = 5;
 }
 
 message Job {
@@ -191,8 +205,17 @@ message ListJobsRequest {
   string project = 3;
 }
 
+message ListScheduledJobRequest {
+  string project = 1;
+  string table_name = 2;
+}
+
 message ListJobsResponse {
   repeated Job jobs = 1;
+}
+
+message ListScheduledJobResponse {
+  repeated ScheduledJob jobs = 1;
 }
 
 message GetJobRequest {

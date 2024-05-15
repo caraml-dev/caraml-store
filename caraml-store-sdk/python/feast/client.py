@@ -33,7 +33,7 @@ from feast_spark.api.JobService_pb2 import (
     GetJobRequest,
     ListJobsRequest,
     Job,
-    ScheduleOfflineToOnlineIngestionJobRequest,
+    ScheduleOfflineToOnlineIngestionJobRequest, ScheduledJob, ListScheduledJobRequest,
 )
 from feast_spark.api.JobService_pb2_grpc import JobServiceStub
 
@@ -384,6 +384,18 @@ class Client:
         """
         request = ListJobsRequest(table_name=table, project=project, include_terminated=include_terminated)
         response = self._job_service.ListJobs(request)
+        return response.jobs
+
+    def list_scheduled_job(self, project = "", table_name = "") -> List[ScheduledJob]:
+        """
+        List scheduled jobs
+        Args:
+            project: Filter by project, if non empty.
+            table_name: Filter by table name, if non empty
+        Returns: List of Scheduled Job protobuf object
+        """
+        request = ListScheduledJobRequest(project=project, table_name=table_name)
+        response = self._job_service.ListScheduledJob(request)
         return response.jobs
 
     def delete_feature_table(self, feature_table: str, project: str):

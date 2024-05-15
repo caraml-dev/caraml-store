@@ -136,6 +136,20 @@ class ListJobsResponse(_message.Message):
     jobs: _containers.RepeatedCompositeFieldContainer[Job]
     def __init__(self, jobs: _Optional[_Iterable[_Union[Job, _Mapping]]] = ...) -> None: ...
 
+class ListScheduledJobRequest(_message.Message):
+    __slots__ = ["project", "table_name"]
+    PROJECT_FIELD_NUMBER: _ClassVar[int]
+    TABLE_NAME_FIELD_NUMBER: _ClassVar[int]
+    project: str
+    table_name: str
+    def __init__(self, project: _Optional[str] = ..., table_name: _Optional[str] = ...) -> None: ...
+
+class ListScheduledJobResponse(_message.Message):
+    __slots__ = ["jobs"]
+    JOBS_FIELD_NUMBER: _ClassVar[int]
+    jobs: _containers.RepeatedCompositeFieldContainer[ScheduledJob]
+    def __init__(self, jobs: _Optional[_Iterable[_Union[ScheduledJob, _Mapping]]] = ...) -> None: ...
+
 class ScheduleOfflineToOnlineIngestionJobRequest(_message.Message):
     __slots__ = ["cron_schedule", "ingestion_timespan", "project", "table_name"]
     CRON_SCHEDULE_FIELD_NUMBER: _ClassVar[int]
@@ -151,6 +165,20 @@ class ScheduleOfflineToOnlineIngestionJobRequest(_message.Message):
 class ScheduleOfflineToOnlineIngestionJobResponse(_message.Message):
     __slots__ = []
     def __init__(self) -> None: ...
+
+class ScheduledJob(_message.Message):
+    __slots__ = ["cron_schedule", "id", "ingestion_timespan", "project", "table_name"]
+    CRON_SCHEDULE_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    INGESTION_TIMESPAN_FIELD_NUMBER: _ClassVar[int]
+    PROJECT_FIELD_NUMBER: _ClassVar[int]
+    TABLE_NAME_FIELD_NUMBER: _ClassVar[int]
+    cron_schedule: str
+    id: str
+    ingestion_timespan: int
+    project: str
+    table_name: str
+    def __init__(self, id: _Optional[str] = ..., table_name: _Optional[str] = ..., project: _Optional[str] = ..., ingestion_timespan: _Optional[int] = ..., cron_schedule: _Optional[str] = ...) -> None: ...
 
 class StartOfflineToOnlineIngestionJobRequest(_message.Message):
     __slots__ = ["delta_ingestion", "end_date", "project", "start_date", "table_name"]
