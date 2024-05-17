@@ -82,7 +82,7 @@ class GetJobResponse(_message.Message):
     def __init__(self, job: _Optional[_Union[Job, _Mapping]] = ...) -> None: ...
 
 class Job(_message.Message):
-    __slots__ = ["batch_ingestion", "error_message", "hash", "id", "log_uri", "retrieval", "start_time", "status", "stream_ingestion", "type"]
+    __slots__ = ["batch_ingestion", "error_message", "hash", "id", "log_uri", "project", "retrieval", "start_time", "status", "stream_ingestion", "type"]
     class OfflineToOnlineMeta(_message.Message):
         __slots__ = ["table_name"]
         TABLE_NAME_FIELD_NUMBER: _ClassVar[int]
@@ -103,6 +103,7 @@ class Job(_message.Message):
     HASH_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
     LOG_URI_FIELD_NUMBER: _ClassVar[int]
+    PROJECT_FIELD_NUMBER: _ClassVar[int]
     RETRIEVAL_FIELD_NUMBER: _ClassVar[int]
     START_TIME_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -113,12 +114,13 @@ class Job(_message.Message):
     hash: str
     id: str
     log_uri: str
+    project: str
     retrieval: Job.RetrievalJobMeta
     start_time: _timestamp_pb2.Timestamp
     status: JobStatus
     stream_ingestion: Job.StreamToOnlineMeta
     type: JobType
-    def __init__(self, id: _Optional[str] = ..., type: _Optional[_Union[JobType, str]] = ..., status: _Optional[_Union[JobStatus, str]] = ..., hash: _Optional[str] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., retrieval: _Optional[_Union[Job.RetrievalJobMeta, _Mapping]] = ..., batch_ingestion: _Optional[_Union[Job.OfflineToOnlineMeta, _Mapping]] = ..., stream_ingestion: _Optional[_Union[Job.StreamToOnlineMeta, _Mapping]] = ..., log_uri: _Optional[str] = ..., error_message: _Optional[str] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., type: _Optional[_Union[JobType, str]] = ..., status: _Optional[_Union[JobStatus, str]] = ..., hash: _Optional[str] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., retrieval: _Optional[_Union[Job.RetrievalJobMeta, _Mapping]] = ..., batch_ingestion: _Optional[_Union[Job.OfflineToOnlineMeta, _Mapping]] = ..., stream_ingestion: _Optional[_Union[Job.StreamToOnlineMeta, _Mapping]] = ..., log_uri: _Optional[str] = ..., error_message: _Optional[str] = ..., project: _Optional[str] = ...) -> None: ...
 
 class ListJobsRequest(_message.Message):
     __slots__ = ["include_terminated", "project", "table_name", "type"]

@@ -108,6 +108,9 @@ message Job {
 
   // Spark job error message, if available
   string error_message = 10;
+
+  // Project
+  string project = 11;
 }
 
 // Ingest data from offline store into online store

@@ -120,11 +120,13 @@ public class JobService {
             default -> JobStatus.JOB_STATUS_PENDING;
           };
     }
+    String project = labels.getOrDefault(PROJECT_LABEL, "");
     String tableName = labels.getOrDefault(FEATURE_TABLE_LABEL, "");
 
     Job.Builder builder =
         Job.newBuilder()
             .setId(app.getMetadata().getName())
+            .setProject(project)
             .setStartTime(startTime)
             .setStatus(jobStatus);
     switch (JobType.valueOf(labels.get(JOB_TYPE_LABEL))) {
@@ -162,7 +164,7 @@ public class JobService {
   public Job createOrUpdateStreamingIngestionJob(String project, String featureTableName) {
     FeatureTableSpec spec =
         tableRepository
-            .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(project, featureTableName)
+            .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(featureTableName, project)
             .map(ft -> ft.toProto().getSpec())
             .orElseThrow(
                 () -> {
