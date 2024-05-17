@@ -15,7 +15,7 @@ from feast.core import DataSource_pb2 as feast_dot_core_dot_DataSource__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n feast_spark/api/JobService.proto\x12\x0f\x66\x65\x61st_spark.api\x1a\x1b\x66\x65\x61st/core/DataSource.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xab\x01\n\x0cScheduledJob\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\x12\x18\n\x07project\x18\x03 \x01(\tR\x07project\x12-\n\x12ingestion_timespan\x18\x04 \x01(\x05R\x11ingestionTimespan\x12#\n\rcron_schedule\x18\x05 \x01(\tR\x0c\x63ronSchedule\"\xa6\x05\n\x03Job\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12,\n\x04type\x18\x02 \x01(\x0e\x32\x18.feast_spark.api.JobTypeR\x04type\x12\x32\n\x06status\x18\x03 \x01(\x0e\x32\x1a.feast_spark.api.JobStatusR\x06status\x12\x12\n\x04hash\x18\x04 \x01(\tR\x04hash\x12\x39\n\nstart_time\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\tstartTime\x12\x45\n\tretrieval\x18\x06 \x01(\x0b\x32%.feast_spark.api.Job.RetrievalJobMetaH\x00R\tretrieval\x12S\n\x0f\x62\x61tch_ingestion\x18\x07 \x01(\x0b\x32(.feast_spark.api.Job.OfflineToOnlineMetaH\x00R\x0e\x62\x61tchIngestion\x12T\n\x10stream_ingestion\x18\x08 \x01(\x0b\x32\'.feast_spark.api.Job.StreamToOnlineMetaH\x00R\x0fstreamIngestion\x12\x17\n\x07log_uri\x18\t \x01(\tR\x06logUri\x12#\n\rerror_message\x18\n \x01(\tR\x0c\x65rrorMessage\x1a;\n\x10RetrievalJobMeta\x12\'\n\x0foutput_location\x18\x01 \x01(\tR\x0eoutputLocation\x1a\x34\n\x13OfflineToOnlineMeta\x12\x1d\n\ntable_name\x18\x01 \x01(\tR\ttableName\x1a\x33\n\x12StreamToOnlineMeta\x12\x1d\n\ntable_name\x18\x01 \x01(\tR\ttableNameB\x06\n\x04meta\"\xfd\x01\n\'StartOfflineToOnlineIngestionJobRequest\x12\x18\n\x07project\x18\x01 \x01(\tR\x07project\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\x12\x39\n\nstart_date\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\tstartDate\x12\x35\n\x08\x65nd_date\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\x07\x65ndDate\x12\'\n\x0f\x64\x65lta_ingestion\x18\x05 \x01(\x08R\x0e\x64\x65ltaIngestion\"\xb4\x01\n(StartOfflineToOnlineIngestionJobResponse\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12@\n\x0ejob_start_time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\x0cjobStartTime\x12\x1d\n\ntable_name\x18\x03 \x01(\tR\ttableName\x12\x17\n\x07log_uri\x18\x04 \x01(\tR\x06logUri\"Y\n\x1eStartStreamIngestionJobRequest\x12\x18\n\x07project\x18\x01 \x01(\tR\x07project\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\"1\n\x1fStartStreamIngestionJobResponse\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\"\xb9\x01\n*ScheduleOfflineToOnlineIngestionJobRequest\x12\x18\n\x07project\x18\x01 \x01(\tR\x07project\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\x12-\n\x12ingestion_timespan\x18\x03 \x01(\x05R\x11ingestionTimespan\x12#\n\rcron_schedule\x18\x04 \x01(\tR\x0c\x63ronSchedule\"-\n+ScheduleOfflineToOnlineIngestionJobResponse\"g\n,UnscheduleOfflineToOnlineIngestionJobRequest\x12\x18\n\x07project\x18\x01 \x01(\tR\x07project\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\"/\n-UnscheduleOfflineToOnlineIngestionJobResponse\"\xe6\x01\n\x1cGetHistoricalFeaturesRequest\x12!\n\x0c\x66\x65\x61ture_refs\x18\x01 \x03(\tR\x0b\x66\x65\x61tureRefs\x12;\n\rentity_source\x18\x02 \x01(\x0b\x32\x16.feast.core.DataSourceR\x0c\x65ntitySource\x12\x18\n\x07project\x18\x03 \x01(\tR\x07project\x12\'\n\x0foutput_location\x18\x04 \x01(\tR\x0eoutputLocation\x12#\n\routput_format\x18\x05 \x01(\tR\x0coutputFormat\"\xb2\x01\n\x1dGetHistoricalFeaturesResponse\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12&\n\x0foutput_file_uri\x18\x02 \x01(\tR\routputFileUri\x12@\n\x0ejob_start_time\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\x0cjobStartTime\x12\x17\n\x07log_uri\x18\x04 \x01(\tR\x06logUri\"\xa7\x01\n\x0fListJobsRequest\x12-\n\x12include_terminated\x18\x01 \x01(\x08R\x11includeTerminated\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\x12\x18\n\x07project\x18\x03 \x01(\tR\x07project\x12,\n\x04type\x18\x04 \x01(\x0e\x32\x18.feast_spark.api.JobTypeR\x04type\"S\n\x18ListScheduledJobsRequest\x12\x18\n\x07project\x18\x01 \x01(\tR\x07project\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\"<\n\x10ListJobsResponse\x12(\n\x04jobs\x18\x01 \x03(\x0b\x32\x14.feast_spark.api.JobR\x04jobs\"N\n\x19ListScheduledJobsResponse\x12\x31\n\x04jobs\x18\x01 \x03(\x0b\x32\x1d.feast_spark.api.ScheduledJobR\x04jobs\"&\n\rGetJobRequest\x12\x15\n\x06job_id\x18\x01 \x01(\tR\x05jobId\"8\n\x0eGetJobResponse\x12&\n\x03job\x18\x01 \x01(\x0b\x32\x14.feast_spark.api.JobR\x03job\")\n\x10\x43\x61ncelJobRequest\x12\x15\n\x06job_id\x18\x01 \x01(\tR\x05jobId\"\x13\n\x11\x43\x61ncelJobResponse\"T\n\x17GetHealthMetricsRequest\x12\x18\n\x07project\x18\x01 \x01(\tR\x07project\x12\x1f\n\x0btable_names\x18\x02 \x03(\tR\ntableNames\"J\n\x18GetHealthMetricsResponse\x12\x16\n\x06passed\x18\x01 \x03(\tR\x06passed\x12\x16\n\x06\x66\x61iled\x18\x02 \x03(\tR\x06\x66\x61iled*`\n\x07JobType\x12\x0f\n\x0bINVALID_JOB\x10\x00\x12\x17\n\x13\x42\x41TCH_INGESTION_JOB\x10\x01\x12\x18\n\x14STREAM_INGESTION_JOB\x10\x02\x12\x11\n\rRETRIEVAL_JOB\x10\x04*~\n\tJobStatus\x12\x16\n\x12JOB_STATUS_INVALID\x10\x00\x12\x16\n\x12JOB_STATUS_PENDING\x10\x01\x12\x16\n\x12JOB_STATUS_RUNNING\x10\x02\x12\x13\n\x0fJOB_STATUS_DONE\x10\x03\x12\x14\n\x10JOB_STATUS_ERROR\x10\x04\x32\xad\t\n\nJobService\x12\x97\x01\n StartOfflineToOnlineIngestionJob\x12\x38.feast_spark.api.StartOfflineToOnlineIngestionJobRequest\x1a\x39.feast_spark.api.StartOfflineToOnlineIngestionJobResponse\x12|\n\x17StartStreamIngestionJob\x12/.feast_spark.api.StartStreamIngestionJobRequest\x1a\x30.feast_spark.api.StartStreamIngestionJobResponse\x12\xa0\x01\n#ScheduleOfflineToOnlineIngestionJob\x12;.feast_spark.api.ScheduleOfflineToOnlineIngestionJobRequest\x1a<.feast_spark.api.ScheduleOfflineToOnlineIngestionJobResponse\x12\xa6\x01\n%UnscheduleOfflineToOnlineIngestionJob\x12=.feast_spark.api.UnscheduleOfflineToOnlineIngestionJobRequest\x1a>.feast_spark.api.UnscheduleOfflineToOnlineIngestionJobResponse\x12v\n\x15GetHistoricalFeatures\x12-.feast_spark.api.GetHistoricalFeaturesRequest\x1a..feast_spark.api.GetHistoricalFeaturesResponse\x12O\n\x08ListJobs\x12 .feast_spark.api.ListJobsRequest\x1a!.feast_spark.api.ListJobsResponse\x12j\n\x11ListScheduledJobs\x12).feast_spark.api.ListScheduledJobsRequest\x1a*.feast_spark.api.ListScheduledJobsResponse\x12R\n\tCancelJob\x12!.feast_spark.api.CancelJobRequest\x1a\".feast_spark.api.CancelJobResponse\x12I\n\x06GetJob\x12\x1e.feast_spark.api.GetJobRequest\x1a\x1f.feast_spark.api.GetJobResponse\x12g\n\x10GetHealthMetrics\x12(.feast_spark.api.GetHealthMetricsRequest\x1a).feast_spark.api.GetHealthMetricsResponseB\x86\x01\n$dev.caraml.store.protobuf.jobserviceB\x0fJobServiceProtoZMgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast_spark/apib\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n feast_spark/api/JobService.proto\x12\x0f\x66\x65\x61st_spark.api\x1a\x1b\x66\x65\x61st/core/DataSource.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xab\x01\n\x0cScheduledJob\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\x12\x18\n\x07project\x18\x03 \x01(\tR\x07project\x12-\n\x12ingestion_timespan\x18\x04 \x01(\x05R\x11ingestionTimespan\x12#\n\rcron_schedule\x18\x05 \x01(\tR\x0c\x63ronSchedule\"\xc0\x05\n\x03Job\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12,\n\x04type\x18\x02 \x01(\x0e\x32\x18.feast_spark.api.JobTypeR\x04type\x12\x32\n\x06status\x18\x03 \x01(\x0e\x32\x1a.feast_spark.api.JobStatusR\x06status\x12\x12\n\x04hash\x18\x04 \x01(\tR\x04hash\x12\x39\n\nstart_time\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\tstartTime\x12\x45\n\tretrieval\x18\x06 \x01(\x0b\x32%.feast_spark.api.Job.RetrievalJobMetaH\x00R\tretrieval\x12S\n\x0f\x62\x61tch_ingestion\x18\x07 \x01(\x0b\x32(.feast_spark.api.Job.OfflineToOnlineMetaH\x00R\x0e\x62\x61tchIngestion\x12T\n\x10stream_ingestion\x18\x08 \x01(\x0b\x32\'.feast_spark.api.Job.StreamToOnlineMetaH\x00R\x0fstreamIngestion\x12\x17\n\x07log_uri\x18\t \x01(\tR\x06logUri\x12#\n\rerror_message\x18\n \x01(\tR\x0c\x65rrorMessage\x12\x18\n\x07project\x18\x0b \x01(\tR\x07project\x1a;\n\x10RetrievalJobMeta\x12\'\n\x0foutput_location\x18\x01 \x01(\tR\x0eoutputLocation\x1a\x34\n\x13OfflineToOnlineMeta\x12\x1d\n\ntable_name\x18\x01 \x01(\tR\ttableName\x1a\x33\n\x12StreamToOnlineMeta\x12\x1d\n\ntable_name\x18\x01 \x01(\tR\ttableNameB\x06\n\x04meta\"\xfd\x01\n\'StartOfflineToOnlineIngestionJobRequest\x12\x18\n\x07project\x18\x01 \x01(\tR\x07project\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\x12\x39\n\nstart_date\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\tstartDate\x12\x35\n\x08\x65nd_date\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\x07\x65ndDate\x12\'\n\x0f\x64\x65lta_ingestion\x18\x05 \x01(\x08R\x0e\x64\x65ltaIngestion\"\xb4\x01\n(StartOfflineToOnlineIngestionJobResponse\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12@\n\x0ejob_start_time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\x0cjobStartTime\x12\x1d\n\ntable_name\x18\x03 \x01(\tR\ttableName\x12\x17\n\x07log_uri\x18\x04 \x01(\tR\x06logUri\"Y\n\x1eStartStreamIngestionJobRequest\x12\x18\n\x07project\x18\x01 \x01(\tR\x07project\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\"1\n\x1fStartStreamIngestionJobResponse\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\"\xb9\x01\n*ScheduleOfflineToOnlineIngestionJobRequest\x12\x18\n\x07project\x18\x01 \x01(\tR\x07project\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\x12-\n\x12ingestion_timespan\x18\x03 \x01(\x05R\x11ingestionTimespan\x12#\n\rcron_schedule\x18\x04 \x01(\tR\x0c\x63ronSchedule\"-\n+ScheduleOfflineToOnlineIngestionJobResponse\"g\n,UnscheduleOfflineToOnlineIngestionJobRequest\x12\x18\n\x07project\x18\x01 \x01(\tR\x07project\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\"/\n-UnscheduleOfflineToOnlineIngestionJobResponse\"\xe6\x01\n\x1cGetHistoricalFeaturesRequest\x12!\n\x0c\x66\x65\x61ture_refs\x18\x01 \x03(\tR\x0b\x66\x65\x61tureRefs\x12;\n\rentity_source\x18\x02 \x01(\x0b\x32\x16.feast.core.DataSourceR\x0c\x65ntitySource\x12\x18\n\x07project\x18\x03 \x01(\tR\x07project\x12\'\n\x0foutput_location\x18\x04 \x01(\tR\x0eoutputLocation\x12#\n\routput_format\x18\x05 \x01(\tR\x0coutputFormat\"\xb2\x01\n\x1dGetHistoricalFeaturesResponse\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12&\n\x0foutput_file_uri\x18\x02 \x01(\tR\routputFileUri\x12@\n\x0ejob_start_time\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\x0cjobStartTime\x12\x17\n\x07log_uri\x18\x04 \x01(\tR\x06logUri\"\xa7\x01\n\x0fListJobsRequest\x12-\n\x12include_terminated\x18\x01 \x01(\x08R\x11includeTerminated\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\x12\x18\n\x07project\x18\x03 \x01(\tR\x07project\x12,\n\x04type\x18\x04 \x01(\x0e\x32\x18.feast_spark.api.JobTypeR\x04type\"S\n\x18ListScheduledJobsRequest\x12\x18\n\x07project\x18\x01 \x01(\tR\x07project\x12\x1d\n\ntable_name\x18\x02 \x01(\tR\ttableName\"<\n\x10ListJobsResponse\x12(\n\x04jobs\x18\x01 \x03(\x0b\x32\x14.feast_spark.api.JobR\x04jobs\"N\n\x19ListScheduledJobsResponse\x12\x31\n\x04jobs\x18\x01 \x03(\x0b\x32\x1d.feast_spark.api.ScheduledJobR\x04jobs\"&\n\rGetJobRequest\x12\x15\n\x06job_id\x18\x01 \x01(\tR\x05jobId\"8\n\x0eGetJobResponse\x12&\n\x03job\x18\x01 \x01(\x0b\x32\x14.feast_spark.api.JobR\x03job\")\n\x10\x43\x61ncelJobRequest\x12\x15\n\x06job_id\x18\x01 \x01(\tR\x05jobId\"\x13\n\x11\x43\x61ncelJobResponse\"T\n\x17GetHealthMetricsRequest\x12\x18\n\x07project\x18\x01 \x01(\tR\x07project\x12\x1f\n\x0btable_names\x18\x02 \x03(\tR\ntableNames\"J\n\x18GetHealthMetricsResponse\x12\x16\n\x06passed\x18\x01 \x03(\tR\x06passed\x12\x16\n\x06\x66\x61iled\x18\x02 \x03(\tR\x06\x66\x61iled*`\n\x07JobType\x12\x0f\n\x0bINVALID_JOB\x10\x00\x12\x17\n\x13\x42\x41TCH_INGESTION_JOB\x10\x01\x12\x18\n\x14STREAM_INGESTION_JOB\x10\x02\x12\x11\n\rRETRIEVAL_JOB\x10\x04*~\n\tJobStatus\x12\x16\n\x12JOB_STATUS_INVALID\x10\x00\x12\x16\n\x12JOB_STATUS_PENDING\x10\x01\x12\x16\n\x12JOB_STATUS_RUNNING\x10\x02\x12\x13\n\x0fJOB_STATUS_DONE\x10\x03\x12\x14\n\x10JOB_STATUS_ERROR\x10\x04\x32\xad\t\n\nJobService\x12\x97\x01\n StartOfflineToOnlineIngestionJob\x12\x38.feast_spark.api.StartOfflineToOnlineIngestionJobRequest\x1a\x39.feast_spark.api.StartOfflineToOnlineIngestionJobResponse\x12|\n\x17StartStreamIngestionJob\x12/.feast_spark.api.StartStreamIngestionJobRequest\x1a\x30.feast_spark.api.StartStreamIngestionJobResponse\x12\xa0\x01\n#ScheduleOfflineToOnlineIngestionJob\x12;.feast_spark.api.ScheduleOfflineToOnlineIngestionJobRequest\x1a<.feast_spark.api.ScheduleOfflineToOnlineIngestionJobResponse\x12\xa6\x01\n%UnscheduleOfflineToOnlineIngestionJob\x12=.feast_spark.api.UnscheduleOfflineToOnlineIngestionJobRequest\x1a>.feast_spark.api.UnscheduleOfflineToOnlineIngestionJobResponse\x12v\n\x15GetHistoricalFeatures\x12-.feast_spark.api.GetHistoricalFeaturesRequest\x1a..feast_spark.api.GetHistoricalFeaturesResponse\x12O\n\x08ListJobs\x12 .feast_spark.api.ListJobsRequest\x1a!.feast_spark.api.ListJobsResponse\x12j\n\x11ListScheduledJobs\x12).feast_spark.api.ListScheduledJobsRequest\x1a*.feast_spark.api.ListScheduledJobsResponse\x12R\n\tCancelJob\x12!.feast_spark.api.CancelJobRequest\x1a\".feast_spark.api.CancelJobResponse\x12I\n\x06GetJob\x12\x1e.feast_spark.api.GetJobRequest\x1a\x1f.feast_spark.api.GetJobResponse\x12g\n\x10GetHealthMetrics\x12(.feast_spark.api.GetHealthMetricsRequest\x1a).feast_spark.api.GetHealthMetricsResponseB\x86\x01\n$dev.caraml.store.protobuf.jobserviceB\x0fJobServiceProtoZMgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast_spark/apib\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'feast_spark.api.JobService_pb2', globals())
@@ -23,60 +23,60 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'\n$dev.caraml.store.protobuf.jobserviceB\017JobServiceProtoZMgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast_spark/api'
-  _JOBTYPE._serialized_start=3075
-  _JOBTYPE._serialized_end=3171
-  _JOBSTATUS._serialized_start=3173
-  _JOBSTATUS._serialized_end=3299
+  _JOBTYPE._serialized_start=3101
+  _JOBTYPE._serialized_end=3197
+  _JOBSTATUS._serialized_start=3199
+  _JOBSTATUS._serialized_end=3325
   _SCHEDULEDJOB._serialized_start=116
   _SCHEDULEDJOB._serialized_end=287
   _JOB._serialized_start=290
-  _JOB._serialized_end=968
-  _JOB_RETRIEVALJOBMETA._serialized_start=794
-  _JOB_RETRIEVALJOBMETA._serialized_end=853
-  _JOB_OFFLINETOONLINEMETA._serialized_start=855
-  _JOB_OFFLINETOONLINEMETA._serialized_end=907
-  _JOB_STREAMTOONLINEMETA._serialized_start=909
-  _JOB_STREAMTOONLINEMETA._serialized_end=960
-  _STARTOFFLINETOONLINEINGESTIONJOBREQUEST._serialized_start=971
-  _STARTOFFLINETOONLINEINGESTIONJOBREQUEST._serialized_end=1224
-  _STARTOFFLINETOONLINEINGESTIONJOBRESPONSE._serialized_start=1227
-  _STARTOFFLINETOONLINEINGESTIONJOBRESPONSE._serialized_end=1407
-  _STARTSTREAMINGESTIONJOBREQUEST._serialized_start=1409
-  _STARTSTREAMINGESTIONJOBREQUEST._serialized_end=1498
-  _STARTSTREAMINGESTIONJOBRESPONSE._serialized_start=1500
-  _STARTSTREAMINGESTIONJOBRESPONSE._serialized_end=1549
-  _SCHEDULEOFFLINETOONLINEINGESTIONJOBREQUEST._serialized_start=1552
-  _SCHEDULEOFFLINETOONLINEINGESTIONJOBREQUEST._serialized_end=1737
-  _SCHEDULEOFFLINETOONLINEINGESTIONJOBRESPONSE._serialized_start=1739
-  _SCHEDULEOFFLINETOONLINEINGESTIONJOBRESPONSE._serialized_end=1784
-  _UNSCHEDULEOFFLINETOONLINEINGESTIONJOBREQUEST._serialized_start=1786
-  _UNSCHEDULEOFFLINETOONLINEINGESTIONJOBREQUEST._serialized_end=1889
-  _UNSCHEDULEOFFLINETOONLINEINGESTIONJOBRESPONSE._serialized_start=1891
-  _UNSCHEDULEOFFLINETOONLINEINGESTIONJOBRESPONSE._serialized_end=1938
-  _GETHISTORICALFEATURESREQUEST._serialized_start=1941
-  _GETHISTORICALFEATURESREQUEST._serialized_end=2171
-  _GETHISTORICALFEATURESRESPONSE._serialized_start=2174
-  _GETHISTORICALFEATURESRESPONSE._serialized_end=2352
-  _LISTJOBSREQUEST._serialized_start=2355
-  _LISTJOBSREQUEST._serialized_end=2522
-  _LISTSCHEDULEDJOBSREQUEST._serialized_start=2524
-  _LISTSCHEDULEDJOBSREQUEST._serialized_end=2607
-  _LISTJOBSRESPONSE._serialized_start=2609
-  _LISTJOBSRESPONSE._serialized_end=2669
-  _LISTSCHEDULEDJOBSRESPONSE._serialized_start=2671
-  _LISTSCHEDULEDJOBSRESPONSE._serialized_end=2749
-  _GETJOBREQUEST._serialized_start=2751
-  _GETJOBREQUEST._serialized_end=2789
-  _GETJOBRESPONSE._serialized_start=2791
-  _GETJOBRESPONSE._serialized_end=2847
-  _CANCELJOBREQUEST._serialized_start=2849
-  _CANCELJOBREQUEST._serialized_end=2890
-  _CANCELJOBRESPONSE._serialized_start=2892
-  _CANCELJOBRESPONSE._serialized_end=2911
-  _GETHEALTHMETRICSREQUEST._serialized_start=2913
-  _GETHEALTHMETRICSREQUEST._serialized_end=2997
-  _GETHEALTHMETRICSRESPONSE._serialized_start=2999
-  _GETHEALTHMETRICSRESPONSE._serialized_end=3073
-  _JOBSERVICE._serialized_start=3302
-  _JOBSERVICE._serialized_end=4499
+  _JOB._serialized_end=994
+  _JOB_RETRIEVALJOBMETA._serialized_start=820
+  _JOB_RETRIEVALJOBMETA._serialized_end=879
+  _JOB_OFFLINETOONLINEMETA._serialized_start=881
+  _JOB_OFFLINETOONLINEMETA._serialized_end=933
+  _JOB_STREAMTOONLINEMETA._serialized_start=935
+  _JOB_STREAMTOONLINEMETA._serialized_end=986
+  _STARTOFFLINETOONLINEINGESTIONJOBREQUEST._serialized_start=997
+  _STARTOFFLINETOONLINEINGESTIONJOBREQUEST._serialized_end=1250
+  _STARTOFFLINETOONLINEINGESTIONJOBRESPONSE._serialized_start=1253
+  _STARTOFFLINETOONLINEINGESTIONJOBRESPONSE._serialized_end=1433
+  _STARTSTREAMINGESTIONJOBREQUEST._serialized_start=1435
+  _STARTSTREAMINGESTIONJOBREQUEST._serialized_end=1524
+  _STARTSTREAMINGESTIONJOBRESPONSE._serialized_start=1526
+  _STARTSTREAMINGESTIONJOBRESPONSE._serialized_end=1575
+  _SCHEDULEOFFLINETOONLINEINGESTIONJOBREQUEST._serialized_start=1578
+  _SCHEDULEOFFLINETOONLINEINGESTIONJOBREQUEST._serialized_end=1763
+  _SCHEDULEOFFLINETOONLINEINGESTIONJOBRESPONSE._serialized_start=1765
+  _SCHEDULEOFFLINETOONLINEINGESTIONJOBRESPONSE._serialized_end=1810
+  _UNSCHEDULEOFFLINETOONLINEINGESTIONJOBREQUEST._serialized_start=1812
+  _UNSCHEDULEOFFLINETOONLINEINGESTIONJOBREQUEST._serialized_end=1915
+  _UNSCHEDULEOFFLINETOONLINEINGESTIONJOBRESPONSE._serialized_start=1917
+  _UNSCHEDULEOFFLINETOONLINEINGESTIONJOBRESPONSE._serialized_end=1964
+  _GETHISTORICALFEATURESREQUEST._serialized_start=1967
+  _GETHISTORICALFEATURESREQUEST._serialized_end=2197
+  _GETHISTORICALFEATURESRESPONSE._serialized_start=2200
+  _GETHISTORICALFEATURESRESPONSE._serialized_end=2378
+  _LISTJOBSREQUEST._serialized_start=2381
+  _LISTJOBSREQUEST._serialized_end=2548
+  _LISTSCHEDULEDJOBSREQUEST._serialized_start=2550
+  _LISTSCHEDULEDJOBSREQUEST._serialized_end=2633
+  _LISTJOBSRESPONSE._serialized_start=2635
+  _LISTJOBSRESPONSE._serialized_end=2695
+  _LISTSCHEDULEDJOBSRESPONSE._serialized_start=2697
+  _LISTSCHEDULEDJOBSRESPONSE._serialized_end=2775
+  _GETJOBREQUEST._serialized_start=2777
+  _GETJOBREQUEST._serialized_end=2815
+  _GETJOBRESPONSE._serialized_start=2817
+  _GETJOBRESPONSE._serialized_end=2873
+  _CANCELJOBREQUEST._serialized_start=2875
+  _CANCELJOBREQUEST._serialized_end=2916
+  _CANCELJOBRESPONSE._serialized_start=2918
+  _CANCELJOBRESPONSE._serialized_end=2937
+  _GETHEALTHMETRICSREQUEST._serialized_start=2939
+  _GETHEALTHMETRICSREQUEST._serialized_end=3023
+  _GETHEALTHMETRICSRESPONSE._serialized_start=3025
+  _GETHEALTHMETRICSRESPONSE._serialized_end=3099
+  _JOBSERVICE._serialized_start=3328
+  _JOBSERVICE._serialized_end=4525
 # @@protoc_insertion_point(module_scope)

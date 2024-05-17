@@ -415,7 +415,7 @@ class Client:
         Returns: List of Scheduled Job protobuf object
         """
         request = ListScheduledJobsRequest(project=project, table_name=table_name)
-        response = self._job_service.ListScheduledJob(request)
+        response = self._job_service.ListScheduledJobs(request)
         return response.jobs
 
     def delete_feature_table(self, feature_table: str, project: str):
