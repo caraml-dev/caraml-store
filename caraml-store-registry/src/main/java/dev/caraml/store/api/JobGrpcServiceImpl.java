@@ -108,7 +108,10 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
   public void listJobs(ListJobsRequest request, StreamObserver<ListJobsResponse> responseObserver) {
     List<Job> jobs =
         jobService.listJobs(
-            request.getIncludeTerminated(), request.getProject(), request.getTableName());
+            request.getIncludeTerminated(),
+            request.getProject(),
+            request.getTableName(),
+            request.getType());
     ListJobsResponse response = ListJobsResponse.newBuilder().addAllJobs(jobs).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();

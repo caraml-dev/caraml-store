@@ -218,6 +218,7 @@ message ListJobsRequest {
   bool include_terminated = 1;
   string table_name = 2;
   string project = 3;
+  JobType type = 4;
 }
 
 message ListScheduledJobsRequest {
