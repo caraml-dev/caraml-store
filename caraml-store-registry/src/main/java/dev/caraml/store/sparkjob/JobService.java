@@ -535,6 +535,14 @@ public class JobService {
     return sparkOperatorApi.getSparkApplication(namespace, id).map(this::sparkApplicationToJob);
   }
 
+  public void cancelJob(String id) {
+    sparkOperatorApi.deleteSparkApplication(namespace, id);
+  }
+
+  public void unscheduleJob(String id) {
+    sparkOperatorApi.deleteScheduledSparkApplication(namespace, id);
+  }
+
   private String generateProjectTableHash(String project, String tableName) {
     return DigestUtils.md5Hex(String.format("%s:%s", project, tableName));
   }

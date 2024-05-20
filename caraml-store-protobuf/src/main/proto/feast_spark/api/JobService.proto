@@ -34,6 +34,9 @@ service JobService {
     // Cancel a single job
     rpc CancelJob (CancelJobRequest) returns (CancelJobResponse);
 
+    // Unschedule a job
+    rpc UnscheduleJob (UnscheduleJobRequest) returns (UnscheduleJobResponse);
+
     // Get details of a single job
     rpc GetJob (GetJobRequest) returns (GetJobResponse);
 
@@ -250,6 +253,12 @@ message CancelJobRequest{
 }
 
 message CancelJobResponse {}
+
+message UnscheduleJobRequest {
+  string job_id = 1;
+}
+
+message UnscheduleJobResponse {}
 
 message GetHealthMetricsRequest {
   string project = 1;

@@ -32,6 +32,8 @@ from feast_spark.api.JobService_pb2 import (
     GetHistoricalFeaturesResponse,
     GetJobRequest,
     ListJobsRequest,
+    CancelJobRequest,
+    UnscheduleJobRequest,
     Job,
     ScheduleOfflineToOnlineIngestionJobRequest, ScheduledJob, ListScheduledJobsRequest, StartStreamIngestionJobResponse,
     StartStreamIngestionJobRequest, JobType, INVALID_JOB,
@@ -427,3 +429,21 @@ class Client:
         """
         request = DeleteFeatureTableRequest(name=feature_table, project=project)
         self._core_service.DeleteFeatureTable(request)
+
+    def cancel_job(self, job_id: str):
+        """
+        Cancel job
+        Args:
+            job_id: spark job id
+        """
+        request = CancelJobRequest(job_id=job_id)
+        self._job_service.CancelJob(request)
+
+    def unschedule_job(self, job_id: str):
+        """
+        Unschedule job
+        Args:
+            job_id: spark job id
+        """
+        request = UnscheduleJobRequest(job_id=job_id)
+        self._job_service.UnscheduleJob(request)

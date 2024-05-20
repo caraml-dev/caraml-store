@@ -26,4 +26,9 @@ public interface SparkOperatorApi {
 
   Optional<ScheduledSparkApplication> getScheduledSparkApplication(String namespace, String name)
       throws SparkOperatorApiException;
+
+  void deleteSparkApplication(String namespace, String name) throws SparkOperatorApiException;
+
+  void deleteScheduledSparkApplication(String namespace, String name)
+      throws SparkOperatorApiException;
 }

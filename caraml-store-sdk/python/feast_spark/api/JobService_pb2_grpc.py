@@ -54,6 +54,11 @@ class JobServiceStub(object):
                 request_serializer=feast__spark_dot_api_dot_JobService__pb2.CancelJobRequest.SerializeToString,
                 response_deserializer=feast__spark_dot_api_dot_JobService__pb2.CancelJobResponse.FromString,
                 )
+        self.UnscheduleJob = channel.unary_unary(
+                '/feast_spark.api.JobService/UnscheduleJob',
+                request_serializer=feast__spark_dot_api_dot_JobService__pb2.UnscheduleJobRequest.SerializeToString,
+                response_deserializer=feast__spark_dot_api_dot_JobService__pb2.UnscheduleJobResponse.FromString,
+                )
         self.GetJob = channel.unary_unary(
                 '/feast_spark.api.JobService/GetJob',
                 request_serializer=feast__spark_dot_api_dot_JobService__pb2.GetJobRequest.SerializeToString,
@@ -125,6 +130,13 @@ class JobServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UnscheduleJob(self, request, context):
+        """Unschedule a job
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def GetJob(self, request, context):
         """Get details of a single job
         """
@@ -181,6 +193,11 @@ def add_JobServiceServicer_to_server(servicer, server):
                     servicer.CancelJob,
                     request_deserializer=feast__spark_dot_api_dot_JobService__pb2.CancelJobRequest.FromString,
                     response_serializer=feast__spark_dot_api_dot_JobService__pb2.CancelJobResponse.SerializeToString,
+            ),
+            'UnscheduleJob': grpc.unary_unary_rpc_method_handler(
+                    servicer.UnscheduleJob,
+                    request_deserializer=feast__spark_dot_api_dot_JobService__pb2.UnscheduleJobRequest.FromString,
+                    response_serializer=feast__spark_dot_api_dot_JobService__pb2.UnscheduleJobResponse.SerializeToString,
             ),
             'GetJob': grpc.unary_unary_rpc_method_handler(
                     servicer.GetJob,
@@ -335,6 +352,23 @@ class JobService(object):
         return grpc.experimental.unary_unary(request, target, '/feast_spark.api.JobService/CancelJob',
             feast__spark_dot_api_dot_JobService__pb2.CancelJobRequest.SerializeToString,
             feast__spark_dot_api_dot_JobService__pb2.CancelJobResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UnscheduleJob(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/feast_spark.api.JobService/UnscheduleJob',
+            feast__spark_dot_api_dot_JobService__pb2.UnscheduleJobRequest.SerializeToString,
+            feast__spark_dot_api_dot_JobService__pb2.UnscheduleJobResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
