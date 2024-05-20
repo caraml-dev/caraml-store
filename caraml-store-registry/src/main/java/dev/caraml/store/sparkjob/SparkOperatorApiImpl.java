@@ -142,4 +142,24 @@ public class SparkOperatorApiImpl implements SparkOperatorApi {
       default -> throw new SparkOperatorApiException(resp.getStatus().toString());
     };
   }
+
+  @Override
+  public void deleteSparkApplication(String namespace, String name)
+      throws SparkOperatorApiException {
+    try {
+      sparkApplicationApi.delete(namespace, name).throwsApiException();
+    } catch (ApiException e) {
+      throw new SparkOperatorApiException(e.getMessage());
+    }
+  }
+
+  @Override
+  public void deleteScheduledSparkApplication(String namespace, String name)
+      throws SparkOperatorApiException {
+    try {
+      scheduledSparkApplicationApi.delete(namespace, name).throwsApiException();
+    } catch (ApiException e) {
+      throw new SparkOperatorApiException(e.getMessage());
+    }
+  }
 }

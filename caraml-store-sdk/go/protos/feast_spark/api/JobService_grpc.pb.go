@@ -27,6 +27,7 @@ const (
 	JobService_ListJobs_FullMethodName                              = "/feast_spark.api.JobService/ListJobs"
 	JobService_ListScheduledJobs_FullMethodName                     = "/feast_spark.api.JobService/ListScheduledJobs"
 	JobService_CancelJob_FullMethodName                             = "/feast_spark.api.JobService/CancelJob"
+	JobService_UnscheduleJob_FullMethodName                         = "/feast_spark.api.JobService/UnscheduleJob"
 	JobService_GetJob_FullMethodName                                = "/feast_spark.api.JobService/GetJob"
 	JobService_GetHealthMetrics_FullMethodName                      = "/feast_spark.api.JobService/GetHealthMetrics"
 )
@@ -51,6 +52,8 @@ type JobServiceClient interface {
 	ListScheduledJobs(ctx context.Context, in *ListScheduledJobsRequest, opts ...grpc.CallOption) (*ListScheduledJobsResponse, error)
 	// Cancel a single job
 	CancelJob(ctx context.Context, in *CancelJobRequest, opts ...grpc.CallOption) (*CancelJobResponse, error)
+	// Unschedule a job
+	UnscheduleJob(ctx context.Context, in *UnscheduleJobRequest, opts ...grpc.CallOption) (*UnscheduleJobResponse, error)
 	// Get details of a single job
 	GetJob(ctx context.Context, in *GetJobRequest, opts ...grpc.CallOption) (*GetJobResponse, error)
 	// Get ingestion health metrics for a Feature Table
@@ -137,6 +140,15 @@ func (c *jobServiceClient) CancelJob(ctx context.Context, in *CancelJobRequest, 
 	return out, nil
 }
 
+func (c *jobServiceClient) UnscheduleJob(ctx context.Context, in *UnscheduleJobRequest, opts ...grpc.CallOption) (*UnscheduleJobResponse, error) {
+	out := new(UnscheduleJobResponse)
+	err := c.cc.Invoke(ctx, JobService_UnscheduleJob_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *jobServiceClient) GetJob(ctx context.Context, in *GetJobRequest, opts ...grpc.CallOption) (*GetJobResponse, error) {
 	out := new(GetJobResponse)
 	err := c.cc.Invoke(ctx, JobService_GetJob_FullMethodName, in, out, opts...)
@@ -175,6 +187,8 @@ type JobServiceServer interface {
 	ListScheduledJobs(context.Context, *ListScheduledJobsRequest) (*ListScheduledJobsResponse, error)
 	// Cancel a single job
 	CancelJob(context.Context, *CancelJobRequest) (*CancelJobResponse, error)
+	// Unschedule a job
+	UnscheduleJob(context.Context, *UnscheduleJobRequest) (*UnscheduleJobResponse, error)
 	// Get details of a single job
 	GetJob(context.Context, *GetJobRequest) (*GetJobResponse, error)
 	// Get ingestion health metrics for a Feature Table
@@ -208,6 +222,9 @@ func (UnimplementedJobServiceServer) ListScheduledJobs(context.Context, *ListSch
 }
 func (UnimplementedJobServiceServer) CancelJob(context.Context, *CancelJobRequest) (*CancelJobResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelJob not implemented")
+}
+func (UnimplementedJobServiceServer) UnscheduleJob(context.Context, *UnscheduleJobRequest) (*UnscheduleJobResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnscheduleJob not implemented")
 }
 func (UnimplementedJobServiceServer) GetJob(context.Context, *GetJobRequest) (*GetJobResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetJob not implemented")
@@ -371,6 +388,24 @@ func _JobService_CancelJob_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _JobService_UnscheduleJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnscheduleJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobServiceServer).UnscheduleJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobService_UnscheduleJob_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobServiceServer).UnscheduleJob(ctx, req.(*UnscheduleJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _JobService_GetJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetJobRequest)
 	if err := dec(in); err != nil {
@@ -445,6 +480,10 @@ var JobService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CancelJob",
 			Handler:    _JobService_CancelJob_Handler,
+		},
+		{
+			MethodName: "UnscheduleJob",
+			Handler:    _JobService_UnscheduleJob_Handler,
 		},
 		{
 			MethodName: "GetJob",

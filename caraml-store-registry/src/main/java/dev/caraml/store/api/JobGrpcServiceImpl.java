@@ -2,6 +2,8 @@ package dev.caraml.store.api;
 
 import dev.caraml.store.protobuf.jobservice.JobServiceGrpc;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.CancelJobRequest;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.CancelJobResponse;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetHistoricalFeaturesRequest;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetHistoricalFeaturesResponse;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.GetJobRequest;
@@ -16,6 +18,8 @@ import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnline
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartOfflineToOnlineIngestionJobResponse;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartStreamIngestionJobRequest;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartStreamIngestionJobResponse;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.UnscheduleJobRequest;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto.UnscheduleJobResponse;
 import dev.caraml.store.sparkjob.JobNotFoundException;
 import dev.caraml.store.sparkjob.JobService;
 import io.grpc.stub.StreamObserver;
@@ -137,6 +141,21 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
             .map(job -> GetJobResponse.newBuilder().setJob(job).build())
             .orElseThrow(() -> new JobNotFoundException(request.getJobId()));
     responseObserver.onNext(response);
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void cancelJob(
+      CancelJobRequest request, StreamObserver<CancelJobResponse> responseObserver) {
+    jobService.cancelJob(request.getJobId());
+    responseObserver.onNext(CancelJobResponse.getDefaultInstance());
+    responseObserver.onCompleted();
+  }
+
+  public void unscheduleJob(
+      UnscheduleJobRequest request, StreamObserver<UnscheduleJobResponse> responseObserver) {
+    jobService.unscheduleJob(request.getJobId());
+    responseObserver.onNext(UnscheduleJobResponse.getDefaultInstance());
     responseObserver.onCompleted();
   }
 }
