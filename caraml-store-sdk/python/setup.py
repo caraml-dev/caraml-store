@@ -37,6 +37,7 @@ setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(exclude=("tests",)),
+    include_package_data=True,
     install_requires=REQUIRED,
     extras_require=EXTRA_REQUIRED,
     use_scm_version={"root": "../..", "relative_to": __file__, "tag_regex": TAG_REGEX},
