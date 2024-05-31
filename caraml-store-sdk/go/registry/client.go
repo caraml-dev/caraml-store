@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"github.com/caraml-dev/caraml-store/caraml-store-sdk/go/auth"
-	servingproto "github.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/serving"
+	registryproto "github.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast_spark/api"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 
 	"github.com/opentracing/opentracing-go"
@@ -14,16 +14,9 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-// Client is a feast serving client.
-type Client interface {
-	GetOnlineFeatures(ctx context.Context, req *OnlineFeaturesRequest) (*OnlineFeaturesResponse, error)
-	GetFeastServingInfo(ctx context.Context, in *servingproto.GetFeastServingInfoRequest) (*servingproto.GetFeastServingInfoResponse, error)
-	Close() error
-}
-
 // GrpcClient is a grpc client for feast serving.
 type GrpcClient struct {
-	cli  servingproto.ServingServiceClient
+	cli  registryproto.JobServiceClient
 	conn *grpc.ClientConn
 }
 
@@ -99,34 +92,33 @@ func NewSecureGrpcClientWithDialOptions(host string, port int, security Security
 	if err != nil {
 		return nil, err
 	}
-	feastCli.cli = servingproto.NewServingServiceClient(conn)
+	feastCli.cli = registryproto.NewJobServiceClient(conn)
 	feastCli.conn = conn
 	return feastCli, nil
 }
 
-// GetOnlineFeatures gets the latest values of the request features from the Feast serving instance provided.
-func (fc *GrpcClient) GetOnlineFeatures(ctx context.Context, req *OnlineFeaturesRequest) (
-	*OnlineFeaturesResponse, error) {
-	featuresRequest, err := req.buildRequest()
-	if err != nil {
-		return nil, err
-	}
-	resp, err := fc.cli.GetOnlineFeatures(ctx, featuresRequest)
-
-	// collect unique entity refs from entity rows
-	entityRefs := make(map[string]struct{})
-	for _, entityRows := range req.Entities {
-		for ref := range entityRows {
-			entityRefs[ref] = struct{}{}
-		}
-	}
-	return &OnlineFeaturesResponse{RawResponse: resp}, err
+// ListJobs lists the spark jobs created by the registry service.
+func (fc *GrpcClient) ListJobs(ctx context.Context, req *registryproto.ListJobsRequest) ([]*registryproto.Job, error) {
+	resp, err := fc.cli.ListJobs(ctx, req)
+	return resp.Jobs, err
 }
 
-// GetFeastServingInfo gets information about the feast serving instance this client is connected to.
-func (fc *GrpcClient) GetFeastServingInfo(ctx context.Context, in *servingproto.GetFeastServingInfoRequest) (
-	*servingproto.GetFeastServingInfoResponse, error) {
-	return fc.cli.GetFeastServingInfo(ctx, in)
+// ListScheduledJobs lists the scheduled spark jobs created by the registry service.
+func (fc *GrpcClient) ListScheduledJobs(ctx context.Context, req *registryproto.ListScheduledJobsRequest) ([]*registryproto.ScheduledJob, error) {
+	resp, err := fc.cli.ListScheduledJobs(ctx, req)
+	return resp.Jobs, err
+}
+
+// StartStreamingJob start or update a streaming ingestion job.
+func (fc *GrpcClient) StartStreamingJob(ctx context.Context, req *registryproto.StartStreamIngestionJobRequest) error {
+	_, err := fc.cli.StartStreamIngestionJob(ctx, req)
+	return err
+}
+
+// ScheduleOfflineToOnlineIngestionJob schedule or update a batch ingestion job.
+func (fc *GrpcClient) ScheduleOfflineToOnlineIngestionJob(ctx context.Context, req *registryproto.ScheduleOfflineToOnlineIngestionJobRequest) error {
+	_, err := fc.cli.ScheduleOfflineToOnlineIngestionJob(ctx, req)
+	return err
 }
 
 // Close the grpc connection.
