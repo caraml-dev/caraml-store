@@ -4,11 +4,12 @@ plugins {
 
 dependencies {
     implementation project(':caraml-store-protobuf')
-    implementation 'com.google.guava:guava:26.0-jre'
+    implementation 'com.google.guava:guava:33.2.1-jre'
     implementation 'org.apache.commons:commons-lang3:3.10'
     implementation 'org.apache.avro:avro:1.10.2'
-    implementation 'com.google.cloud:google-cloud-bigtable:2.19.1'
-    implementation 'com.google.cloud:google-cloud-bigtable-bom:2.19.1'
+    implementation platform('com.google.cloud:libraries-bom:26.43.0')
+    implementation 'com.google.cloud:google-cloud-bigtable:2.40.0'
+    implementation 'commons-codec:commons-codec:1.17.1'
     implementation 'io.lettuce:lettuce-core:6.2.0.RELEASE'
     implementation 'io.netty:netty-transport-native-epoll:4.1.52.Final:linux-x86_64'
     testImplementation project(':caraml-store-testutil')

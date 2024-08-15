@@ -40,7 +40,7 @@ dependencies {
     implementation 'joda-time:joda-time:2.10.6'
     implementation "com.github.scopt:scopt_$scalaVersion:3.7.1"
     implementation 'redis.clients:jedis:4.1.1'
-    implementation('com.google.cloud.bigtable:bigtable-hbase-2.x-hadoop:1.26.3') {
+    implementation('com.google.cloud.bigtable:bigtable-hbase-2.x-hadoop:2.14.3') {
         exclude group: "org.apache.hadoop", module: "hadoop-common"
     }
     implementation "org.apache.hbase:hbase-client:$hbaseVersion"
