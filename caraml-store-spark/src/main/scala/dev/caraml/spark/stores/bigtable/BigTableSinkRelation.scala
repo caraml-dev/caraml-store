@@ -4,7 +4,7 @@ import com.google.cloud.bigtable.hbase.BigtableConfiguration
 import dev.caraml.spark.serialization.Serializer
 import dev.caraml.spark.utils.StringUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.hbase.client.Put
+import org.apache.hadoop.hbase.client.{Admin, Connection, Put}
 import org.apache.hadoop.hbase.mapred.TableOutputFormat
 import org.apache.hadoop.hbase.{HColumnDescriptor, HTableDescriptor, TableName}
 import org.apache.hadoop.mapred.JobConf
@@ -30,8 +30,12 @@ class BigTableSinkRelation(
 
   override def schema: StructType = ???
 
+  def getConnection(hadoopConfig: Configuration): Connection = {
+    BigtableConfiguration.connect(hadoopConfig)
+  }
+
   def createTable(): Unit = {
-    val btConn = BigtableConfiguration.connect(hadoopConfig)
+    val btConn = getConnection(hadoopConfig)
     try {
       val admin = btConn.getAdmin
 

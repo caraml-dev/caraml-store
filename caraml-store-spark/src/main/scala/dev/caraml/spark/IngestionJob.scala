@@ -87,6 +87,9 @@ object IngestionJob {
     opt[String](name = "bigtable")
       .action((x, c) => c.copy(store = parseJSON(x).camelizeKeys.extract[BigTableConfig]))
 
+    opt[String](name = "hbase")
+      .action((x, c) => c.copy(store = parseJSON(x).extract[HBaseConfig]))
+
     opt[String](name = "statsd")
       .action((x, c) => c.copy(metrics = Some(parseJSON(x).extract[StatsDConfig])))
 
