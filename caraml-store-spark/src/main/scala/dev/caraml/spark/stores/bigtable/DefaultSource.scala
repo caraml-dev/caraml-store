@@ -23,7 +23,7 @@ class DefaultSource extends CreatableRelationProvider {
       parameters: Map[String, String],
       data: DataFrame
   ): BaseRelation = {
-    val onlineStore = parameters.getOrElse("online_store", "bigtable")
+    val onlineStore               = parameters.getOrElse("online_store", "bigtable")
     var rel: BigTableSinkRelation = null
     println(s"onlineStore: $onlineStore")
     if (onlineStore == "bigtable") {
@@ -41,14 +41,13 @@ class DefaultSource extends CreatableRelationProvider {
 
       configureBigTableClient(bigtableConf, sqlContext)
 
-      rel =
-        new BigTableSinkRelation(
-          sqlContext,
-          new AvroSerializer,
-          SparkBigtableConfig.parse(parameters),
-          bigtableConf
-        )
-    } else if (onlineStore == "hbase"){
+      rel = new BigTableSinkRelation(
+        sqlContext,
+        new AvroSerializer,
+        SparkBigtableConfig.parse(parameters),
+        bigtableConf
+      )
+    } else if (onlineStore == "hbase") {
       val hbaseConf = new Configuration()
       hbaseConf.set("hbase.zookeeper.quorum", sqlContext.getConf(ZOOKEEPER_QUOROM_KEY))
       hbaseConf.set("hbase.zookeeper.property.clientPort", sqlContext.getConf(ZOOKEEPER_PORT_KEY))
@@ -98,5 +97,5 @@ object DefaultSource {
   private val MAX_INFLIGHT_KEY                = "spark.bigtable.maxInflightRpcs"
 
   private val ZOOKEEPER_QUOROM_KEY = "spark.hbase.zookeeper.quorum"
-  private val ZOOKEEPER_PORT_KEY = "spark.hbase.zookeeper.port"
+  private val ZOOKEEPER_PORT_KEY   = "spark.hbase.zookeeper.port"
 }

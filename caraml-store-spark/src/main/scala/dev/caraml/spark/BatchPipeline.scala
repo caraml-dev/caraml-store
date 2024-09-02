@@ -67,16 +67,16 @@ object BatchPipeline extends BasePipeline {
       .filter(rowValidator.allChecks)
 
     val onlineStore = config.store match {
-      case _: RedisConfig => "redis"
+      case _: RedisConfig    => "redis"
       case _: BigTableConfig => "bigtable"
-      case _: HBaseConfig => "hbase"
+      case _: HBaseConfig    => "hbase"
     }
 
     validRows.write
       .format(config.store match {
         case _: RedisConfig    => "dev.caraml.spark.stores.redis"
         case _: BigTableConfig => "dev.caraml.spark.stores.bigtable"
-        case _: HBaseConfig => "dev.caraml.spark.stores.bigtable"
+        case _: HBaseConfig    => "dev.caraml.spark.stores.bigtable"
       })
       .option("online_store", onlineStore)
       .option("entity_columns", featureTable.entities.map(_.name).mkString(","))
