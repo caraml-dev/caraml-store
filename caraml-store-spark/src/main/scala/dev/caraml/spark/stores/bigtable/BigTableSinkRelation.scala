@@ -119,7 +119,7 @@ class BigTableSinkRelation(
     val qualifier = "avro".getBytes
     put.addColumn(metadataColumnFamily.getBytes, qualifier, schema.asInstanceOf[String].getBytes)
 
-    val btConn = BigtableConfiguration.connect(hadoopConfig)
+    val btConn = getConnection(hadoopConfig)
     try {
       val table = btConn.getTable(TableName.valueOf(tableName))
       table.checkAndPut(

@@ -23,8 +23,9 @@ class DefaultSource extends CreatableRelationProvider {
       parameters: Map[String, String],
       data: DataFrame
   ): BaseRelation = {
-    val onlineStore = parameters.getOrElse("onlineStore", "bigtable")
+    val onlineStore = parameters.getOrElse("online_store", "bigtable")
     var rel: BigTableSinkRelation = null
+    println(s"onlineStore: $onlineStore")
     if (onlineStore == "bigtable") {
       val bigtableConf = BigtableConfiguration.configure(
         sqlContext.getConf(PROJECT_KEY),
