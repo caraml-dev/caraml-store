@@ -76,6 +76,7 @@ caraml:
       enableClientSideMetrics: false
       # Timeout configuration for BigTable client. Set 0 to use the default client configuration.
       timeoutMs: 0
+      isUsingHBaseSDK: true
 
 grpc:
   server:
