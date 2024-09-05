@@ -4,7 +4,7 @@ import com.google.cloud.bigtable.hbase.BigtableConfiguration
 import dev.caraml.spark.serialization.Serializer
 import dev.caraml.spark.utils.StringUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.hbase.client.{Admin, Connection, Put}
+import org.apache.hadoop.hbase.client.{Admin, ColumnFamilyDescriptorBuilder, Connection, Put, TableDescriptorBuilder}
 import org.apache.hadoop.hbase.mapred.TableOutputFormat
 import org.apache.hadoop.hbase.{HColumnDescriptor, HTableDescriptor, TableName}
 import org.apache.hadoop.mapred.JobConf
@@ -40,36 +40,50 @@ class BigTableSinkRelation(
       val admin = btConn.getAdmin
 
       val table = if (!admin.isTableAvailable(TableName.valueOf(tableName))) {
-        val t          = new HTableDescriptor(TableName.valueOf(tableName))
-        val metadataCF = new HColumnDescriptor(metadataColumnFamily)
-        t.addFamily(metadataCF)
-        t
+        val tableBuilder = TableDescriptorBuilder.newBuilder(TableName.valueOf(tableName))
+        val cf = ColumnFamilyDescriptorBuilder.of(metadataColumnFamily)
+        tableBuilder.setColumnFamily(cf)
+        val table = tableBuilder.build()
+        table
+//        val t          = new HTableDescriptor(TableName.valueOf(tableName))
+//        val metadataCF = new HColumnDescriptor(metadataColumnFamily)
+//        t.addFamily(metadataCF)
+//        t
       } else {
-        admin.getTableDescriptor(TableName.valueOf(tableName))
+//        val t = admin.getTableDescriptor(TableName.valueOf(tableName))
+        val t = btConn.getTable(TableName.valueOf(tableName))
+        t.getDescriptor()
       }
 
-      val featuresCF = new HColumnDescriptor(config.namespace)
-      if (config.maxAge > 0) {
-        featuresCF.setTimeToLive(config.maxAge.toInt)
+//      val featuresCF = new HColumnDescriptor(config.namespace)
+//      if (config.maxAge > 0) {
+//        featuresCF.setTimeToLive(config.maxAge.toInt)
+//      }
+//      featuresCF.setMaxVersions(1)
+      val featuresCFBuilder = ColumnFamilyDescriptorBuilder.newBuilder(config.namespace.getBytes)
+      if (config.maxAge > 0){
+        featuresCFBuilder.setTimeToLive(config.maxAge.toInt)
       }
+      featuresCFBuilder.setMaxVersions(1)
+      val featuresCF = featuresCFBuilder.build()
 
-      featuresCF.setMaxVersions(1)
-
+      println("config.namespaces: ", config.namespace)
+      val tdb = TableDescriptorBuilder.newBuilder(table)
       if (!table.getColumnFamilyNames.contains(config.namespace.getBytes)) {
-        table.addFamily(featuresCF)
-
+//        table.addFamily(featuresCF)
+        tdb.setColumnFamily(featuresCF)
         if (!admin.isTableAvailable(table.getTableName)) {
-          admin.createTable(table)
+          admin.createTable(tdb.build())
         } else {
-          admin.modifyTable(table)
+          admin.modifyTable(tdb.build())
         }
       } else if (
         config.maxAge > 0 && table
           .getColumnFamily(config.namespace.getBytes)
           .getTimeToLive != featuresCF.getTimeToLive
       ) {
-        table.modifyFamily(featuresCF)
-        admin.modifyTable(table)
+        tdb.modifyColumnFamily(featuresCF)
+        admin.modifyTable(tdb.build())
       }
     } finally {
       btConn.close()
