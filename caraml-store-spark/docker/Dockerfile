@@ -1,4 +1,4 @@
-FROM apache/spark-py:v3.1.3
+FROM --platform=linux/amd64 apache/spark-py:v3.1.3
 
 ARG GCS_CONNECTOR_VERSION=2.2.5
 ARG BQ_CONNECTOR_VERSION=0.27.1
