@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
@@ -94,7 +95,14 @@ public class HBaseSchemaRegistry {
       Result result = table.get(query);
 
       Cell last = result.getColumnLatestCell(COLUMN_FAMILY.getBytes(), QUALIFIER.getBytes());
-      Schema schema = new Schema.Parser().parse(Bytes.toString(last.getValueArray()));
+      if (last == null) {
+          throw new RuntimeException("Schema not found");
+      }
+      ByteBuffer schemaBuffer = ByteBuffer.wrap(last.getValueArray())
+          .position(last.getValueOffset())
+          .limit(last.getValueOffset() + last.getValueLength())
+          .slice();
+      Schema schema = new Schema.Parser().parse(ByteString.copyFrom(schemaBuffer).toStringUtf8());
       return new GenericDatumReader<>(schema);
     } catch (IOException e) {
       throw new RuntimeException(e);

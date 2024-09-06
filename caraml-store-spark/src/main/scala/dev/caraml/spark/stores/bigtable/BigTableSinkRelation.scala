@@ -72,10 +72,11 @@ class BigTableSinkRelation(
       if (!table.getColumnFamilyNames.contains(config.namespace.getBytes)) {
 //        table.addFamily(featuresCF)
         tdb.setColumnFamily(featuresCF)
+        val t = tdb.build()
         if (!admin.isTableAvailable(table.getTableName)) {
-          admin.createTable(tdb.build())
+          admin.createTable(t)
         } else {
-          admin.modifyTable(tdb.build())
+          admin.modifyTable(t)
         }
       } else if (
         config.maxAge > 0 && table
