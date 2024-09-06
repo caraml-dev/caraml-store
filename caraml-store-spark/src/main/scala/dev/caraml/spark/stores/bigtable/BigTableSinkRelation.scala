@@ -4,7 +4,13 @@ import com.google.cloud.bigtable.hbase.BigtableConfiguration
 import dev.caraml.spark.serialization.Serializer
 import dev.caraml.spark.utils.StringUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.hbase.client.{Admin, ColumnFamilyDescriptorBuilder, Connection, Put, TableDescriptorBuilder}
+import org.apache.hadoop.hbase.client.{
+  Admin,
+  ColumnFamilyDescriptorBuilder,
+  Connection,
+  Put,
+  TableDescriptorBuilder
+}
 import org.apache.hadoop.hbase.mapred.TableOutputFormat
 import org.apache.hadoop.hbase.{HColumnDescriptor, HTableDescriptor, TableName}
 import org.apache.hadoop.mapred.JobConf
@@ -41,7 +47,7 @@ class BigTableSinkRelation(
 
       val table = if (!admin.isTableAvailable(TableName.valueOf(tableName))) {
         val tableBuilder = TableDescriptorBuilder.newBuilder(TableName.valueOf(tableName))
-        val cf = ColumnFamilyDescriptorBuilder.of(metadataColumnFamily)
+        val cf           = ColumnFamilyDescriptorBuilder.of(metadataColumnFamily)
         tableBuilder.setColumnFamily(cf)
         val table = tableBuilder.build()
         table
@@ -61,7 +67,7 @@ class BigTableSinkRelation(
 //      }
 //      featuresCF.setMaxVersions(1)
       val featuresCFBuilder = ColumnFamilyDescriptorBuilder.newBuilder(config.namespace.getBytes)
-      if (config.maxAge > 0){
+      if (config.maxAge > 0) {
         featuresCFBuilder.setTimeToLive(config.maxAge.toInt)
       }
       featuresCFBuilder.setMaxVersions(1)

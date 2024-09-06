@@ -16,7 +16,6 @@ import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
-import org.apache.hadoop.hbase.util.Bytes;
 
 public class HBaseSchemaRegistry {
   private final Connection hbaseClient;
@@ -96,12 +95,13 @@ public class HBaseSchemaRegistry {
 
       Cell last = result.getColumnLatestCell(COLUMN_FAMILY.getBytes(), QUALIFIER.getBytes());
       if (last == null) {
-          throw new RuntimeException("Schema not found");
+        throw new RuntimeException("Schema not found");
       }
-      ByteBuffer schemaBuffer = ByteBuffer.wrap(last.getValueArray())
-          .position(last.getValueOffset())
-          .limit(last.getValueOffset() + last.getValueLength())
-          .slice();
+      ByteBuffer schemaBuffer =
+          ByteBuffer.wrap(last.getValueArray())
+              .position(last.getValueOffset())
+              .limit(last.getValueOffset() + last.getValueLength())
+              .slice();
       Schema schema = new Schema.Parser().parse(ByteString.copyFrom(schemaBuffer).toStringUtf8());
       return new GenericDatumReader<>(schema);
     } catch (IOException e) {
