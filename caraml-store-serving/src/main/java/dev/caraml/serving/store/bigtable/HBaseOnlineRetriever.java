@@ -17,7 +17,6 @@ import org.apache.avro.io.DecoderFactory;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.util.Bytes;
 
 public class HBaseOnlineRetriever implements SSTableOnlineRetriever<ByteString, Result> {
   private final Connection client;
@@ -58,31 +57,37 @@ public class HBaseOnlineRetriever implements SSTableOnlineRetriever<ByteString, 
                 return featureReferences.stream()
                     .map(ServingServiceProto.FeatureReference::getFeatureTable)
                     .distinct()
-                        .map(cf -> {
-                            List<Cell> rowCells = row.getColumnCells(cf.getBytes(), null);
-                            System.out.println("Column Family: " + cf);
-                            System.out.println("Row Cells: " + rowCells);
-                            return rowCells;
+                    .map(
+                        cf -> {
+                          List<Cell> rowCells = row.getColumnCells(cf.getBytes(), null);
+                          System.out.println("Column Family: " + cf);
+                          System.out.println("Row Cells: " + rowCells);
+                          return rowCells;
                         })
-//                    .map(cf -> row.getColumnCells(cf.getBytes(), null))
+                    //                    .map(cf -> row.getColumnCells(cf.getBytes(), null))
                     .filter(ls -> !ls.isEmpty())
                     .flatMap(
                         rowCells -> {
                           Cell rowCell = rowCells.get(0); // Latest cell
-//                          String family = Bytes.toString(rowCell.getFamilyArray());
-//                          System.out.println("rowCell: " + rowCell.toString());
-//                          ByteString value = ByteString.copyFrom(rowCell.getValueArray());
-//                          System.out.println("value: " + value);
-                            ByteBuffer valueBuffer = ByteBuffer.wrap(rowCell.getValueArray())
-                                    .position(rowCell.getValueOffset())
-                                    .limit(rowCell.getValueOffset() + rowCell.getValueLength())
-                                    .slice();
-                            ByteBuffer familyBuffer = ByteBuffer.wrap(rowCell.getFamilyArray())
-                                    .position(rowCell.getFamilyOffset())
-                                    .limit(rowCell.getFamilyOffset() + rowCell.getFamilyLength())
-                                    .slice();
-                            String family = ByteString.copyFrom(familyBuffer).toStringUtf8();
-                            ByteString value = ByteString.copyFrom(valueBuffer);
+                          //                          String family =
+                          // Bytes.toString(rowCell.getFamilyArray());
+                          //                          System.out.println("rowCell: " +
+                          // rowCell.toString());
+                          //                          ByteString value =
+                          // ByteString.copyFrom(rowCell.getValueArray());
+                          //                          System.out.println("value: " + value);
+                          ByteBuffer valueBuffer =
+                              ByteBuffer.wrap(rowCell.getValueArray())
+                                  .position(rowCell.getValueOffset())
+                                  .limit(rowCell.getValueOffset() + rowCell.getValueLength())
+                                  .slice();
+                          ByteBuffer familyBuffer =
+                              ByteBuffer.wrap(rowCell.getFamilyArray())
+                                  .position(rowCell.getFamilyOffset())
+                                  .limit(rowCell.getFamilyOffset() + rowCell.getFamilyLength())
+                                  .slice();
+                          String family = ByteString.copyFrom(familyBuffer).toStringUtf8();
+                          ByteString value = ByteString.copyFrom(valueBuffer);
 
                           List<Feature> features;
                           List<ServingServiceProto.FeatureReference> localFeatureReferences =
@@ -136,7 +141,6 @@ public class HBaseOnlineRetriever implements SSTableOnlineRetriever<ByteString, 
       Arrays.stream(rows)
           .filter(row -> !row.isEmpty())
           .forEach(row -> result.put(ByteString.copyFrom(row.getRow()), row));
-
 
       return result;
     } catch (IOException e) {
