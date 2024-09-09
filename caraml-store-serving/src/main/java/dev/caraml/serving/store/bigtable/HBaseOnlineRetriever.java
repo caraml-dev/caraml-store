@@ -57,25 +57,11 @@ public class HBaseOnlineRetriever implements SSTableOnlineRetriever<ByteString, 
                 return featureReferences.stream()
                     .map(ServingServiceProto.FeatureReference::getFeatureTable)
                     .distinct()
-                    .map(
-                        cf -> {
-                          List<Cell> rowCells = row.getColumnCells(cf.getBytes(), null);
-                          System.out.println("Column Family: " + cf);
-                          System.out.println("Row Cells: " + rowCells);
-                          return rowCells;
-                        })
-                    //                    .map(cf -> row.getColumnCells(cf.getBytes(), null))
+                    .map(cf -> row.getColumnCells(cf.getBytes(), null))
                     .filter(ls -> !ls.isEmpty())
                     .flatMap(
                         rowCells -> {
                           Cell rowCell = rowCells.get(0); // Latest cell
-                          //                          String family =
-                          // Bytes.toString(rowCell.getFamilyArray());
-                          //                          System.out.println("rowCell: " +
-                          // rowCell.toString());
-                          //                          ByteString value =
-                          // ByteString.copyFrom(rowCell.getValueArray());
-                          //                          System.out.println("value: " + value);
                           ByteBuffer valueBuffer =
                               ByteBuffer.wrap(rowCell.getValueArray())
                                   .position(rowCell.getValueOffset())
