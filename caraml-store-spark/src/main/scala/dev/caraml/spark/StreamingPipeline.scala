@@ -77,6 +77,12 @@ object StreamingPipeline extends BasePipeline with Serializable {
       case _ => Array()
     }
 
+    val onlineStore = config.store match {
+      case _: RedisConfig    => "redis"
+      case _: BigTableConfig => "bigtable"
+      case _: HBaseConfig    => "hbase"
+    }
+
     val parsed = input
       .withColumn("features", featureStruct)
       .select(metadata :+ col("features.*"): _*)
@@ -100,6 +106,7 @@ object StreamingPipeline extends BasePipeline with Serializable {
 
         val metadataColName: Array[String] = metadata.map(_.toString)
 
+
         rowsAfterValidation
           .map(metrics.incrementRead)
           .filter(if (config.doNotIngestInvalidRows) expr("_isValid") else rowValidator.allChecks)
@@ -108,7 +115,9 @@ object StreamingPipeline extends BasePipeline with Serializable {
           .format(config.store match {
             case _: RedisConfig    => "dev.caraml.spark.stores.redis"
             case _: BigTableConfig => "dev.caraml.spark.stores.bigtable"
+            case _: HBaseConfig    => "dev.caraml.spark.stores.bigtable"
           })
+          .option("online_store", onlineStore)
           .option("entity_columns", featureTable.entities.map(_.name).mkString(","))
           .option("namespace", featureTable.name)
           .option("project_name", featureTable.project)
