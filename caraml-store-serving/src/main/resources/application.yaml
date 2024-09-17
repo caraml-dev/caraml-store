@@ -33,7 +33,7 @@ caraml:
       maxExpectedCount: 150
 
   store:
-    # Active store. Possible values: [hbase, redis, bigtable]
+    # Active store. Possible values: [redisCluster, redis, bigtable, hbase]
     active: redis
     #
     #    redis:
