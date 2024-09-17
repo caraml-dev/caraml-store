@@ -95,6 +95,7 @@ public class HBaseSchemaRegistry {
 
       Cell last = result.getColumnLatestCell(COLUMN_FAMILY.getBytes(), QUALIFIER.getBytes());
       if (last == null) {
+        // NOTE: this should never happen
         throw new RuntimeException("Schema not found");
       }
       ByteBuffer schemaBuffer =
