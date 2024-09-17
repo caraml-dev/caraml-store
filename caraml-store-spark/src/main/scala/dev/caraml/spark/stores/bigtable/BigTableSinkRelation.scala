@@ -51,21 +51,10 @@ class BigTableSinkRelation(
         tableBuilder.setColumnFamily(cf)
         val table = tableBuilder.build()
         table
-//        val t          = new HTableDescriptor(TableName.valueOf(tableName))
-//        val metadataCF = new HColumnDescriptor(metadataColumnFamily)
-//        t.addFamily(metadataCF)
-//        t
       } else {
-//        val t = admin.getTableDescriptor(TableName.valueOf(tableName))
         val t = btConn.getTable(TableName.valueOf(tableName))
         t.getDescriptor()
       }
-
-//      val featuresCF = new HColumnDescriptor(config.namespace)
-//      if (config.maxAge > 0) {
-//        featuresCF.setTimeToLive(config.maxAge.toInt)
-//      }
-//      featuresCF.setMaxVersions(1)
       val featuresCFBuilder = ColumnFamilyDescriptorBuilder.newBuilder(config.namespace.getBytes)
       if (config.maxAge > 0) {
         featuresCFBuilder.setTimeToLive(config.maxAge.toInt)
@@ -73,10 +62,9 @@ class BigTableSinkRelation(
       featuresCFBuilder.setMaxVersions(1)
       val featuresCF = featuresCFBuilder.build()
 
-      println("config.namespaces: ", config.namespace)
+      // TODO: Set compression type for column family
       val tdb = TableDescriptorBuilder.newBuilder(table)
       if (!table.getColumnFamilyNames.contains(config.namespace.getBytes)) {
-//        table.addFamily(featuresCF)
         tdb.setColumnFamily(featuresCF)
         val t = tdb.build()
         if (!admin.isTableAvailable(table.getTableName)) {
