@@ -106,7 +106,6 @@ object StreamingPipeline extends BasePipeline with Serializable {
 
         val metadataColName: Array[String] = metadata.map(_.toString)
 
-
         rowsAfterValidation
           .map(metrics.incrementRead)
           .filter(if (config.doNotIngestInvalidRows) expr("_isValid") else rowValidator.allChecks)
