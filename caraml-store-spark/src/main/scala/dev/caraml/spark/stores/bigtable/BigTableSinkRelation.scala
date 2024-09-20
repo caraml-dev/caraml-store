@@ -4,7 +4,13 @@ import com.google.cloud.bigtable.hbase.BigtableConfiguration
 import dev.caraml.spark.serialization.Serializer
 import dev.caraml.spark.utils.StringUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.hbase.client.Put
+import org.apache.hadoop.hbase.client.{
+  Admin,
+  ColumnFamilyDescriptorBuilder,
+  Connection,
+  Put,
+  TableDescriptorBuilder
+}
 import org.apache.hadoop.hbase.mapred.TableOutputFormat
 import org.apache.hadoop.hbase.{HColumnDescriptor, HTableDescriptor, TableName}
 import org.apache.hadoop.mapred.JobConf
@@ -30,42 +36,49 @@ class BigTableSinkRelation(
 
   override def schema: StructType = ???
 
+  def getConnection(hadoopConfig: Configuration): Connection = {
+    BigtableConfiguration.connect(hadoopConfig)
+  }
+
   def createTable(): Unit = {
-    val btConn = BigtableConfiguration.connect(hadoopConfig)
+    val btConn = getConnection(hadoopConfig)
     try {
       val admin = btConn.getAdmin
 
       val table = if (!admin.isTableAvailable(TableName.valueOf(tableName))) {
-        val t          = new HTableDescriptor(TableName.valueOf(tableName))
-        val metadataCF = new HColumnDescriptor(metadataColumnFamily)
-        t.addFamily(metadataCF)
-        t
+        val tableBuilder = TableDescriptorBuilder.newBuilder(TableName.valueOf(tableName))
+        val cf           = ColumnFamilyDescriptorBuilder.of(metadataColumnFamily)
+        tableBuilder.setColumnFamily(cf)
+        val table = tableBuilder.build()
+        table
       } else {
-        admin.getTableDescriptor(TableName.valueOf(tableName))
+        val t = btConn.getTable(TableName.valueOf(tableName))
+        t.getDescriptor()
       }
-
-      val featuresCF = new HColumnDescriptor(config.namespace)
+      val featuresCFBuilder = ColumnFamilyDescriptorBuilder.newBuilder(config.namespace.getBytes)
       if (config.maxAge > 0) {
-        featuresCF.setTimeToLive(config.maxAge.toInt)
+        featuresCFBuilder.setTimeToLive(config.maxAge.toInt)
       }
+      featuresCFBuilder.setMaxVersions(1)
+      val featuresCF = featuresCFBuilder.build()
 
-      featuresCF.setMaxVersions(1)
-
+      // TODO: Set compression type for column family
+      val tdb = TableDescriptorBuilder.newBuilder(table)
       if (!table.getColumnFamilyNames.contains(config.namespace.getBytes)) {
-        table.addFamily(featuresCF)
-
+        tdb.setColumnFamily(featuresCF)
+        val t = tdb.build()
         if (!admin.isTableAvailable(table.getTableName)) {
-          admin.createTable(table)
+          admin.createTable(t)
         } else {
-          admin.modifyTable(table)
+          admin.modifyTable(t)
         }
       } else if (
         config.maxAge > 0 && table
           .getColumnFamily(config.namespace.getBytes)
           .getTimeToLive != featuresCF.getTimeToLive
       ) {
-        table.modifyFamily(featuresCF)
-        admin.modifyTable(table)
+        tdb.modifyColumnFamily(featuresCF)
+        admin.modifyTable(tdb.build())
       }
     } finally {
       btConn.close()
@@ -115,7 +128,7 @@ class BigTableSinkRelation(
     val qualifier = "avro".getBytes
     put.addColumn(metadataColumnFamily.getBytes, qualifier, schema.asInstanceOf[String].getBytes)
 
-    val btConn = BigtableConfiguration.connect(hadoopConfig)
+    val btConn = getConnection(hadoopConfig)
     try {
       val table = btConn.getTable(TableName.valueOf(tableName))
       table.checkAndPut(

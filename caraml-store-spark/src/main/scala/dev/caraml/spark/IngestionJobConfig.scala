@@ -26,7 +26,8 @@ case class RedisWriteProperties(
     enableRateLimit: Boolean = false,
     ratePerSecondLimit: Int = 50000
 )
-case class BigTableConfig(projectId: String, instanceId: String) extends StoreConfig
+case class BigTableConfig(projectId: String, instanceId: String)    extends StoreConfig
+case class HBaseConfig(zookeeperQuorum: String, zookeeperPort: Int) extends StoreConfig
 
 sealed trait MetricConfig
 

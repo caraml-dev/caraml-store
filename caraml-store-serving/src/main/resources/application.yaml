@@ -33,41 +33,41 @@ caraml:
       maxExpectedCount: 150
 
   store:
-    # Active store. Possible values: [redisCluster, redis, bigtable]
+    # Active store. Possible values: [redisCluster, redis, bigtable, hbase]
     active: redis
-
-    redis:
-      host: localhost
-      port: 6379
-      password: ""
-      ssl: false
-
-    redisCluster:
-      # Connection string specifies the host:port of Redis instances in the redis cluster.
-      connectionString: "localhost:7000,localhost:7001,localhost:7002,localhost:7003,localhost:7004,localhost:7005"
-      # Password authentication. Empty string if password is not set.
-      password: ""
-      readFrom: MASTER
-      # Redis operation timeout in ISO-8601 format
-      timeout: PT0.5S
-#      # Uncomment to customize netty behaviour
-#      tcp:
-#        # Epoll Channel Option: TCP_KEEPIDLE
-#        keepIdle: 15
-#        # Epoll Channel Option: TCP_KEEPINTVL
-#        keepInterval: 5
-#        # Epoll Channel Option: TCP_KEEPCNT
-#        keepConnection: 3
-#        # Epoll Channel Option: TCP_USER_TIMEOUT
-#        userConnection: 60000
-#      # Uncomment to customize redis cluster topology refresh config
-#      topologyRefresh:
-#        # enable adaptive topology refresh from all triggers : MOVED_REDIRECT, ASK_REDIRECT, PERSISTENT_RECONNECTS, UNKNOWN_NODE (since 5.1), and UNCOVERED_SLOT (since 5.2) (see also reconnect attempts for the reconnect trigger)
-#        enableAllAdaptiveTriggerRefresh: true
-#        # enable periodic refresh
-#        enablePeriodicRefresh: false
-#        # topology refresh period in seconds
-#        refreshPeriodSecond: 30
+    #
+    #    redis:
+    #      host: localhost
+    #      port: 6379
+    #      password: ""
+    #      ssl: false
+    #
+    #    redisCluster:
+    #      # Connection string specifies the host:port of Redis instances in the redis cluster.
+    #      connectionString: "localhost:7000,localhost:7001,localhost:7002,localhost:7003,localhost:7004,localhost:7005"
+    #      # Password authentication. Empty string if password is not set.
+    #      password: ""
+    #      readFrom: MASTER
+    #      # Redis operation timeout in ISO-8601 format
+    #      timeout: PT0.5S
+    #      # Uncomment to customize netty behaviour
+    #      tcp:
+    #        # Epoll Channel Option: TCP_KEEPIDLE
+    #        keepIdle: 15
+    #        # Epoll Channel Option: TCP_KEEPINTVL
+    #        keepInterval: 5
+    #        # Epoll Channel Option: TCP_KEEPCNT
+    #        keepConnection: 3
+    #        # Epoll Channel Option: TCP_USER_TIMEOUT
+    #        userConnection: 60000
+    #      # Uncomment to customize redis cluster topology refresh config
+    #      topologyRefresh:
+    #        # enable adaptive topology refresh from all triggers : MOVED_REDIRECT, ASK_REDIRECT, PERSISTENT_RECONNECTS, UNKNOWN_NODE (since 5.1), and UNCOVERED_SLOT (since 5.2) (see also reconnect attempts for the reconnect trigger)
+    #        enableAllAdaptiveTriggerRefresh: true
+    #        # enable periodic refresh
+    #        enablePeriodicRefresh: false
+    #        # topology refresh period in seconds
+    #        refreshPeriodSecond: 30
 
     bigtable:
       projectId: gcp-project-name
@@ -77,6 +77,10 @@ caraml:
       # Timeout configuration for BigTable client. Set 0 to use the default client configuration.
       timeoutMs: 0
       isUsingHBaseSDK: true
+
+    hbase:
+      zookeeperQuorum: 127.0.0.1
+      zookeeperClientPort: 2181
 
 grpc:
   server:
