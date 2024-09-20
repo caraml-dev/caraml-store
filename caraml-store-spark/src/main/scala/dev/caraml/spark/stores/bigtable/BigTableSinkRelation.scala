@@ -64,6 +64,7 @@ class BigTableSinkRelation(
 
       // TODO: Set compression type for column family
       val tdb = TableDescriptorBuilder.newBuilder(table)
+
       if (!table.getColumnFamilyNames.contains(config.namespace.getBytes)) {
         tdb.setColumnFamily(featuresCF)
         val t = tdb.build()
@@ -143,19 +144,19 @@ class BigTableSinkRelation(
     }
   }
 
-  private def tableName: String = {
+  protected def tableName: String = {
     val entities = config.entityColumns.sorted.mkString("__")
     StringUtils.trimAndHash(s"${config.projectName}__${entities}", maxTableNameLength)
   }
 
-  private def joinEntityKey: UserDefinedFunction = udf { r: Row =>
+  protected def joinEntityKey: UserDefinedFunction = udf { r: Row =>
     ((0 until r.size)).map(r.getString).mkString("#").getBytes
   }
 
-  private val metadataColumnFamily = "metadata"
-  private val schemaKeyPrefix      = "schema#"
-  private val emptyQualifier       = ""
-  private val maxTableNameLength   = 50
+  protected val metadataColumnFamily = "metadata"
+  protected val schemaKeyPrefix      = "schema#"
+  protected val emptyQualifier       = ""
+  protected val maxTableNameLength   = 50
 
   private def isSystemColumn(name: String) =
     (config.entityColumns ++ Seq(config.timestampColumn)).contains(name)
