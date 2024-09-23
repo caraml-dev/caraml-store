@@ -3,7 +3,12 @@ package dev.caraml.spark.stores.bigtable
 import dev.caraml.spark.serialization.Serializer
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.TableName
-import org.apache.hadoop.hbase.client.{ColumnFamilyDescriptorBuilder, Connection, ConnectionFactory, TableDescriptorBuilder}
+import org.apache.hadoop.hbase.client.{
+  ColumnFamilyDescriptorBuilder,
+  Connection,
+  ConnectionFactory,
+  TableDescriptorBuilder
+}
 import org.apache.hadoop.hbase.io.compress.Compression
 import org.apache.spark.sql.SQLContext
 
@@ -41,7 +46,9 @@ class HbaseSinkRelation(
 
       val tdb = TableDescriptorBuilder.newBuilder(table)
       // TODO: make this configurable
-      tdb.setRegionSplitPolicyClassName("org.apache.hadoop.hbase.regionserver.IncreasingToUpperBoundRegionSplitPolicy")
+      tdb.setRegionSplitPolicyClassName(
+        "org.apache.hadoop.hbase.regionserver.IncreasingToUpperBoundRegionSplitPolicy"
+      )
 
       if (!table.getColumnFamilyNames.contains(config.namespace.getBytes)) {
         tdb.setColumnFamily(featuresCF)
