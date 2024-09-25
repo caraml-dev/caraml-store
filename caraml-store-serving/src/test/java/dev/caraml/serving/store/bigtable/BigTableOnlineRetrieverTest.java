@@ -80,7 +80,9 @@ public class BigTableOnlineRetrieverTest {
                 .setInstanceId(INSTANCE_ID)
                 .build());
     Configuration config = BigtableConfiguration.configure(PROJECT_ID, INSTANCE_ID);
-    config.set(BigtableOptionsFactory.BIGTABLE_EMULATOR_HOST_KEY, "localhost:" + bigtableEmulator.getMappedPort(BIGTABLE_EMULATOR_PORT));
+    config.set(
+        BigtableOptionsFactory.BIGTABLE_EMULATOR_HOST_KEY,
+        "localhost:" + bigtableEmulator.getMappedPort(BIGTABLE_EMULATOR_PORT));
     hbaseClient = BigtableConfiguration.connect(config);
     ingestData();
   }
@@ -237,17 +239,17 @@ public class BigTableOnlineRetrieverTest {
   }
 
   @Test
-  public void shouldRetrieveFeaturesSuccessfullyWhenUsingHbase(){
+  public void shouldRetrieveFeaturesSuccessfullyWhenUsingHbase() {
     HBaseOnlineRetriever retriever = new HBaseOnlineRetriever(hbaseClient);
     List<FeatureReference> featureReferences =
-            Stream.of("trip_cost", "trip_distance")
-                    .map(f -> FeatureReference.newBuilder().setFeatureTable("rides").setName(f).build())
-                    .toList();
+        Stream.of("trip_cost", "trip_distance")
+            .map(f -> FeatureReference.newBuilder().setFeatureTable("rides").setName(f).build())
+            .toList();
     List<String> entityNames = List.of("driver");
     List<EntityRow> entityRows =
-            List.of(DataGenerator.createEntityRow("driver", DataGenerator.createInt64Value(1), 100));
+        List.of(DataGenerator.createEntityRow("driver", DataGenerator.createInt64Value(1), 100));
     List<List<Feature>> featuresForRows =
-            retriever.getOnlineFeatures(FEAST_PROJECT, entityRows, featureReferences, entityNames);
+        retriever.getOnlineFeatures(FEAST_PROJECT, entityRows, featureReferences, entityNames);
     assertEquals(1, featuresForRows.size());
     List<Feature> features = featuresForRows.get(0);
     assertEquals(2, features.size());
@@ -255,20 +257,19 @@ public class BigTableOnlineRetrieverTest {
     assertEquals(featureReferences.get(0), features.get(0).getFeatureReference());
     assertEquals(3.5, features.get(1).getFeatureValue(ValueType.Enum.DOUBLE).getDoubleVal());
     assertEquals(featureReferences.get(1), features.get(1).getFeatureReference());
-
   }
 
   @Test
   public void shouldFilterOutMissingFeatureRefUsingHbase() {
-    BigTableOnlineRetriever retriever = new BigTableOnlineRetriever(client);
+    HBaseOnlineRetriever retriever = new HBaseOnlineRetriever(hbaseClient);
     List<FeatureReference> featureReferences =
-            List.of(
-                    FeatureReference.newBuilder().setFeatureTable("rides").setName("not_exists").build());
+        List.of(
+            FeatureReference.newBuilder().setFeatureTable("rides").setName("not_exists").build());
     List<String> entityNames = List.of("driver");
     List<EntityRow> entityRows =
-            List.of(DataGenerator.createEntityRow("driver", DataGenerator.createInt64Value(1), 100));
+        List.of(DataGenerator.createEntityRow("driver", DataGenerator.createInt64Value(1), 100));
     List<List<Feature>> features =
-            retriever.getOnlineFeatures(FEAST_PROJECT, entityRows, featureReferences, entityNames);
+        retriever.getOnlineFeatures(FEAST_PROJECT, entityRows, featureReferences, entityNames);
     assertEquals(1, features.size());
     assertEquals(0, features.get(0).size());
   }
