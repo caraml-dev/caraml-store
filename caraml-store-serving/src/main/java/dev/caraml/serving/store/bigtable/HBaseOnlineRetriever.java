@@ -27,6 +27,13 @@ public class HBaseOnlineRetriever implements SSTableOnlineRetriever<ByteString, 
     this.schemaRegistry = new HBaseSchemaRegistry(client);
   }
 
+  /**
+   * Generate BigTable key in the form of entity values joined by #.
+   *
+   * @param entityRow Single EntityRow representation in feature retrieval call
+   * @param entityNames List of entities related to feature references in retrieval call
+   * @return
+   */
   @Override
   public ByteString convertEntityValueToKey(
       ServingServiceProto.GetOnlineFeaturesRequest.EntityRow entityRow, List<String> entityNames) {
@@ -39,6 +46,15 @@ public class HBaseOnlineRetriever implements SSTableOnlineRetriever<ByteString, 
             .getBytes());
   }
 
+  /**
+   * Converts rowCell feature into @NativeFeature type, HBase specific implementation
+   *
+   * @param tableName Name of SSTable
+   * @param rowKeys List of keys of rows to retrieve
+   * @param rows Map of rowKey to Row related to it
+   * @param featureReferences List of feature references
+   * @return
+   */
   @Override
   public List<List<Feature>> convertRowToFeature(
       String tableName,
@@ -134,6 +150,15 @@ public class HBaseOnlineRetriever implements SSTableOnlineRetriever<ByteString, 
     }
   }
 
+  /**
+   * @param tableName
+   * @param value
+   * @param featureReferences
+   * @param reusedDecoder
+   * @param timestamp
+   * @return
+   * @throws IOException
+   */
   private List<Feature> decodeFeatures(
       String tableName,
       ByteString value,
