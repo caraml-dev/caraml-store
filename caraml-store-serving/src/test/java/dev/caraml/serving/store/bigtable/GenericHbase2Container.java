@@ -13,7 +13,7 @@ import org.testcontainers.utility.DockerImageName;
 public class GenericHbase2Container extends GenericContainer<GenericHbase2Container> {
 
   private final String hostName;
-  private final Configuration hbase2Configuration = HBaseConfiguration.create();
+  public final Configuration hbase2Configuration = HBaseConfiguration.create();
 
   public GenericHbase2Container() {
     super(DockerImageName.parse("jcjabouille/hbase-standalone:2.4.9"));
@@ -40,10 +40,13 @@ public class GenericHbase2Container extends GenericContainer<GenericHbase2Contai
 
     withEnv("HBASE_MASTER_PORT", Integer.toString(masterPort));
     withEnv("HBASE_REGION_PORT", Integer.toString(regionPort));
-    setPortBindings(
-        Arrays.asList(
-            String.format("%d:%d", masterPort, masterPort),
-            String.format("%d:%d", regionPort, regionPort)));
+//    setPortBindings(
+//        Arrays.asList(
+//            String.format("%d:%d", masterPort, masterPort),
+//            String.format("%d:%d", regionPort, regionPort)));
+
+    // Set network mode to host
+    withNetworkMode("host");
   }
 
   @Override

@@ -38,9 +38,11 @@ public class HbaseOnlineRetrieverTest {
 
   @BeforeAll
   public static void setup() throws IOException {
-    hbaseConfiguration.set("hbase.zookeeper.quorum", hbase.getHost());
-    hbaseConfiguration.set("hbase.zookeeper.property.clientPort", "2181");
-    hbaseClient = ConnectionFactory.createConnection(hbaseConfiguration);
+//    hbaseConfiguration.set("hbase.zookeeper.quorum", hbase.getHost());
+//    hbaseConfiguration.set("hbase.zookeeper.property.clientPort", hbase.getMappedPort(2181).toString());
+//    hbaseConfiguration.set("hbase.zookeeper.property.clientPort", "2181");
+//    hbaseClient = ConnectionFactory.createConnection(hbaseConfiguration);
+    hbaseClient = ConnectionFactory.createConnection(hbase.hbase2Configuration);
     admin = (HBaseAdmin) hbaseClient.getAdmin();
     ingestData();
   }
