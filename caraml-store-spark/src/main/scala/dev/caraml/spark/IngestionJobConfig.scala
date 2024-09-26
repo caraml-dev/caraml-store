@@ -27,7 +27,8 @@ case class RedisWriteProperties(
     ratePerSecondLimit: Int = 50000
 )
 case class BigTableConfig(projectId: String, instanceId: String)    extends StoreConfig
-case class HBaseConfig(zookeeperQuorum: String, zookeeperPort: Int) extends StoreConfig
+case class HBaseConfig(zookeeperQuorum: String, zookeeperPort: Int, hbaseProperties: HBaseProperties = HBaseProperties()) extends StoreConfig
+case class HBaseProperties(regionSplitPolicy: String = "org.apache.hadoop.hbase.regionserver.IncreasingToUpperBoundRegionSplitPolicy", compressionAlgorithm: String = "ZSTD")
 
 sealed trait MetricConfig
 

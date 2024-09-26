@@ -62,7 +62,6 @@ class BigTableSinkRelation(
       featuresCFBuilder.setMaxVersions(1)
       val featuresCF = featuresCFBuilder.build()
 
-      // TODO: Set compression type for column family
       val tdb = TableDescriptorBuilder.newBuilder(table)
 
       if (!table.getColumnFamilyNames.contains(config.namespace.getBytes)) {

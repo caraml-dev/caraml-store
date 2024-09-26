@@ -41,13 +41,18 @@ class HbaseSinkRelation(
         featuresCFBuilder.setTimeToLive(config.maxAge.toInt)
       }
       featuresCFBuilder.setMaxVersions(1)
-      featuresCFBuilder.setCompressionType(Compression.Algorithm.ZSTD)
+      sqlContext.getConf("spark.hbase.properties.compressionAlgorithm") match {
+        case "ZSTD" => featuresCFBuilder.setCompressionType(Compression.Algorithm.ZSTD)
+        case "GZ" => featuresCFBuilder.setCompressionType(Compression.Algorithm.GZ)
+        case "LZ4" => featuresCFBuilder.setCompressionType(Compression.Algorithm.LZ4)
+        case "SNAPPY" => featuresCFBuilder.setCompressionType(Compression.Algorithm.SNAPPY)
+        case _ => featuresCFBuilder.setCompressionType(Compression.Algorithm.NONE)
+      }
       val featuresCF = featuresCFBuilder.build()
 
       val tdb = TableDescriptorBuilder.newBuilder(table)
-      // TODO: make this configurable
       tdb.setRegionSplitPolicyClassName(
-        "org.apache.hadoop.hbase.regionserver.IncreasingToUpperBoundRegionSplitPolicy"
+        sqlContext.getConf("spark.hbase.properties.regionSplitPolicyClassName")
       )
 
       if (!table.getColumnFamilyNames.contains(config.namespace.getBytes)) {
@@ -66,6 +71,7 @@ class HbaseSinkRelation(
         tdb.modifyColumnFamily(featuresCF)
         admin.modifyTable(tdb.build())
       }
+
     } finally {
       hbaseConn.close()
     }
