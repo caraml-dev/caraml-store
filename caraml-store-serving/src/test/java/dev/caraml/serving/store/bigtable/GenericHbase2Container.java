@@ -3,7 +3,6 @@ package dev.caraml.serving.store.bigtable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
-import java.util.Arrays;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.testcontainers.containers.GenericContainer;
@@ -40,10 +39,10 @@ public class GenericHbase2Container extends GenericContainer<GenericHbase2Contai
 
     withEnv("HBASE_MASTER_PORT", Integer.toString(masterPort));
     withEnv("HBASE_REGION_PORT", Integer.toString(regionPort));
-//    setPortBindings(
-//        Arrays.asList(
-//            String.format("%d:%d", masterPort, masterPort),
-//            String.format("%d:%d", regionPort, regionPort)));
+    //    setPortBindings(
+    //        Arrays.asList(
+    //            String.format("%d:%d", masterPort, masterPort),
+    //            String.format("%d:%d", regionPort, regionPort)));
 
     // Set network mode to host
     withNetworkMode("host");

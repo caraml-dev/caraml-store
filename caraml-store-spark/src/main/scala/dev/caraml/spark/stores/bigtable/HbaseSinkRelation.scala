@@ -42,11 +42,11 @@ class HbaseSinkRelation(
       }
       featuresCFBuilder.setMaxVersions(1)
       sqlContext.getConf("spark.hbase.properties.compressionAlgorithm") match {
-        case "ZSTD" => featuresCFBuilder.setCompressionType(Compression.Algorithm.ZSTD)
-        case "GZ" => featuresCFBuilder.setCompressionType(Compression.Algorithm.GZ)
-        case "LZ4" => featuresCFBuilder.setCompressionType(Compression.Algorithm.LZ4)
+        case "ZSTD"   => featuresCFBuilder.setCompressionType(Compression.Algorithm.ZSTD)
+        case "GZ"     => featuresCFBuilder.setCompressionType(Compression.Algorithm.GZ)
+        case "LZ4"    => featuresCFBuilder.setCompressionType(Compression.Algorithm.LZ4)
         case "SNAPPY" => featuresCFBuilder.setCompressionType(Compression.Algorithm.SNAPPY)
-        case _ => featuresCFBuilder.setCompressionType(Compression.Algorithm.NONE)
+        case _        => featuresCFBuilder.setCompressionType(Compression.Algorithm.NONE)
       }
       val featuresCF = featuresCFBuilder.build()
 

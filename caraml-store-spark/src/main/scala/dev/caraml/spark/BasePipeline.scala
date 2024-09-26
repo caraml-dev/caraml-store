@@ -37,7 +37,10 @@ object BasePipeline {
         conf
           .set("spark.hbase.zookeeper.quorum", zookeeperQuorum)
           .set("spark.hbase.zookeeper.port", zookeeperPort.toString)
-          .set("spark.hbase.properties.regionSplitPolicyClassName", hbaseProperties.regionSplitPolicy)
+          .set(
+            "spark.hbase.properties.regionSplitPolicyClassName",
+            hbaseProperties.regionSplitPolicy
+          )
           .set("spark.hbase.properties.compressionAlgorithm", hbaseProperties.compressionAlgorithm)
     }
 
