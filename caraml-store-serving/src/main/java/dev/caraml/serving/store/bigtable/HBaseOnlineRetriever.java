@@ -28,7 +28,7 @@ public class HBaseOnlineRetriever implements SSTableOnlineRetriever<ByteString, 
   }
 
   /**
-   * Generate BigTable key in the form of entity values joined by #.
+   * Generate Hbase key in the form of entity values joined by #.
    *
    * @param entityRow Single EntityRow representation in feature retrieval call
    * @param entityNames List of entities related to feature references in retrieval call
@@ -53,7 +53,7 @@ public class HBaseOnlineRetriever implements SSTableOnlineRetriever<ByteString, 
    * @param rowKeys List of keys of rows to retrieve
    * @param rows Map of rowKey to Row related to it
    * @param featureReferences List of feature references
-   * @return
+   * @return List of List of Features associated with respective rowKey
    */
   @Override
   public List<List<Feature>> convertRowToFeature(
@@ -79,10 +79,7 @@ public class HBaseOnlineRetriever implements SSTableOnlineRetriever<ByteString, 
                         rowCells -> {
                           Cell rowCell = rowCells.get(0); // Latest cell
                           ByteBuffer valueBuffer =
-                              ByteBuffer.wrap(rowCell.getValueArray())
-                                  .position(rowCell.getValueOffset())
-                                  .limit(rowCell.getValueOffset() + rowCell.getValueLength())
-                                  .slice();
+                              HBaseSchemaRegistry.GetValueByteBufferFromRowCell(rowCell);
                           ByteBuffer familyBuffer =
                               ByteBuffer.wrap(rowCell.getFamilyArray())
                                   .position(rowCell.getFamilyOffset())
@@ -119,6 +116,15 @@ public class HBaseOnlineRetriever implements SSTableOnlineRetriever<ByteString, 
         .collect(Collectors.toList());
   }
 
+  /**
+   * Retrieve rows with required column families for each row entity by sending batch Get request,
+   * HBase specific implementation
+   *
+   * @param tableName Name of SSTable
+   * @param rowKeys List of keys of rows to retrieve
+   * @param columnFamilies List of column names
+   * @return
+   */
   @Override
   public Map<ByteString, Result> getFeaturesFromSSTable(
       String tableName, List<ByteString> rowKeys, List<String> columnFamilies) {
@@ -151,12 +157,15 @@ public class HBaseOnlineRetriever implements SSTableOnlineRetriever<ByteString, 
   }
 
   /**
-   * @param tableName
-   * @param value
-   * @param featureReferences
-   * @param reusedDecoder
-   * @param timestamp
-   * @return
+   * Decode features from Avro serialized bytes
+   *
+   * @param tableName Name of Hbase table
+   * @param value Value of HBase cell where first 4 bytes represents the schema reference and the
+   *     remaining bytes represent the avro-serialized features
+   * @param featureReferences List of feature references
+   * @param reusedDecoder Decoder for decoding feature values
+   * @param timestamp Timesttamp of rowcell
+   * @return @NativeFeature with retrieved value stored in Hbase Cell
    * @throws IOException
    */
   private List<Feature> decodeFeatures(

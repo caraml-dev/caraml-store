@@ -46,15 +46,18 @@ public class HBaseSchemaRegistry extends BaseSchemaRegistry {
         // NOTE: this should never happen
         throw new RuntimeException("Schema not found");
       }
-      ByteBuffer schemaBuffer =
-          ByteBuffer.wrap(last.getValueArray())
-              .position(last.getValueOffset())
-              .limit(last.getValueOffset() + last.getValueLength())
-              .slice();
+      ByteBuffer schemaBuffer = GetValueByteBufferFromRowCell(last);
       Schema schema = new Schema.Parser().parse(ByteString.copyFrom(schemaBuffer).toStringUtf8());
       return new GenericDatumReader<>(schema);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static ByteBuffer GetValueByteBufferFromRowCell(Cell cell) {
+    return ByteBuffer.wrap(cell.getValueArray())
+        .position(cell.getValueOffset())
+        .limit(cell.getValueOffset() + cell.getValueLength())
+        .slice();
   }
 }
