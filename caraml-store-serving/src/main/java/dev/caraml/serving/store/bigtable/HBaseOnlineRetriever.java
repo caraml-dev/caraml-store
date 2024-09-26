@@ -175,8 +175,10 @@ public class HBaseOnlineRetriever implements SSTableOnlineRetriever<ByteString, 
       BinaryDecoder reusedDecoder,
       long timestamp)
       throws IOException {
-    ByteString schemaReferenceBytes = value.substring(0, 4);
-    byte[] featureValueBytes = value.substring(4).toByteArray();
+    ByteString schemaReferenceBytes =
+        value.substring(0, HBaseSchemaRegistry.SCHEMA_REFERENCE_LENGTH);
+    byte[] featureValueBytes =
+        value.substring(HBaseSchemaRegistry.SCHEMA_REFERENCE_LENGTH).toByteArray();
 
     HBaseSchemaRegistry.SchemaReference schemaReference =
         new HBaseSchemaRegistry.SchemaReference(tableName, schemaReferenceBytes);

@@ -13,6 +13,7 @@ public abstract class BaseSchemaRegistry {
   protected static String COLUMN_FAMILY = "metadata";
   protected static String QUALIFIER = "avro";
   protected static String KEY_PREFIX = "schema#";
+  public static final int SCHEMA_REFERENCE_LENGTH = 4;
 
   public static class SchemaReference {
     private final String tableName;
