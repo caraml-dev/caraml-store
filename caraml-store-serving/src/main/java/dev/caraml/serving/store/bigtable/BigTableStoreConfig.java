@@ -36,7 +36,13 @@ public class BigTableStoreConfig {
           BigtableConfiguration.configure(projectId, instanceId);
       config.set(BigtableOptionsFactory.APP_PROFILE_ID_KEY, appProfileId);
 
-      Connection connection = BigtableConfiguration.connect(config);
+      Connection connection;
+      try {
+        connection = BigtableConfiguration.connect(config);
+      } catch (IllegalStateException e) {
+        throw new RuntimeException(e);
+      }
+
       return new HBaseOnlineRetriever(connection);
     }
 
