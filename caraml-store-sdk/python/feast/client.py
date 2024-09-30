@@ -236,7 +236,7 @@ class Client:
         List online stores
         Returns: ListOnlineStoresResponse
         """
-        return self._core_service.ListOnlineStores(ListOnlineStoresRequest())
+        return self._core_service.ListOnlineStore(ListOnlineStoresRequest())
 
     def get_online_features(
         self,

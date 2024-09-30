@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1e\x66\x65\x61st/core/SparkOverride.proto\x12\nfeast.core\"\x9f\x01\n\rSparkOverride\x12\x1d\n\ndriver_cpu\x18\x01 \x01(\x05R\tdriverCpu\x12#\n\rdriver_memory\x18\x02 \x01(\tR\x0c\x64riverMemory\x12!\n\x0c\x65xecutor_cpu\x18\x03 \x01(\x05R\x0b\x65xecutorCpu\x12\'\n\x0f\x65xecutor_memory\x18\x04 \x01(\tR\x0e\x65xecutorMemoryB~\n\x1e\x64\x65v.caraml.store.protobuf.coreB\x12SparkOverrideProtoZHgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/coreb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1e\x66\x65\x61st/core/SparkOverride.proto\x12\nfeast.core\"i\n\rSparkOverride\x12\x12\n\ndriver_cpu\x18\x01 \x01(\x05\x12\x15\n\rdriver_memory\x18\x02 \x01(\t\x12\x14\n\x0c\x65xecutor_cpu\x18\x03 \x01(\x05\x12\x17\n\x0f\x65xecutor_memory\x18\x04 \x01(\tB~\n\x1e\x64\x65v.caraml.store.protobuf.coreB\x12SparkOverrideProtoZHgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/coreb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'feast.core.SparkOverride_pb2', globals())
@@ -21,6 +21,6 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'\n\036dev.caraml.store.protobuf.coreB\022SparkOverrideProtoZHgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/core'
-  _SPARKOVERRIDE._serialized_start=47
-  _SPARKOVERRIDE._serialized_end=206
+  _SPARKOVERRIDE._serialized_start=46
+  _SPARKOVERRIDE._serialized_end=151
 # @@protoc_insertion_point(module_scope)

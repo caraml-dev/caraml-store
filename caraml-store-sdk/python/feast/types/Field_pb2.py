@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 from feast.types import Value_pb2 as feast_dot_types_dot_Value__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x17\x66\x65\x61st/types/Field.proto\x12\x0b\x66\x65\x61st.types\x1a\x17\x66\x65\x61st/types/Value.proto\"E\n\x05\x46ield\x12\x12\n\x04name\x18\x01 \x01(\tR\x04name\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x12.feast.types.ValueR\x05valueBx\n\x1f\x64\x65v.caraml.store.protobuf.typesB\nFieldProtoZIgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/typesb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x17\x66\x65\x61st/types/Field.proto\x12\x0b\x66\x65\x61st.types\x1a\x17\x66\x65\x61st/types/Value.proto\"8\n\x05\x46ield\x12\x0c\n\x04name\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.feast.types.ValueBx\n\x1f\x64\x65v.caraml.store.protobuf.typesB\nFieldProtoZIgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/typesb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'feast.types.Field_pb2', globals())
@@ -23,5 +23,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'\n\037dev.caraml.store.protobuf.typesB\nFieldProtoZIgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/types'
   _FIELD._serialized_start=65
-  _FIELD._serialized_end=134
+  _FIELD._serialized_end=121
 # @@protoc_insertion_point(module_scope)
