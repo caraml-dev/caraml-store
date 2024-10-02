@@ -8,7 +8,8 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.10'
     implementation 'org.apache.avro:avro:1.10.2'
     implementation platform('com.google.cloud:libraries-bom:26.43.0')
-    implementation 'com.google.cloud:google-cloud-bigtable:2.40.0'
+    implementation 'com.google.cloud:google-cloud-bigtable:2.39.2'
+    implementation 'com.google.cloud.bigtable:bigtable-hbase-2.x:2.14.3'
     implementation 'commons-codec:commons-codec:1.17.1'
     implementation 'io.lettuce:lettuce-core:6.2.0.RELEASE'
     implementation 'io.netty:netty-transport-native-epoll:4.1.52.Final:linux-x86_64'

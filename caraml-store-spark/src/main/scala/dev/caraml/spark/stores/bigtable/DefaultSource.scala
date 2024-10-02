@@ -23,27 +23,43 @@ class DefaultSource extends CreatableRelationProvider {
       parameters: Map[String, String],
       data: DataFrame
   ): BaseRelation = {
-    val bigtableConf = BigtableConfiguration.configure(
-      sqlContext.getConf(PROJECT_KEY),
-      sqlContext.getConf(INSTANCE_KEY)
-    )
-
-    if (sqlContext.getConf("spark.bigtable.emulatorHost", "").nonEmpty) {
-      bigtableConf.set(
-        BIGTABLE_EMULATOR_HOST_KEY,
-        sqlContext.getConf("spark.bigtable.emulatorHost")
+    val onlineStore               = parameters.getOrElse("online_store", "bigtable")
+    var rel: BigTableSinkRelation = null
+    println(s"onlineStore: $onlineStore")
+    if (onlineStore == "bigtable") {
+      val bigtableConf = BigtableConfiguration.configure(
+        sqlContext.getConf(PROJECT_KEY),
+        sqlContext.getConf(INSTANCE_KEY)
       )
-    }
 
-    configureBigTableClient(bigtableConf, sqlContext)
+      if (sqlContext.getConf("spark.bigtable.emulatorHost", "").nonEmpty) {
+        bigtableConf.set(
+          BIGTABLE_EMULATOR_HOST_KEY,
+          sqlContext.getConf("spark.bigtable.emulatorHost")
+        )
+      }
 
-    val rel =
-      new BigTableSinkRelation(
+      configureBigTableClient(bigtableConf, sqlContext)
+
+      rel = new BigTableSinkRelation(
         sqlContext,
         new AvroSerializer,
         SparkBigtableConfig.parse(parameters),
         bigtableConf
       )
+    } else if (onlineStore == "hbase") {
+      val hbaseConf = new Configuration()
+      hbaseConf.set("hbase.zookeeper.quorum", sqlContext.getConf(ZOOKEEPER_QUOROM_KEY))
+      hbaseConf.set("hbase.zookeeper.property.clientPort", sqlContext.getConf(ZOOKEEPER_PORT_KEY))
+      rel = new HbaseSinkRelation(
+        sqlContext,
+        new AvroSerializer,
+        SparkBigtableConfig.parse(parameters),
+        hbaseConf
+      )
+    } else {
+      throw new UnsupportedOperationException(s"Unsupported online store: $onlineStore")
+    }
     rel.createTable()
     rel.saveWriteSchema(data)
     rel.insert(data, overwrite = false)
@@ -79,4 +95,7 @@ object DefaultSource {
   private val THROTTLING_THRESHOLD_MILLIS_KEY = "spark.bigtable.throttlingThresholdMs"
   private val MAX_ROW_COUNT_KEY               = "spark.bigtable.maxRowCount"
   private val MAX_INFLIGHT_KEY                = "spark.bigtable.maxInflightRpcs"
+
+  private val ZOOKEEPER_QUOROM_KEY = "spark.hbase.zookeeper.quorum"
+  private val ZOOKEEPER_PORT_KEY   = "spark.hbase.zookeeper.port"
 }

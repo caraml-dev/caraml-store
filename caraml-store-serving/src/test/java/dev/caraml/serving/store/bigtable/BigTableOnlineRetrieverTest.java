@@ -8,6 +8,8 @@ import com.google.cloud.bigtable.admin.v2.models.CreateTableRequest;
 import com.google.cloud.bigtable.data.v2.BigtableDataClient;
 import com.google.cloud.bigtable.data.v2.BigtableDataSettings;
 import com.google.cloud.bigtable.data.v2.models.RowMutation;
+import com.google.cloud.bigtable.hbase.BigtableConfiguration;
+import com.google.cloud.bigtable.hbase.BigtableOptionsFactory;
 import com.google.common.hash.Hashing;
 import com.google.protobuf.ByteString;
 import dev.caraml.serving.store.Feature;
@@ -26,6 +28,8 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.client.Connection;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -40,6 +44,7 @@ public class BigTableOnlineRetrieverTest {
   static final Integer BIGTABLE_EMULATOR_PORT = 8086;
   static final String FEAST_PROJECT = "default";
   static BigtableDataClient client;
+  static Connection hbaseClient;
   static BigtableTableAdminClient adminClient;
 
   @Container
@@ -74,6 +79,11 @@ public class BigTableOnlineRetrieverTest {
                 .setProjectId(PROJECT_ID)
                 .setInstanceId(INSTANCE_ID)
                 .build());
+    Configuration config = BigtableConfiguration.configure(PROJECT_ID, INSTANCE_ID);
+    config.set(
+        BigtableOptionsFactory.BIGTABLE_EMULATOR_HOST_KEY,
+        "localhost:" + bigtableEmulator.getMappedPort(BIGTABLE_EMULATOR_PORT));
+    hbaseClient = BigtableConfiguration.connect(config);
     ingestData();
   }
 
@@ -216,6 +226,42 @@ public class BigTableOnlineRetrieverTest {
   @Test
   public void shouldFilterOutMissingFeatureRef() {
     BigTableOnlineRetriever retriever = new BigTableOnlineRetriever(client);
+    List<FeatureReference> featureReferences =
+        List.of(
+            FeatureReference.newBuilder().setFeatureTable("rides").setName("not_exists").build());
+    List<String> entityNames = List.of("driver");
+    List<EntityRow> entityRows =
+        List.of(DataGenerator.createEntityRow("driver", DataGenerator.createInt64Value(1), 100));
+    List<List<Feature>> features =
+        retriever.getOnlineFeatures(FEAST_PROJECT, entityRows, featureReferences, entityNames);
+    assertEquals(1, features.size());
+    assertEquals(0, features.get(0).size());
+  }
+
+  @Test
+  public void shouldRetrieveFeaturesSuccessfullyWhenUsingHbase() {
+    HBaseOnlineRetriever retriever = new HBaseOnlineRetriever(hbaseClient);
+    List<FeatureReference> featureReferences =
+        Stream.of("trip_cost", "trip_distance")
+            .map(f -> FeatureReference.newBuilder().setFeatureTable("rides").setName(f).build())
+            .toList();
+    List<String> entityNames = List.of("driver");
+    List<EntityRow> entityRows =
+        List.of(DataGenerator.createEntityRow("driver", DataGenerator.createInt64Value(1), 100));
+    List<List<Feature>> featuresForRows =
+        retriever.getOnlineFeatures(FEAST_PROJECT, entityRows, featureReferences, entityNames);
+    assertEquals(1, featuresForRows.size());
+    List<Feature> features = featuresForRows.get(0);
+    assertEquals(2, features.size());
+    assertEquals(5L, features.get(0).getFeatureValue(ValueType.Enum.INT64).getInt64Val());
+    assertEquals(featureReferences.get(0), features.get(0).getFeatureReference());
+    assertEquals(3.5, features.get(1).getFeatureValue(ValueType.Enum.DOUBLE).getDoubleVal());
+    assertEquals(featureReferences.get(1), features.get(1).getFeatureReference());
+  }
+
+  @Test
+  public void shouldFilterOutMissingFeatureRefUsingHbase() {
+    HBaseOnlineRetriever retriever = new HBaseOnlineRetriever(hbaseClient);
     List<FeatureReference> featureReferences =
         List.of(
             FeatureReference.newBuilder().setFeatureTable("rides").setName("not_exists").build());

@@ -2,10 +2,13 @@ package dev.caraml.serving.store.bigtable;
 
 import com.google.cloud.bigtable.data.v2.BigtableDataClient;
 import com.google.cloud.bigtable.data.v2.BigtableDataSettings;
+import com.google.cloud.bigtable.hbase.BigtableConfiguration;
+import com.google.cloud.bigtable.hbase.BigtableOptionsFactory;
 import dev.caraml.serving.store.OnlineRetriever;
 import java.io.IOException;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.hadoop.hbase.client.Connection;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -23,10 +26,22 @@ public class BigTableStoreConfig {
   private String appProfileId;
   private Boolean enableClientSideMetrics;
   private Long timeoutMs;
+  private Boolean isUsingHBaseSDK;
 
   @Bean
   public OnlineRetriever getRetriever() {
     try {
+      // Using HBase SDK
+      if (isUsingHBaseSDK) {
+        org.apache.hadoop.conf.Configuration config =
+            BigtableConfiguration.configure(projectId, instanceId);
+        config.set(BigtableOptionsFactory.APP_PROFILE_ID_KEY, appProfileId);
+
+        Connection connection = BigtableConfiguration.connect(config);
+        return new HBaseOnlineRetriever(connection);
+      }
+
+      // Using BigTable SDK
       BigtableDataSettings.Builder builder =
           BigtableDataSettings.newBuilder()
               .setProjectId(projectId)
@@ -45,6 +60,7 @@ public class BigTableStoreConfig {
       }
       BigtableDataClient client = BigtableDataClient.create(settings);
       return new BigTableOnlineRetriever(client);
+
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
