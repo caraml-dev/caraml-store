@@ -30,24 +30,18 @@ public class BigTableStoreConfig {
 
   @Bean
   public OnlineRetriever getRetriever() {
-    // Using HBase SDK
-    if (isUsingHBaseSDK) {
-      org.apache.hadoop.conf.Configuration config =
-          BigtableConfiguration.configure(projectId, instanceId);
-      config.set(BigtableOptionsFactory.APP_PROFILE_ID_KEY, appProfileId);
+    try {
+      // Using HBase SDK
+      if (isUsingHBaseSDK) {
+        org.apache.hadoop.conf.Configuration config =
+            BigtableConfiguration.configure(projectId, instanceId);
+        config.set(BigtableOptionsFactory.APP_PROFILE_ID_KEY, appProfileId);
 
-      Connection connection;
-      try {
-        connection = BigtableConfiguration.connect(config);
-      } catch (IllegalStateException e) {
-        throw new RuntimeException(e);
+        Connection connection = BigtableConfiguration.connect(config);
+        return new HBaseOnlineRetriever(connection);
       }
 
-      return new HBaseOnlineRetriever(connection);
-    }
-
-    // Using BigTable SDK
-    try {
+      // Using BigTable SDK
       BigtableDataSettings.Builder builder =
           BigtableDataSettings.newBuilder()
               .setProjectId(projectId)
@@ -66,6 +60,7 @@ public class BigTableStoreConfig {
       }
       BigtableDataClient client = BigtableDataClient.create(settings);
       return new BigTableOnlineRetriever(client);
+
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
