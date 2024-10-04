@@ -32,4 +32,7 @@ enum StoreType {
 
   // redis in-memory database
   REDIS = 2;
+
+  // HBase database
+  HBASE = 3;
 }

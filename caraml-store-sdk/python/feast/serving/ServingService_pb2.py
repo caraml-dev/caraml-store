@@ -15,7 +15,7 @@ from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__
 from feast.types import Value_pb2 as feast_dot_types_dot_Value__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"feast/serving/ServingService.proto\x12\rfeast.serving\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17\x66\x65\x61st/types/Value.proto\"\x1c\n\x1aGetFeastServingInfoRequest\"7\n\x1bGetFeastServingInfoResponse\x12\x18\n\x07version\x18\x01 \x01(\tR\x07version\"K\n\x10\x46\x65\x61tureReference\x12#\n\rfeature_table\x18\x01 \x01(\tR\x0c\x66\x65\x61tureTable\x12\x12\n\x04name\x18\x02 \x01(\tR\x04name\"\xb3\x03\n\x18GetOnlineFeaturesRequest\x12;\n\x08\x66\x65\x61tures\x18\x04 \x03(\x0b\x32\x1f.feast.serving.FeatureReferenceR\x08\x66\x65\x61tures\x12R\n\x0b\x65ntity_rows\x18\x02 \x03(\x0b\x32\x31.feast.serving.GetOnlineFeaturesRequest.EntityRowR\nentityRows\x12\x18\n\x07project\x18\x05 \x01(\tR\x07project\x1a\xeb\x01\n\tEntityRow\x12\x38\n\ttimestamp\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\ttimestamp\x12U\n\x06\x66ields\x18\x02 \x03(\x0b\x32=.feast.serving.GetOnlineFeaturesRequest.EntityRow.FieldsEntryR\x06\x66ields\x1aM\n\x0b\x46ieldsEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x12.feast.types.ValueR\x05value:\x02\x38\x01\"\xee\x03\n\x1bGetOnlineFeaturesResponseV2\x12Y\n\x0c\x66ield_values\x18\x01 \x03(\x0b\x32\x36.feast.serving.GetOnlineFeaturesResponseV2.FieldValuesR\x0b\x66ieldValues\x1a\xf3\x02\n\x0b\x46ieldValues\x12Z\n\x06\x66ields\x18\x01 \x03(\x0b\x32\x42.feast.serving.GetOnlineFeaturesResponseV2.FieldValues.FieldsEntryR\x06\x66ields\x12`\n\x08statuses\x18\x02 \x03(\x0b\x32\x44.feast.serving.GetOnlineFeaturesResponseV2.FieldValues.StatusesEntryR\x08statuses\x1aM\n\x0b\x46ieldsEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x12.feast.types.ValueR\x05value:\x02\x38\x01\x1aW\n\rStatusesEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x30\n\x05value\x18\x02 \x01(\x0e\x32\x1a.feast.serving.FieldStatusR\x05value:\x02\x38\x01\"\xac\x02\n\x19GetOnlineFeaturesResponse\x12L\n\x08metadata\x18\x01 \x01(\x0b\x32\x30.feast.serving.GetOnlineFeaturesResponseMetadataR\x08metadata\x12N\n\x07results\x18\x02 \x03(\x0b\x32\x34.feast.serving.GetOnlineFeaturesResponse.FieldVectorR\x07results\x1aq\n\x0b\x46ieldVector\x12*\n\x06values\x18\x01 \x03(\x0b\x32\x12.feast.types.ValueR\x06values\x12\x36\n\x08statuses\x18\x02 \x03(\x0e\x32\x1a.feast.serving.FieldStatusR\x08statuses\"^\n!GetOnlineFeaturesResponseMetadata\x12\x39\n\x0b\x66ield_names\x18\x01 \x01(\x0b\x32\x18.feast.serving.FieldListR\nfieldNames\"\x1d\n\tFieldList\x12\x10\n\x03val\x18\x01 \x03(\tR\x03val*r\n\x0b\x46ieldStatus\x12\x0b\n\x07INVALID\x10\x00\x12\x0b\n\x07PRESENT\x10\x01\x12\x0e\n\nNULL_VALUE\x10\x02\x12\r\n\tNOT_FOUND\x10\x03\x12\x13\n\x0fOUTSIDE_MAX_AGE\x10\x04\x12\x15\n\x11INGESTION_FAILURE\x10\x05\x32\xd2\x02\n\x0eServingService\x12l\n\x13GetFeastServingInfo\x12).feast.serving.GetFeastServingInfoRequest\x1a*.feast.serving.GetFeastServingInfoResponse\x12j\n\x13GetOnlineFeaturesV2\x12\'.feast.serving.GetOnlineFeaturesRequest\x1a*.feast.serving.GetOnlineFeaturesResponseV2\x12\x66\n\x11GetOnlineFeatures\x12\'.feast.serving.GetOnlineFeaturesRequest\x1a(.feast.serving.GetOnlineFeaturesResponseB\x85\x01\n!dev.caraml.store.protobuf.servingB\x13ServingServiceProtoZKgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/servingb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"feast/serving/ServingService.proto\x12\rfeast.serving\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17\x66\x65\x61st/types/Value.proto\"\x1c\n\x1aGetFeastServingInfoRequest\".\n\x1bGetFeastServingInfoResponse\x12\x0f\n\x07version\x18\x01 \x01(\t\"7\n\x10\x46\x65\x61tureReference\x12\x15\n\rfeature_table\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\"\xf5\x02\n\x18GetOnlineFeaturesRequest\x12\x31\n\x08\x66\x65\x61tures\x18\x04 \x03(\x0b\x32\x1f.feast.serving.FeatureReference\x12\x46\n\x0b\x65ntity_rows\x18\x02 \x03(\x0b\x32\x31.feast.serving.GetOnlineFeaturesRequest.EntityRow\x12\x0f\n\x07project\x18\x05 \x01(\t\x1a\xcc\x01\n\tEntityRow\x12-\n\ttimestamp\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12M\n\x06\x66ields\x18\x02 \x03(\x0b\x32=.feast.serving.GetOnlineFeaturesRequest.EntityRow.FieldsEntry\x1a\x41\n\x0b\x46ieldsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.feast.types.Value:\x02\x38\x01\"\xb7\x03\n\x1bGetOnlineFeaturesResponseV2\x12L\n\x0c\x66ield_values\x18\x01 \x03(\x0b\x32\x36.feast.serving.GetOnlineFeaturesResponseV2.FieldValues\x1a\xc9\x02\n\x0b\x46ieldValues\x12R\n\x06\x66ields\x18\x01 \x03(\x0b\x32\x42.feast.serving.GetOnlineFeaturesResponseV2.FieldValues.FieldsEntry\x12V\n\x08statuses\x18\x02 \x03(\x0b\x32\x44.feast.serving.GetOnlineFeaturesResponseV2.FieldValues.StatusesEntry\x1a\x41\n\x0b\x46ieldsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.feast.types.Value:\x02\x38\x01\x1aK\n\rStatusesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12)\n\x05value\x18\x02 \x01(\x0e\x32\x1a.feast.serving.FieldStatus:\x02\x38\x01\"\x87\x02\n\x19GetOnlineFeaturesResponse\x12\x42\n\x08metadata\x18\x01 \x01(\x0b\x32\x30.feast.serving.GetOnlineFeaturesResponseMetadata\x12\x45\n\x07results\x18\x02 \x03(\x0b\x32\x34.feast.serving.GetOnlineFeaturesResponse.FieldVector\x1a_\n\x0b\x46ieldVector\x12\"\n\x06values\x18\x01 \x03(\x0b\x32\x12.feast.types.Value\x12,\n\x08statuses\x18\x02 \x03(\x0e\x32\x1a.feast.serving.FieldStatus\"R\n!GetOnlineFeaturesResponseMetadata\x12-\n\x0b\x66ield_names\x18\x01 \x01(\x0b\x32\x18.feast.serving.FieldList\"\x18\n\tFieldList\x12\x0b\n\x03val\x18\x01 \x03(\t*r\n\x0b\x46ieldStatus\x12\x0b\n\x07INVALID\x10\x00\x12\x0b\n\x07PRESENT\x10\x01\x12\x0e\n\nNULL_VALUE\x10\x02\x12\r\n\tNOT_FOUND\x10\x03\x12\x13\n\x0fOUTSIDE_MAX_AGE\x10\x04\x12\x15\n\x11INGESTION_FAILURE\x10\x05\x32\xd2\x02\n\x0eServingService\x12l\n\x13GetFeastServingInfo\x12).feast.serving.GetFeastServingInfoRequest\x1a*.feast.serving.GetFeastServingInfoResponse\x12j\n\x13GetOnlineFeaturesV2\x12\'.feast.serving.GetOnlineFeaturesRequest\x1a*.feast.serving.GetOnlineFeaturesResponseV2\x12\x66\n\x11GetOnlineFeatures\x12\'.feast.serving.GetOnlineFeaturesRequest\x1a(.feast.serving.GetOnlineFeaturesResponseB\x85\x01\n!dev.caraml.store.protobuf.servingB\x13ServingServiceProtoZKgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/servingb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'feast.serving.ServingService_pb2', globals())
@@ -29,36 +29,36 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _GETONLINEFEATURESRESPONSEV2_FIELDVALUES_FIELDSENTRY._serialized_options = b'8\001'
   _GETONLINEFEATURESRESPONSEV2_FIELDVALUES_STATUSESENTRY._options = None
   _GETONLINEFEATURESRESPONSEV2_FIELDVALUES_STATUSESENTRY._serialized_options = b'8\001'
-  _FIELDSTATUS._serialized_start=1640
-  _FIELDSTATUS._serialized_end=1754
+  _FIELDSTATUS._serialized_start=1440
+  _FIELDSTATUS._serialized_end=1554
   _GETFEASTSERVINGINFOREQUEST._serialized_start=111
   _GETFEASTSERVINGINFOREQUEST._serialized_end=139
   _GETFEASTSERVINGINFORESPONSE._serialized_start=141
-  _GETFEASTSERVINGINFORESPONSE._serialized_end=196
-  _FEATUREREFERENCE._serialized_start=198
-  _FEATUREREFERENCE._serialized_end=273
-  _GETONLINEFEATURESREQUEST._serialized_start=276
-  _GETONLINEFEATURESREQUEST._serialized_end=711
-  _GETONLINEFEATURESREQUEST_ENTITYROW._serialized_start=476
-  _GETONLINEFEATURESREQUEST_ENTITYROW._serialized_end=711
-  _GETONLINEFEATURESREQUEST_ENTITYROW_FIELDSENTRY._serialized_start=634
-  _GETONLINEFEATURESREQUEST_ENTITYROW_FIELDSENTRY._serialized_end=711
-  _GETONLINEFEATURESRESPONSEV2._serialized_start=714
-  _GETONLINEFEATURESRESPONSEV2._serialized_end=1208
-  _GETONLINEFEATURESRESPONSEV2_FIELDVALUES._serialized_start=837
-  _GETONLINEFEATURESRESPONSEV2_FIELDVALUES._serialized_end=1208
-  _GETONLINEFEATURESRESPONSEV2_FIELDVALUES_FIELDSENTRY._serialized_start=634
-  _GETONLINEFEATURESRESPONSEV2_FIELDVALUES_FIELDSENTRY._serialized_end=711
-  _GETONLINEFEATURESRESPONSEV2_FIELDVALUES_STATUSESENTRY._serialized_start=1121
-  _GETONLINEFEATURESRESPONSEV2_FIELDVALUES_STATUSESENTRY._serialized_end=1208
-  _GETONLINEFEATURESRESPONSE._serialized_start=1211
-  _GETONLINEFEATURESRESPONSE._serialized_end=1511
-  _GETONLINEFEATURESRESPONSE_FIELDVECTOR._serialized_start=1398
-  _GETONLINEFEATURESRESPONSE_FIELDVECTOR._serialized_end=1511
-  _GETONLINEFEATURESRESPONSEMETADATA._serialized_start=1513
-  _GETONLINEFEATURESRESPONSEMETADATA._serialized_end=1607
-  _FIELDLIST._serialized_start=1609
-  _FIELDLIST._serialized_end=1638
-  _SERVINGSERVICE._serialized_start=1757
-  _SERVINGSERVICE._serialized_end=2095
+  _GETFEASTSERVINGINFORESPONSE._serialized_end=187
+  _FEATUREREFERENCE._serialized_start=189
+  _FEATUREREFERENCE._serialized_end=244
+  _GETONLINEFEATURESREQUEST._serialized_start=247
+  _GETONLINEFEATURESREQUEST._serialized_end=620
+  _GETONLINEFEATURESREQUEST_ENTITYROW._serialized_start=416
+  _GETONLINEFEATURESREQUEST_ENTITYROW._serialized_end=620
+  _GETONLINEFEATURESREQUEST_ENTITYROW_FIELDSENTRY._serialized_start=555
+  _GETONLINEFEATURESREQUEST_ENTITYROW_FIELDSENTRY._serialized_end=620
+  _GETONLINEFEATURESRESPONSEV2._serialized_start=623
+  _GETONLINEFEATURESRESPONSEV2._serialized_end=1062
+  _GETONLINEFEATURESRESPONSEV2_FIELDVALUES._serialized_start=733
+  _GETONLINEFEATURESRESPONSEV2_FIELDVALUES._serialized_end=1062
+  _GETONLINEFEATURESRESPONSEV2_FIELDVALUES_FIELDSENTRY._serialized_start=555
+  _GETONLINEFEATURESRESPONSEV2_FIELDVALUES_FIELDSENTRY._serialized_end=620
+  _GETONLINEFEATURESRESPONSEV2_FIELDVALUES_STATUSESENTRY._serialized_start=987
+  _GETONLINEFEATURESRESPONSEV2_FIELDVALUES_STATUSESENTRY._serialized_end=1062
+  _GETONLINEFEATURESRESPONSE._serialized_start=1065
+  _GETONLINEFEATURESRESPONSE._serialized_end=1328
+  _GETONLINEFEATURESRESPONSE_FIELDVECTOR._serialized_start=1233
+  _GETONLINEFEATURESRESPONSE_FIELDVECTOR._serialized_end=1328
+  _GETONLINEFEATURESRESPONSEMETADATA._serialized_start=1330
+  _GETONLINEFEATURESRESPONSEMETADATA._serialized_end=1412
+  _FIELDLIST._serialized_start=1414
+  _FIELDLIST._serialized_end=1438
+  _SERVINGSERVICE._serialized_start=1557
+  _SERVINGSERVICE._serialized_end=1895
 # @@protoc_insertion_point(module_scope)
