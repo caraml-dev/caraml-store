@@ -54,7 +54,8 @@ object StreamingPipeline extends BasePipeline with Serializable {
         sparkSession.readStream
           .format("kafka")
           .option("kafka.bootstrap.servers", source.bootstrapServers)
-          .option("subscribe", source.topic)
+//          .option("subscribe", source.topic)
+          .option("subscribePattern", s".*\\.${source.topic}")
           .load()
       case source: MemoryStreamingSource =>
         source.read
