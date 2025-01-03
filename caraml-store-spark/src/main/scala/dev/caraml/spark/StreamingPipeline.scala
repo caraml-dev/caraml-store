@@ -54,7 +54,11 @@ object StreamingPipeline extends BasePipeline with Serializable {
         sparkSession.readStream
           .format("kafka")
           .option("kafka.bootstrap.servers", source.bootstrapServers)
-          .option("subscribe", source.topic)
+          .option("subscribePattern", s"^(.*\\.|)${source.topic}")
+          .option(
+            "kafka.metadata.max.age.ms",
+            "5000"
+          ) // set max age to 5s to refresh for topics every 5s
           .load()
       case source: MemoryStreamingSource =>
         source.read
