@@ -16,6 +16,7 @@ message DataSource {
     BATCH_FILE = 1;
     BATCH_BIGQUERY = 2;
     STREAM_KAFKA = 3;
+    BATCH_MAXCOMPUTE = 4;
   }
   SourceType type = 1;
 
