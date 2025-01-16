@@ -17,6 +17,7 @@ public class DataSourceValidator {
       }
       case BATCH_BIGQUERY -> Matchers.checkValidBigQueryTableRef(
           spec.getBigqueryOptions().getTableRef(), "FeatureTable");
+      case BATCH_MAXCOMPUTE -> {} // validation for table_ref to be added
       case STREAM_KAFKA -> {
         StreamFormat.FormatCase messageFormat =
             spec.getKafkaOptions().getMessageFormat().getFormatCase();

@@ -11,6 +11,7 @@ from feast.core.FeatureTable_pb2 import FeatureTableSpec as FeatureTableSpecProt
 from feast.data_source import (
     BigQuerySource,
     FileSource,
+    MaxComputeSource,
     KafkaSource, new_batch_source_from_proto, new_stream_source_from_proto,
 )
 from feast.feature import Feature
@@ -29,7 +30,7 @@ class FeatureTable:
         name: str,
         entities: List[str],
         features: List[Feature],
-        batch_source: Optional[Union[BigQuerySource, FileSource]] = None,
+        batch_source: Optional[Union[BigQuerySource, FileSource, MaxComputeSource]] = None,
         stream_source: Optional[KafkaSource] = None,
         max_age: Optional[Duration] = None,
         labels: Optional[MutableMapping[str, str]] = None,

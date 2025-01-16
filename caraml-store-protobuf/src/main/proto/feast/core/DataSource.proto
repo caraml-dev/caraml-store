@@ -57,6 +57,11 @@ message DataSource {
     SparkOverride spark_override = 2;
   }
 
+  // Defines options for DataSource that sources features from a MaxCompute Query
+  message MaxComputeOptions {
+    string table_ref = 1;
+  }
+
   // Defines options for DataSource that sources features from Kafka messages.
   // Each message should be a Protobuf that can be decoded with the generated
   // Java Protobuf class at the given class path
@@ -79,5 +84,6 @@ message DataSource {
     FileOptions file_options = 11;
     BigQueryOptions bigquery_options = 12;
     KafkaOptions kafka_options = 13;
+    MaxComputeOptions maxcompute_options = 14;
   }
 }

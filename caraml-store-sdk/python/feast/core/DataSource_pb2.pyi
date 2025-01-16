@@ -9,7 +9,7 @@ from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Opti
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class DataSource(_message.Message):
-    __slots__ = ["bigquery_options", "created_timestamp_column", "date_partition_column", "event_timestamp_column", "field_mapping", "file_options", "kafka_options", "type"]
+    __slots__ = ["bigquery_options", "created_timestamp_column", "date_partition_column", "event_timestamp_column", "field_mapping", "file_options", "kafka_options", "maxcompute_options", "type"]
     class SourceType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
         __slots__ = []
     class BigQueryOptions(_message.Message):
@@ -46,6 +46,11 @@ class DataSource(_message.Message):
         spark_override: _SparkOverride_pb2.SparkOverride
         topic: str
         def __init__(self, bootstrap_servers: _Optional[str] = ..., topic: _Optional[str] = ..., message_format: _Optional[_Union[_DataFormat_pb2.StreamFormat, _Mapping]] = ..., spark_override: _Optional[_Union[_SparkOverride_pb2.SparkOverride, _Mapping]] = ...) -> None: ...
+    class MaxComputeOptions(_message.Message):
+        __slots__ = ["table_ref"]
+        TABLE_REF_FIELD_NUMBER: _ClassVar[int]
+        table_ref: str
+        def __init__(self, table_ref: _Optional[str] = ...) -> None: ...
     BATCH_BIGQUERY: DataSource.SourceType
     BATCH_FILE: DataSource.SourceType
     BATCH_MAXCOMPUTE: DataSource.SourceType
@@ -57,6 +62,7 @@ class DataSource(_message.Message):
     FILE_OPTIONS_FIELD_NUMBER: _ClassVar[int]
     INVALID: DataSource.SourceType
     KAFKA_OPTIONS_FIELD_NUMBER: _ClassVar[int]
+    MAXCOMPUTE_OPTIONS_FIELD_NUMBER: _ClassVar[int]
     STREAM_KAFKA: DataSource.SourceType
     TYPE_FIELD_NUMBER: _ClassVar[int]
     bigquery_options: DataSource.BigQueryOptions
@@ -66,5 +72,6 @@ class DataSource(_message.Message):
     field_mapping: _containers.ScalarMap[str, str]
     file_options: DataSource.FileOptions
     kafka_options: DataSource.KafkaOptions
+    maxcompute_options: DataSource.MaxComputeOptions
     type: DataSource.SourceType
-    def __init__(self, type: _Optional[_Union[DataSource.SourceType, str]] = ..., field_mapping: _Optional[_Mapping[str, str]] = ..., event_timestamp_column: _Optional[str] = ..., date_partition_column: _Optional[str] = ..., created_timestamp_column: _Optional[str] = ..., file_options: _Optional[_Union[DataSource.FileOptions, _Mapping]] = ..., bigquery_options: _Optional[_Union[DataSource.BigQueryOptions, _Mapping]] = ..., kafka_options: _Optional[_Union[DataSource.KafkaOptions, _Mapping]] = ...) -> None: ...
+    def __init__(self, type: _Optional[_Union[DataSource.SourceType, str]] = ..., field_mapping: _Optional[_Mapping[str, str]] = ..., event_timestamp_column: _Optional[str] = ..., date_partition_column: _Optional[str] = ..., created_timestamp_column: _Optional[str] = ..., file_options: _Optional[_Union[DataSource.FileOptions, _Mapping]] = ..., bigquery_options: _Optional[_Union[DataSource.BigQueryOptions, _Mapping]] = ..., kafka_options: _Optional[_Union[DataSource.KafkaOptions, _Mapping]] = ..., maxcompute_options: _Optional[_Union[DataSource.MaxComputeOptions, _Mapping]] = ...) -> None: ...

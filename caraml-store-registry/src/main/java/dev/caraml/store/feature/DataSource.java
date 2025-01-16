@@ -10,6 +10,7 @@ import dev.caraml.store.protobuf.core.DataSourceProto;
 import dev.caraml.store.protobuf.core.DataSourceProto.DataSource.BigQueryOptions;
 import dev.caraml.store.protobuf.core.DataSourceProto.DataSource.FileOptions;
 import dev.caraml.store.protobuf.core.DataSourceProto.DataSource.KafkaOptions;
+import dev.caraml.store.protobuf.core.DataSourceProto.DataSource.MaxComputeOptions;
 import dev.caraml.store.protobuf.core.DataSourceProto.DataSource.SourceType;
 import dev.caraml.store.protobuf.core.SparkOverrideProto.SparkOverride;
 import java.util.HashMap;
@@ -85,6 +86,9 @@ public class DataSource {
         dataSourceConfigMap.put("table_ref", spec.getBigqueryOptions().getTableRef());
         populateDatasourceConfigMapWithSparkOverride(
             dataSourceConfigMap, spec.getBigqueryOptions().getSparkOverride());
+      }
+      case BATCH_MAXCOMPUTE -> {
+        dataSourceConfigMap.put("table_ref", spec.getMaxcomputeOptions().getTableRef());
       }
       case STREAM_KAFKA -> {
         dataSourceConfigMap.put("bootstrap_servers", spec.getKafkaOptions().getBootstrapServers());
@@ -166,6 +170,11 @@ public class DataSource {
         bigQueryOptions.setSparkOverride(
             parseDatasourceConfigMapToSparkOverride(dataSourceConfigMap));
         spec.setBigqueryOptions(bigQueryOptions.build());
+      }
+      case BATCH_MAXCOMPUTE -> {
+        MaxComputeOptions.Builder maxComputeOptions = MaxComputeOptions.newBuilder();
+        maxComputeOptions.setTableRef(dataSourceConfigMap.get("table_ref"));
+        spec.setMaxcomputeOptions(maxComputeOptions.build());
       }
       case STREAM_KAFKA -> {
         KafkaOptions.Builder kafkaOptions = KafkaOptions.newBuilder();

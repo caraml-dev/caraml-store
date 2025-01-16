@@ -15,7 +15,7 @@ from feast.core import DataFormat_pb2 as feast_dot_core_dot_DataFormat__pb2
 from feast.core import SparkOverride_pb2 as feast_dot_core_dot_SparkOverride__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1b\x66\x65\x61st/core/DataSource.proto\x12\nfeast.core\x1a\x1b\x66\x65\x61st/core/DataFormat.proto\x1a\x1e\x66\x65\x61st/core/SparkOverride.proto\"\xc2\t\n\nDataSource\x12\x35\n\x04type\x18\x01 \x01(\x0e\x32!.feast.core.DataSource.SourceTypeR\x04type\x12M\n\rfield_mapping\x18\x02 \x03(\x0b\x32(.feast.core.DataSource.FieldMappingEntryR\x0c\x66ieldMapping\x12\x34\n\x16\x65vent_timestamp_column\x18\x03 \x01(\tR\x14\x65ventTimestampColumn\x12\x32\n\x15\x64\x61te_partition_column\x18\x04 \x01(\tR\x13\x64\x61tePartitionColumn\x12\x38\n\x18\x63reated_timestamp_column\x18\x05 \x01(\tR\x16\x63reatedTimestampColumn\x12G\n\x0c\x66ile_options\x18\x0b \x01(\x0b\x32\".feast.core.DataSource.FileOptionsH\x00R\x0b\x66ileOptions\x12S\n\x10\x62igquery_options\x18\x0c \x01(\x0b\x32&.feast.core.DataSource.BigQueryOptionsH\x00R\x0f\x62igqueryOptions\x12J\n\rkafka_options\x18\r \x01(\x0b\x32#.feast.core.DataSource.KafkaOptionsH\x00R\x0ckafkaOptions\x1a?\n\x11\x46ieldMappingEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01\x1a\xa3\x01\n\x0b\x46ileOptions\x12\x37\n\x0b\x66ile_format\x18\x01 \x01(\x0b\x32\x16.feast.core.FileFormatR\nfileFormat\x12\x19\n\x08\x66ile_url\x18\x02 \x01(\tR\x07\x66ileUrl\x12@\n\x0espark_override\x18\x03 \x01(\x0b\x32\x19.feast.core.SparkOverrideR\rsparkOverride\x1ap\n\x0f\x42igQueryOptions\x12\x1b\n\ttable_ref\x18\x01 \x01(\tR\x08tableRef\x12@\n\x0espark_override\x18\x02 \x01(\x0b\x32\x19.feast.core.SparkOverrideR\rsparkOverride\x1a\xd4\x01\n\x0cKafkaOptions\x12+\n\x11\x62ootstrap_servers\x18\x01 \x01(\tR\x10\x62ootstrapServers\x12\x14\n\x05topic\x18\x02 \x01(\tR\x05topic\x12?\n\x0emessage_format\x18\x03 \x01(\x0b\x32\x18.feast.core.StreamFormatR\rmessageFormat\x12@\n\x0espark_override\x18\x04 \x01(\x0b\x32\x19.feast.core.SparkOverrideR\rsparkOverride\"e\n\nSourceType\x12\x0b\n\x07INVALID\x10\x00\x12\x0e\n\nBATCH_FILE\x10\x01\x12\x12\n\x0e\x42\x41TCH_BIGQUERY\x10\x02\x12\x10\n\x0cSTREAM_KAFKA\x10\x03\x12\x14\n\x10\x42\x41TCH_MAXCOMPUTE\x10\x04\x42\t\n\x07optionsB{\n\x1e\x64\x65v.caraml.store.protobuf.coreB\x0f\x44\x61taSourceProtoZHgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/coreb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1b\x66\x65\x61st/core/DataSource.proto\x12\nfeast.core\x1a\x1b\x66\x65\x61st/core/DataFormat.proto\x1a\x1e\x66\x65\x61st/core/SparkOverride.proto\"\xcf\n\n\nDataSource\x12\x35\n\x04type\x18\x01 \x01(\x0e\x32!.feast.core.DataSource.SourceTypeR\x04type\x12M\n\rfield_mapping\x18\x02 \x03(\x0b\x32(.feast.core.DataSource.FieldMappingEntryR\x0c\x66ieldMapping\x12\x34\n\x16\x65vent_timestamp_column\x18\x03 \x01(\tR\x14\x65ventTimestampColumn\x12\x32\n\x15\x64\x61te_partition_column\x18\x04 \x01(\tR\x13\x64\x61tePartitionColumn\x12\x38\n\x18\x63reated_timestamp_column\x18\x05 \x01(\tR\x16\x63reatedTimestampColumn\x12G\n\x0c\x66ile_options\x18\x0b \x01(\x0b\x32\".feast.core.DataSource.FileOptionsH\x00R\x0b\x66ileOptions\x12S\n\x10\x62igquery_options\x18\x0c \x01(\x0b\x32&.feast.core.DataSource.BigQueryOptionsH\x00R\x0f\x62igqueryOptions\x12J\n\rkafka_options\x18\r \x01(\x0b\x32#.feast.core.DataSource.KafkaOptionsH\x00R\x0ckafkaOptions\x12Y\n\x12maxcompute_options\x18\x0e \x01(\x0b\x32(.feast.core.DataSource.MaxComputeOptionsH\x00R\x11maxcomputeOptions\x1a?\n\x11\x46ieldMappingEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01\x1a\xa3\x01\n\x0b\x46ileOptions\x12\x37\n\x0b\x66ile_format\x18\x01 \x01(\x0b\x32\x16.feast.core.FileFormatR\nfileFormat\x12\x19\n\x08\x66ile_url\x18\x02 \x01(\tR\x07\x66ileUrl\x12@\n\x0espark_override\x18\x03 \x01(\x0b\x32\x19.feast.core.SparkOverrideR\rsparkOverride\x1ap\n\x0f\x42igQueryOptions\x12\x1b\n\ttable_ref\x18\x01 \x01(\tR\x08tableRef\x12@\n\x0espark_override\x18\x02 \x01(\x0b\x32\x19.feast.core.SparkOverrideR\rsparkOverride\x1a\x30\n\x11MaxComputeOptions\x12\x1b\n\ttable_ref\x18\x01 \x01(\tR\x08tableRef\x1a\xd4\x01\n\x0cKafkaOptions\x12+\n\x11\x62ootstrap_servers\x18\x01 \x01(\tR\x10\x62ootstrapServers\x12\x14\n\x05topic\x18\x02 \x01(\tR\x05topic\x12?\n\x0emessage_format\x18\x03 \x01(\x0b\x32\x18.feast.core.StreamFormatR\rmessageFormat\x12@\n\x0espark_override\x18\x04 \x01(\x0b\x32\x19.feast.core.SparkOverrideR\rsparkOverride\"e\n\nSourceType\x12\x0b\n\x07INVALID\x10\x00\x12\x0e\n\nBATCH_FILE\x10\x01\x12\x12\n\x0e\x42\x41TCH_BIGQUERY\x10\x02\x12\x10\n\x0cSTREAM_KAFKA\x10\x03\x12\x14\n\x10\x42\x41TCH_MAXCOMPUTE\x10\x04\x42\t\n\x07optionsB{\n\x1e\x64\x65v.caraml.store.protobuf.coreB\x0f\x44\x61taSourceProtoZHgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/coreb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'feast.core.DataSource_pb2', globals())
@@ -26,15 +26,17 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _DATASOURCE_FIELDMAPPINGENTRY._options = None
   _DATASOURCE_FIELDMAPPINGENTRY._serialized_options = b'8\001'
   _DATASOURCE._serialized_start=105
-  _DATASOURCE._serialized_end=1323
-  _DATASOURCE_FIELDMAPPINGENTRY._serialized_start=651
-  _DATASOURCE_FIELDMAPPINGENTRY._serialized_end=714
-  _DATASOURCE_FILEOPTIONS._serialized_start=717
-  _DATASOURCE_FILEOPTIONS._serialized_end=880
-  _DATASOURCE_BIGQUERYOPTIONS._serialized_start=882
-  _DATASOURCE_BIGQUERYOPTIONS._serialized_end=994
-  _DATASOURCE_KAFKAOPTIONS._serialized_start=997
-  _DATASOURCE_KAFKAOPTIONS._serialized_end=1209
-  _DATASOURCE_SOURCETYPE._serialized_start=1211
-  _DATASOURCE_SOURCETYPE._serialized_end=1312
+  _DATASOURCE._serialized_end=1464
+  _DATASOURCE_FIELDMAPPINGENTRY._serialized_start=742
+  _DATASOURCE_FIELDMAPPINGENTRY._serialized_end=805
+  _DATASOURCE_FILEOPTIONS._serialized_start=808
+  _DATASOURCE_FILEOPTIONS._serialized_end=971
+  _DATASOURCE_BIGQUERYOPTIONS._serialized_start=973
+  _DATASOURCE_BIGQUERYOPTIONS._serialized_end=1085
+  _DATASOURCE_MAXCOMPUTEOPTIONS._serialized_start=1087
+  _DATASOURCE_MAXCOMPUTEOPTIONS._serialized_end=1135
+  _DATASOURCE_KAFKAOPTIONS._serialized_start=1138
+  _DATASOURCE_KAFKAOPTIONS._serialized_end=1350
+  _DATASOURCE_SOURCETYPE._serialized_start=1352
+  _DATASOURCE_SOURCETYPE._serialized_end=1453
 # @@protoc_insertion_point(module_scope)
