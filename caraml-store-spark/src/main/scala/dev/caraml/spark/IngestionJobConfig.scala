@@ -120,6 +120,14 @@ case class ExpectationSpec(
     expectations: List[Expectation]
 )
 
+abstract class ResultStoreConfig
+
+case class KafkaResultStoreConfig(
+    bootstrapServers: String,
+    topic: String
+) extends ResultStoreConfig
+
+
 case class IngestionJobConfig(
     mode: Modes = Modes.Offline,
     featureTable: FeatureTable = null,
@@ -137,5 +145,6 @@ case class IngestionJobConfig(
     expectationSpec: Option[ExpectationSpec] = None,
     doNotIngestInvalidRows: Boolean = false,
     checkpointPath: Option[String] = None,
-    bq: Option[BQConfig] = None
+    bq: Option[BQConfig] = None,
+    resultStore: Option[ResultStoreConfig] = None
 )

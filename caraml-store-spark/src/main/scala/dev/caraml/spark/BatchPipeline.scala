@@ -4,6 +4,7 @@ import dev.caraml.spark.metrics.IngestionPipelineMetrics
 import dev.caraml.spark.sources.bq.BigQueryReader
 import dev.caraml.spark.sources.file.FileReader
 import dev.caraml.spark.validation.RowValidator
+import dev.caraml.spark.results.KafkaResultStore
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
@@ -87,6 +88,11 @@ object BatchPipeline extends BasePipeline {
       .option("entity_max_age", config.entityMaxAge.getOrElse(0L))
       .save()
 
+    val rowsWrittenCount = validRows.count() // Get the number of rows written to the store
+
+    // Optionally, you can log or use the validRowCount and rowsWrittenCount variables as needed
+    println(s"Number of rows written to the store: $rowsWrittenCount")
+
     config.deadLetterPath foreach { path =>
       projected
         .filter(!rowValidator.allChecks)
@@ -97,6 +103,15 @@ object BatchPipeline extends BasePipeline {
         .save(StringUtils.stripEnd(path, "/") + "/" + SparkEnv.get.conf.getAppId)
     }
 
+    // perform result store if ResultStoreConfig is defined
+    config.resultStore match {
+      case Some(KafkaResultStoreConfig(bootstrapServers, topic)) =>
+        val resultStore = new KafkaResultStore(bootstrapServers, topic)
+        resultStore.storeResults(config, rowsWrittenCount)
+      case None => // Do nothing
+    }
+
     None
   }
+
 }
