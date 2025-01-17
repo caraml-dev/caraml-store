@@ -127,6 +127,9 @@ case class KafkaResultStoreConfig(
     topic: String
 ) extends ResultStoreConfig
 
+case class ResultStore(
+    kafka: Option[KafkaResultStoreConfig] = None
+) 
 
 case class IngestionJobConfig(
     mode: Modes = Modes.Offline,

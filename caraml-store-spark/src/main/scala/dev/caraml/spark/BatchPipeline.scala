@@ -28,6 +28,7 @@ object BatchPipeline extends BasePipeline {
     val rowValidator =
       new RowValidator(featureTable, config.source.eventTimestampColumn, config.expectationSpec)
     val metrics = new IngestionPipelineMetrics
+    val jobStartTime = System.currentTimeMillis()
 
     val input = config.source match {
       case source: BQSource =>
@@ -102,6 +103,8 @@ object BatchPipeline extends BasePipeline {
         .mode(SaveMode.Append)
         .save(StringUtils.stripEnd(path, "/") + "/" + SparkEnv.get.conf.getAppId)
     }
+
+    val jobEndTime = System.currentTimeMillis()
 
     // perform result store if ResultStoreConfig is defined
     config.resultStore match {

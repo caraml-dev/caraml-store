@@ -132,11 +132,9 @@ object IngestionJob {
 
     opt[String](name = "result-store")
       .action((x, c) => {
-        parseJSON(x).extract[ResultStoreConfig] match {
-          case KafkaResultStoreConfig(bootstrapServers, topic) =>
-            c.copy(resultStore =
-              Some(KafkaResultStoreConfig(bootstrapServers, topic))
-            )
+        parseJSON(x).extract[ResultStore] match {
+          case ResultStore(kafka: Some[KafkaResultStoreConfig]) =>
+            c.copy(resultStore = Some(kafka.get))
           case _ => c
         }
       })
