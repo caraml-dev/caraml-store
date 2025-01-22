@@ -15,7 +15,20 @@ object MaxComputeReader {
        end: DateTime
      ): DataFrame = {
 
-    val data = sparkSession.sql("select * from table where timestamp >= 100 && timestamp <= 100")
-    data.toDF()
+    val ODPS_DATA_SOURCE = "org.apache.spark.sql.odps.datasource.DefaultSource"
+    val reader = sparkSession.read.format(ODPS_DATA_SOURCE)
+      .option("spark.hadoop.odps.project.name", "g_gojek_id_staging")
+      .option("spark.hadoop.odps.access.id", "access_id")
+      .option("spark.hadoop.odps.access.key", "access_key")
+      .option("spark.hadoop.odps.end.point", "endpoint")
+      .option("spark.hadoop.odps.table.name", "table name")
+
+    reader.load(s"${source.project}.${source.dataset}.${source.table}")
+      .filter(col(source.eventTimestampColumn) >= new Timestamp(start.getMillis))
+      .filter(col(source.eventTimestampColumn) < new Timestamp(end.getMillis))
+
+//    val data = sparkSession.sql("select * from table where timestamp >= 100 && timestamp <= 100")
+//    data.toDF()
+
   }
 }
