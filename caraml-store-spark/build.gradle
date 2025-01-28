@@ -81,7 +81,7 @@ def containerRegistry = System.getenv('DOCKER_REGISTRY')
 docker {
     dependsOn shadowJar
     dockerfile file('docker/Dockerfile')
-    files shadowJar.outputs, "$rootDir/caraml-store-pyspark/scripts"
+    files shadowJar.outputs, "$rootDir/caraml-store-pyspark/scripts", "$rootDir/caraml-store-spark/prebuilt-jars/custom-dialect.jar"
     copySpec.with {
         from("$rootDir/caraml-store-pyspark") {
             include 'templates/**'
