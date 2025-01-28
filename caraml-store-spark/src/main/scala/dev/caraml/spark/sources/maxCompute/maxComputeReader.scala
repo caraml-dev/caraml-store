@@ -15,20 +15,23 @@ object MaxComputeReader {
        end: DateTime
      ): DataFrame = {
 
-    val ODPS_DATA_SOURCE = "org.apache.spark.sql.odps.datasource.DefaultSource"
-    val reader = sparkSession.read.format(ODPS_DATA_SOURCE)
-      .option("spark.hadoop.odps.project.name", "g_gojek_id_staging")
-      .option("spark.hadoop.odps.access.id", "access_id")
-      .option("spark.hadoop.odps.access.key", "access_key")
-      .option("spark.hadoop.odps.end.point", "endpoint")
-      .option("spark.hadoop.odps.table.name", "table name")
+    val maxComputeAccessID = sys.env("caraml-spark-maxcompute-access-id")
+    val maxComputeAccessKey = sys.env("caraml-spark-maxcompute-access-key")
+    val maxComputeJDBCConnectionURL = "jdbc:odps:https://service.ap-southeast-5.maxcompute.aliyun.com/api/?project=%s" format source.project
 
-    reader.load(s"${source.project}.${source.dataset}.${source.table}")
-      .filter(col(source.eventTimestampColumn) >= new Timestamp(start.getMillis))
-      .filter(col(source.eventTimestampColumn) < new Timestamp(end.getMillis))
+    val sqlQuery = "select * from %s.%s where %s >= %d and %s < %d" format (
+      source.dataset, source.table, source.eventTimestampColumn, start.getMillis, source.eventTimestampColumn, end.getMillis
+    )
 
-//    val data = sparkSession.sql("select * from table where timestamp >= 100 && timestamp <= 100")
-//    data.toDF()
+    val data = sparkSession.read.format("jdbc")
+      .option("url", maxComputeJDBCConnectionURL)
+      // Not setting queryTimeout will fail the query, whereas setting it up actually doesn't make an impact
+      .option("queryTimeout", 5000)
+      .option("query", sqlQuery)
+      .option("user", maxComputeAccessID) // access id
+      .option("password", maxComputeAccessKey) //
+      .load()
 
+    data.toDF()
   }
 }

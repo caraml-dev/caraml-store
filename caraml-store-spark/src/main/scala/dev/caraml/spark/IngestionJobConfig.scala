@@ -149,4 +149,5 @@ case class IngestionJobConfig(
     doNotIngestInvalidRows: Boolean = false,
     checkpointPath: Option[String] = None,
     bq: Option[BQConfig] = None,
+//    maxCompute: Option[MaxComputeSource] = None,
 )
