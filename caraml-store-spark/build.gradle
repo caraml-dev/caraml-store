@@ -59,6 +59,8 @@ dependencies {
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.26.3'
     testImplementation "com.dimafeng:testcontainers-scala-kafka_$scalaVersion:0.40.12"
     testRuntimeOnly 'com.vladsch.flexmark:flexmark-all:0.35.10'
+    implementation files('./prebuilt-jars/custom-dialect.jar')
+    testImplementation 'com.aliyun.odps:odps-jdbc:3.8.2'
 }
 application {
     mainClassName = 'dev.caraml.spark.IngestionJob'
