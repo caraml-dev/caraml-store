@@ -21,7 +21,7 @@ object MaxComputeReader {
     val maxComputeAccessKey = sys.env("CARAML_SPARK_MAXCOMPUTE_ACCESS_KEY")
     val maxComputeJDBCConnectionURL = "jdbc:odps:https://service.ap-southeast-5.maxcompute.aliyun.com/api/?project=%s" format source.project
 
-    val sqlQuery = "select * from %s.%s where %s >= %d and %s < %d" format (
+    val sqlQuery = "select * from %s.%s  where to_millis(%s) > %d and to_millis(%s) < %d" format (
       source.dataset, source.table, source.eventTimestampColumn, start.getMillis, source.eventTimestampColumn, end.getMillis
     )
 
@@ -36,8 +36,6 @@ object MaxComputeReader {
       .option("user", maxComputeAccessID) // access id
       .option("password", maxComputeAccessKey) //
       .load()
-
-    println(data)
 
     data.toDF()
   }

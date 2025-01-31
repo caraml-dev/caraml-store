@@ -7,7 +7,7 @@ ARG ODPC_JDBC_CONNECTOR=3.8.2
 USER root
 ADD https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop2-${GCS_CONNECTOR_VERSION}.jar /opt/spark/jars
 ADD https://repo1.maven.org/maven2/com/google/cloud/spark/spark-bigquery-with-dependencies_2.12/${BQ_CONNECTOR_VERSION}/spark-bigquery-with-dependencies_2.12-${BQ_CONNECTOR_VERSION}.jar /opt/spark/jars
-ADD https://repo1.maven.org/maven2/com/aliyun/odps/odps-jdbc/${ODPC_JDBC_CONNECTOR}/odps-jdbc-${ODPC_JDBC_CONNECTOR}.jar /opt/spark/jars
+ADD https://github.com/aliyun/aliyun-odps-jdbc/releases/download/v${ODPC_JDBC_CONNECTOR}/odps-jdbc-${ODPC_JDBC_CONNECTOR}-jar-with-dependencies.jar /opt/spark/jars
 
 RUN pip install Jinja2==3.1.2
 # For logging to /dev/termination-log
