@@ -107,7 +107,7 @@ case class Sources(
     file: Option[FileSource] = None,
     bq: Option[BQSource] = None,
     kafka: Option[KafkaSource] = None,
-    maxCompute: Option[MaxComputeSource] = None,
+    maxCompute: Option[MaxComputeSource] = None
 )
 
 case class Field(name: String, `type`: ValueType.Enum)
@@ -148,6 +148,5 @@ case class IngestionJobConfig(
     expectationSpec: Option[ExpectationSpec] = None,
     doNotIngestInvalidRows: Boolean = false,
     checkpointPath: Option[String] = None,
-    bq: Option[BQConfig] = None,
-//    maxCompute: Option[MaxComputeSource] = None,
+    bq: Option[BQConfig] = None
 )

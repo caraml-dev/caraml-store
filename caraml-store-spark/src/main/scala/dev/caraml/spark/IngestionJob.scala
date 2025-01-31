@@ -40,7 +40,8 @@ object IngestionJob {
           case Sources(file: Some[FileSource], _, _, _)   => c.copy(source = file.get)
           case Sources(_, bq: Some[BQSource], _, _)       => c.copy(source = bq.get)
           case Sources(_, _, kafka: Some[KafkaSource], _) => c.copy(source = kafka.get)
-          case Sources(_, _, _, maxCompute: Some[MaxComputeSource]) => c.copy(source = maxCompute.get)
+          case Sources(_, _, _, maxCompute: Some[MaxComputeSource]) =>
+            c.copy(source = maxCompute.get)
         }
       })
       .required()

@@ -50,7 +50,7 @@ object BatchPipeline extends BasePipeline {
           sparkSession,
           source,
           config.startTime,
-          config.endTime,
+          config.endTime
         )
     }
 

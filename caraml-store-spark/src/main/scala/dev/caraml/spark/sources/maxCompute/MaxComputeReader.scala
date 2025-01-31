@@ -15,8 +15,7 @@ object MaxComputeReader {
        source: MaxComputeSource,
        start: DateTime,
        end: DateTime
-     ): DataFrame = {
-
+  ): DataFrame = {
     val maxComputeAccessID = sys.env("CARAML_SPARK_MAXCOMPUTE_ACCESS_ID")
     val maxComputeAccessKey = sys.env("CARAML_SPARK_MAXCOMPUTE_ACCESS_KEY")
     val maxComputeJDBCConnectionURL = "jdbc:odps:https://service.ap-southeast-5.maxcompute.aliyun.com/api/?project=%s" format source.project
