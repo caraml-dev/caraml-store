@@ -11,10 +11,10 @@ import com.caraml.odps.CustomDialect
 
 object MaxComputeReader {
   def createBatchSource(
-        sparkSession: SparkSession,
-        source: MaxComputeSource,
-        start: DateTime,
-        end: DateTime
+      sparkSession: SparkSession,
+      source: MaxComputeSource,
+      start: DateTime,
+      end: DateTime
   ): DataFrame = {
     val maxComputeAccessID  = sys.env("CARAML_SPARK_MAXCOMPUTE_ACCESS_ID")
     val maxComputeAccessKey = sys.env("CARAML_SPARK_MAXCOMPUTE_ACCESS_KEY")
