@@ -1,5 +1,6 @@
 package dev.caraml.store.sparkjob;
 
+import com.google.protobuf.Option;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import dev.caraml.store.feature.EntityRepository;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -397,6 +399,7 @@ public class JobService {
           case BATCH_FILE -> dataSource.getFileOptions().getSparkOverride();
           case BATCH_BIGQUERY -> dataSource.getBigqueryOptions().getSparkOverride();
           case STREAM_KAFKA -> dataSource.getKafkaOptions().getSparkOverride();
+          case BATCH_MAXCOMPUTE -> dataSource.getBigqueryOptions().getSparkOverride();
           default -> throw new IllegalArgumentException(
               String.format("%s is not a valid data source", dataSource.getType()));
         };

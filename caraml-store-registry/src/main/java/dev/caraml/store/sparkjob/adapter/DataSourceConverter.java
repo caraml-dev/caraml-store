@@ -52,6 +52,19 @@ class DataSourceConverter {
     @Nullable String datePartitionColumn;
   }
 
+  @RequiredArgsConstructor
+  @Getter
+  @Setter
+  static class MaxComputeSource extends DataSource {
+    private final String project;
+    private final String dataset;
+    private final String table;
+    private final String eventTimestampColumn;
+    private final Map<String, String> fieldMapping;
+    @Nullable String createdTimestampColumn;
+    @Nullable String datePartitionColumn;
+  }
+
   @Getter
   @Setter
   @AllArgsConstructor
@@ -115,6 +128,36 @@ class DataSourceConverter {
           bqSource.setCreatedTimestampColumn(sourceProtobuf.getCreatedTimestampColumn());
         }
         yield Map.of("bq", bqSource);
+      }
+
+      case MAXCOMPUTE_OPTIONS -> {
+        DataSourceProto.DataSource.MaxComputeOptions options = sourceProtobuf.getMaxcomputeOptions();
+        Pattern pattern = Pattern.compile("(?<project>[^:]+):(?<dataset>[^.]+).(?<table>.+)");
+        Matcher matcher = pattern.matcher(options.getTableRef());
+        matcher.find();
+        if (!matcher.matches()) {
+          throw new IllegalArgumentException(
+                  String.format(
+                          "Table ref '%s' is not in the form of <project>:<dataset>.<table>",
+                          options.getTableRef()));
+        }
+        String project = matcher.group("project");
+        String dataset = matcher.group("dataset");
+        String table = matcher.group("table");
+        MaxComputeSource maxComputeSource =
+                new MaxComputeSource(
+                        project,
+                        dataset,
+                        table,
+                        sourceProtobuf.getEventTimestampColumn(),
+                        sourceProtobuf.getFieldMappingMap());
+        if (!sourceProtobuf.getDatePartitionColumn().isEmpty()) {
+          maxComputeSource.setDatePartitionColumn(sourceProtobuf.getDatePartitionColumn());
+        }
+        if (!sourceProtobuf.getCreatedTimestampColumn().isEmpty()) {
+          maxComputeSource.setCreatedTimestampColumn(sourceProtobuf.getCreatedTimestampColumn());
+        }
+        yield Map.of("maxCompute", maxComputeSource);
       }
 
       case KAFKA_OPTIONS -> {
