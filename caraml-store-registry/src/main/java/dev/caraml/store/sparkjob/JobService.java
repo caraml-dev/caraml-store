@@ -1,6 +1,5 @@
 package dev.caraml.store.sparkjob;
 
-import com.google.protobuf.Option;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import dev.caraml.store.feature.EntityRepository;
