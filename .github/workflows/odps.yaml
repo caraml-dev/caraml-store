@@ -28,7 +28,7 @@ jobs:
           arguments: customDialectJar
 
       - name: Publish customDialectJar
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: custom-dialect
           path: build/libs/custom-dialect.jar
