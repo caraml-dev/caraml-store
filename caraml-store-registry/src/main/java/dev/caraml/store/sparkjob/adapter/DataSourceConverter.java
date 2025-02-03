@@ -132,7 +132,7 @@ class DataSourceConverter {
 
       case MAXCOMPUTE_OPTIONS -> {
         DataSourceProto.DataSource.MaxComputeOptions options =
-                sourceProtobuf.getMaxcomputeOptions();
+            sourceProtobuf.getMaxcomputeOptions();
         Pattern pattern = Pattern.compile("(?<project>[^:]+):(?<dataset>[^.]+).(?<table>.+)");
         Matcher matcher = pattern.matcher(options.getTableRef());
         matcher.find();
