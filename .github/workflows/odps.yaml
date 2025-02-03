@@ -1,13 +1,7 @@
 name: Publish CustomDialect JAR
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
+    workflow_dispatch: # Allows manual triggering of the workflow
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
@@ -33,9 +27,23 @@ jobs:
           name: custom-dialect
           path: caraml-store-spark/build/libs/custom-dialect.jar
 
-      - name: Publish customDialectJar to GitHub Packages
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: caraml-store-spark:publish
+      - name: Create Draft Prerelease
+        id: create_release
+        uses: actions/create-release@v1
         env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          draft: true
+          prerelease: true
+
+      - name: Upload customDialectJar to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: caraml-store-spark/build/libs/custom-dialect.jar
+          asset_name: custom-dialect.jar
+          asset_content_type: application/java-archive
