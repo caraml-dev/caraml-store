@@ -31,4 +31,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: custom-dialect
-          path: build/libs/custom-dialect.jar
+          path: caraml-store-spark/build/libs/custom-dialect.jar

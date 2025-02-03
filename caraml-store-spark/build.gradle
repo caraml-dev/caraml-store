@@ -153,8 +153,13 @@ sourceSets {
 // Define a new task to package CustomDialect as an individual JAR
 task customDialectJar(type: Jar) {
     archiveBaseName.set('custom-dialect')
+    archiveVersion.set('')
+    archiveFileName.set('custom-dialect.jar')
     from sourceSets.main.output
     include 'dev/caraml/spark/odps/CustomDialect.class'
     destinationDirectory.set(file("$buildDir/libs"))
+    doLast {
+            println "Path: ${destinationDirectory.get().asFile}/custom-dialect.jar"
+    }
 }
 customDialectJar.dependsOn classes
