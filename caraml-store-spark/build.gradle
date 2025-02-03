@@ -2,7 +2,7 @@ plugins {
     id 'caraml.scala'
     id 'application'
     id "com.github.johnrengelman.shadow" version "7.1.2"
-    id 'com.palantir.docker' version "0.34.0"
+    id 'com.palantir.docker' version "0.36.0"
     id 'com.github.maiflai.scalatest' version "0.32"
     id 'com.google.protobuf'
     id 'idea'
@@ -169,7 +169,6 @@ customDialectJar.dependsOn classes
 publishing {
     publications {
         customDialect(MavenPublication) {
-            from components.java
             artifactId = 'custom-dialect'
             artifact("$buildDir/libs/custom-dialect.jar") {
                 builtBy customDialectJar
