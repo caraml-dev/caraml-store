@@ -32,3 +32,10 @@ jobs:
         with:
           name: custom-dialect
           path: caraml-store-spark/build/libs/custom-dialect.jar
+
+      - name: Publish customDialectJar to GitHub Packages
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: caraml-store-spark:customDialectJar
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
