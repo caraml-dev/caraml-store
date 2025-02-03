@@ -131,26 +131,27 @@ class DataSourceConverter {
       }
 
       case MAXCOMPUTE_OPTIONS -> {
-        DataSourceProto.DataSource.MaxComputeOptions options = sourceProtobuf.getMaxcomputeOptions();
+        DataSourceProto.DataSource.MaxComputeOptions options =
+                sourceProtobuf.getMaxcomputeOptions();
         Pattern pattern = Pattern.compile("(?<project>[^:]+):(?<dataset>[^.]+).(?<table>.+)");
         Matcher matcher = pattern.matcher(options.getTableRef());
         matcher.find();
         if (!matcher.matches()) {
           throw new IllegalArgumentException(
-                  String.format(
-                          "Table ref '%s' is not in the form of <project>:<dataset>.<table>",
-                          options.getTableRef()));
+              String.format(
+                  "Table ref '%s' is not in the form of <project>:<dataset>.<table>",
+                  options.getTableRef()));
         }
         String project = matcher.group("project");
         String dataset = matcher.group("dataset");
         String table = matcher.group("table");
         MaxComputeSource maxComputeSource =
-                new MaxComputeSource(
-                        project,
-                        dataset,
-                        table,
-                        sourceProtobuf.getEventTimestampColumn(),
-                        sourceProtobuf.getFieldMappingMap());
+            new MaxComputeSource(
+                project,
+                dataset,
+                table,
+                sourceProtobuf.getEventTimestampColumn(),
+                sourceProtobuf.getFieldMappingMap());
         if (!sourceProtobuf.getDatePartitionColumn().isEmpty()) {
           maxComputeSource.setDatePartitionColumn(sourceProtobuf.getDatePartitionColumn());
         }
