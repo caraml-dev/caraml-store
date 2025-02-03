@@ -2,6 +2,7 @@ name: Publish CustomDialect JAR
 
 on:
     workflow_dispatch: # Allows manual triggering of the workflow
+    pull_request:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
