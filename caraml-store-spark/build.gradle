@@ -168,7 +168,7 @@ customDialectJar.dependsOn classes
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        customDialect(MavenPublication) {
             from components.java
             artifactId = 'custom-dialect'
             artifact("$buildDir/libs/custom-dialect.jar") {
