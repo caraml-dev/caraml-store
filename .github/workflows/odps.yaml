@@ -2,7 +2,10 @@ name: Publish CustomDialect JAR
 
 on:
     workflow_dispatch: # Allows manual triggering of the workflow
-    pull_request:
+    push:
+        tags:
+            - "v[0-9]+.[0-9]+.[0-9]+*"
+    
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
@@ -34,8 +37,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.run_number }}
-          release_name: Release ${{ github.run_number }}
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
           draft: true
           prerelease: true
 
