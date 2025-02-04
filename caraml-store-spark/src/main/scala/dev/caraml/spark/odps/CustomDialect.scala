@@ -11,7 +11,7 @@ class CustomDialect extends JdbcDialect {
   }
 
   override def quoteIdentifier(colName: String): String = {
-    s"`$colName`"
+    s"$colName"
   }
 
   override def getJDBCType(dt: DataType): Option[JdbcType] = {
