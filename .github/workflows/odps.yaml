@@ -4,7 +4,10 @@ on:
     workflow_dispatch: # Allows manual triggering of the workflow
     push:
         tags:
-            - "v[0-9]+.[0-9]+.[0-9]+*"
+        - "caraml-store-spark/odps/v[0-9]+.[0-9]+.[0-9]+*"
+        paths:
+        - ".github/workflows/odps.yaml"
+        - "caraml-store-spark/src/main/scala/dev/caraml/spark/odps/**"
     
 jobs:
   build-and-publish:
