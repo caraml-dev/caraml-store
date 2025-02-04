@@ -25,4 +25,5 @@ public class SparkDriverSpec {
   private Map<String, String> annotations;
   private Map<String, String> serviceAnnotations;
   private List<SecretInfo> secrets;
+  private Map<String, Map<String, String>> envSecretKeyRefs;
 }
