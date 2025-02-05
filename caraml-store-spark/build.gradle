@@ -61,6 +61,7 @@ dependencies {
     testRuntimeOnly 'com.vladsch.flexmark:flexmark-all:0.35.10'
     implementation files('./prebuilt-jars/custom-dialect.jar')
     implementation 'com.aliyun.odps:odps-jdbc:3.8.2'
+    implementation 'org.antlr:antlr4-runtime:4.11.1'
 }
 application {
     mainClassName = 'dev.caraml.spark.IngestionJob'
