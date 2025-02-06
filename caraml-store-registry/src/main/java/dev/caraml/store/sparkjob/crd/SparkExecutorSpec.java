@@ -19,7 +19,7 @@ public class SparkExecutorSpec {
   private String memory;
   private String memoryOverhead;
   private String javaOptions;
-  private Map<String, String> driver;
+  private Map<String, String> labels;
   private Map<String, String> annotations;
   private List<SecretInfo> secrets;
   private Map<String, Map<String, String>> envSecretKeyRefs;
