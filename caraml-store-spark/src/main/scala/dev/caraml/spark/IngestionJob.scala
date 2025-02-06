@@ -20,7 +20,6 @@ object IngestionJob {
   val parser = new scopt.OptionParser[IngestionJobConfig]("IngestionJob") {
     // ToDo: read version from Manifest
     head("dev.caraml.spark.IngestionJob", "latest")
-    println("inside parser")
 
     opt[Modes]("mode")
       .action((x, c) => c.copy(mode = x))
