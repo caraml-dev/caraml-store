@@ -63,24 +63,13 @@ dependencies {
     compileOnly('com.aliyun.odps:odps-jdbc:3.8.2') {
         exclude group: 'org.antlr', module: 'antlr4-runtime'
     }
-//    implementation 'org.antlr:antlr4-runtime:4.10.1'
-//    implementation 'org.antlr:antlr-runtime:3.0'
-    // https://mvnrepository.com/artifact/org.antlr/antlr4-runtime
-    // works - implementation 'org.antlr:antlr4-runtime:4.8'
 
 }
 application {
     mainClassName = 'dev.caraml.spark.IngestionJob'
 }
 
-//configurations {
-//    runtime.exclude group: 'org.antlr', module: 'antlr4-runtime'
-//}
-
 shadowJar {
-//    dependencies {
-//        include(dependency('com.aliyun.odps:odps-jdbc:3.8.2'))
-//    }
     archiveFileName = "caraml-spark-application-with-dependencies.jar"
     project.configurations.implementation.canBeResolved = true
     configurations = [project.configurations.implementation]
