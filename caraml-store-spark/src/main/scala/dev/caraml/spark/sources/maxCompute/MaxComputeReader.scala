@@ -46,6 +46,7 @@ object MaxComputeReader {
 
     println(data)
     println(data.toDF().show(3))
+    println(data.toDF().count())
 
 //    data.toDF().registerTempTable("temp_table")
 //    val valres = sparkSession.sql("select * from temp_table")
