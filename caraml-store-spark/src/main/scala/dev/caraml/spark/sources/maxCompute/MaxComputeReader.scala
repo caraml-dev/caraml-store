@@ -18,9 +18,10 @@ object MaxComputeReader {
     val maxComputeJDBCConnectionURL =
       "jdbc:odps:https://service.ap-southeast-5.maxcompute.aliyun.com/api/?project=%s&interactiveMode=True&enableLimit=False" format source.project
 
-    val sqlQuery = "(select * from `%s.%s`  where to_millis(%s) > %d and to_millis(%s) < %d)" format (
-      source.dataset, source.table, source.eventTimestampColumn, start.getMillis, source.eventTimestampColumn, end.getMillis
-    )
+    val sqlQuery =
+      "(select * from `%s.%s`  where to_millis(%s) > %d and to_millis(%s) < %d)" format (
+        source.dataset, source.table, source.eventTimestampColumn, start.getMillis, source.eventTimestampColumn, end.getMillis
+      )
     println("query is", sqlQuery)
 
     val customDialect = new CustomDialect()
