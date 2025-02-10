@@ -3,8 +3,8 @@ package dev.caraml.spark.sources.maxCompute
 import dev.caraml.spark.MaxComputeSource
 import org.joda.time.DateTime
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.sql.{SQLContext}
 import org.apache.spark.sql.jdbc.JdbcDialects
+import com.caraml.odps.CustomDialect
 
 object MaxComputeReader {
   def createBatchSource(
@@ -22,7 +22,7 @@ object MaxComputeReader {
       "(select * from `%s.%s`  where to_millis(%s) > %d and to_millis(%s) < %d)" format (
         source.dataset, source.table, source.eventTimestampColumn, start.getMillis, source.eventTimestampColumn, end.getMillis
       )
-    println("query is", sqlQuery)
+    println("query to maxcompute is", sqlQuery)
 
     val customDialect = new CustomDialect()
     JdbcDialects.registerDialect(customDialect)
