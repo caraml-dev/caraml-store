@@ -60,6 +60,11 @@ dependencies {
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.26.3'
     testImplementation "com.dimafeng:testcontainers-scala-kafka_$scalaVersion:0.40.12"
     testRuntimeOnly 'com.vladsch.flexmark:flexmark-all:0.35.10'
+    implementation files('./prebuilt-jars/custom-dialect.jar')
+    compileOnly('com.aliyun.odps:odps-jdbc:3.8.2') {
+        exclude group: 'org.antlr', module: 'antlr4-runtime'
+    }
+
 }
 application {
     mainClassName = 'dev.caraml.spark.IngestionJob'
@@ -82,7 +87,7 @@ def containerRegistry = System.getenv('DOCKER_REGISTRY')
 docker {
     dependsOn shadowJar
     dockerfile file('docker/Dockerfile')
-    files shadowJar.outputs, "$rootDir/caraml-store-pyspark/scripts"
+    files shadowJar.outputs, "$rootDir/caraml-store-pyspark/scripts", "$rootDir/caraml-store-spark/prebuilt-jars/custom-dialect.jar"
     copySpec.with {
         from("$rootDir/caraml-store-pyspark") {
             include 'templates/**'

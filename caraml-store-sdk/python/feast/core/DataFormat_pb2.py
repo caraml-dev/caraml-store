@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1b\x66\x65\x61st/core/DataFormat.proto\x12\nfeast.core\"g\n\nFileFormat\x12>\n\x0eparquet_format\x18\x01 \x01(\x0b\x32$.feast.core.FileFormat.ParquetFormatH\x00\x1a\x0f\n\rParquetFormatB\x08\n\x06\x66ormat\"\xd8\x01\n\x0cStreamFormat\x12:\n\x0b\x61vro_format\x18\x01 \x01(\x0b\x32#.feast.core.StreamFormat.AvroFormatH\x00\x12<\n\x0cproto_format\x18\x02 \x01(\x0b\x32$.feast.core.StreamFormat.ProtoFormatH\x00\x1a!\n\x0bProtoFormat\x12\x12\n\nclass_path\x18\x01 \x01(\t\x1a!\n\nAvroFormat\x12\x13\n\x0bschema_json\x18\x01 \x01(\tB\x08\n\x06\x66ormatB{\n\x1e\x64\x65v.caraml.store.protobuf.coreB\x0f\x44\x61taFormatProtoZHgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/coreb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1b\x66\x65\x61st/core/DataFormat.proto\x12\nfeast.core\"v\n\nFileFormat\x12M\n\x0eparquet_format\x18\x01 \x01(\x0b\x32$.feast.core.FileFormat.ParquetFormatH\x00R\rparquetFormat\x1a\x0f\n\rParquetFormatB\x08\n\x06\x66ormat\"\x88\x02\n\x0cStreamFormat\x12\x46\n\x0b\x61vro_format\x18\x01 \x01(\x0b\x32#.feast.core.StreamFormat.AvroFormatH\x00R\navroFormat\x12I\n\x0cproto_format\x18\x02 \x01(\x0b\x32$.feast.core.StreamFormat.ProtoFormatH\x00R\x0bprotoFormat\x1a,\n\x0bProtoFormat\x12\x1d\n\nclass_path\x18\x01 \x01(\tR\tclassPath\x1a-\n\nAvroFormat\x12\x1f\n\x0bschema_json\x18\x01 \x01(\tR\nschemaJsonB\x08\n\x06\x66ormatB{\n\x1e\x64\x65v.caraml.store.protobuf.coreB\x0f\x44\x61taFormatProtoZHgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/coreb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'feast.core.DataFormat_pb2', globals())
@@ -22,13 +22,13 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'\n\036dev.caraml.store.protobuf.coreB\017DataFormatProtoZHgithub.com/caraml-dev/caraml-store/caraml-store-sdk/go/protos/feast/core'
   _FILEFORMAT._serialized_start=43
-  _FILEFORMAT._serialized_end=146
-  _FILEFORMAT_PARQUETFORMAT._serialized_start=121
-  _FILEFORMAT_PARQUETFORMAT._serialized_end=136
-  _STREAMFORMAT._serialized_start=149
-  _STREAMFORMAT._serialized_end=365
-  _STREAMFORMAT_PROTOFORMAT._serialized_start=287
-  _STREAMFORMAT_PROTOFORMAT._serialized_end=320
-  _STREAMFORMAT_AVROFORMAT._serialized_start=322
-  _STREAMFORMAT_AVROFORMAT._serialized_end=355
+  _FILEFORMAT._serialized_end=161
+  _FILEFORMAT_PARQUETFORMAT._serialized_start=136
+  _FILEFORMAT_PARQUETFORMAT._serialized_end=151
+  _STREAMFORMAT._serialized_start=164
+  _STREAMFORMAT._serialized_end=428
+  _STREAMFORMAT_PROTOFORMAT._serialized_start=327
+  _STREAMFORMAT_PROTOFORMAT._serialized_end=371
+  _STREAMFORMAT_AVROFORMAT._serialized_start=373
+  _STREAMFORMAT_AVROFORMAT._serialized_end=418
 # @@protoc_insertion_point(module_scope)

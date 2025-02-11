@@ -83,6 +83,16 @@ case class BQSource(
     override val datePartitionColumn: Option[String] = None
 ) extends BatchSource
 
+case class MaxComputeSource(
+    project: String,
+    dataset: String,
+    table: String,
+    override val fieldMapping: Map[String, String],
+    override val eventTimestampColumn: String,
+    override val createdTimestampColumn: Option[String] = None,
+    override val datePartitionColumn: Option[String] = None
+) extends BatchSource
+
 case class KafkaSource(
     bootstrapServers: String,
     topic: String,
@@ -96,7 +106,8 @@ case class KafkaSource(
 case class Sources(
     file: Option[FileSource] = None,
     bq: Option[BQSource] = None,
-    kafka: Option[KafkaSource] = None
+    kafka: Option[KafkaSource] = None,
+    maxCompute: Option[MaxComputeSource] = None
 )
 
 case class Field(name: String, `type`: ValueType.Enum)

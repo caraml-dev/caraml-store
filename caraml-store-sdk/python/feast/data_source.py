@@ -15,6 +15,7 @@ class SourceType(enum.Enum):
     UNKNOWN = 0
     BATCH_FILE = 1
     BATCH_BIGQUERY = 2
+    BATCH_MAXCOMPUTE = 3
 
 
 @dataclass
@@ -129,6 +130,38 @@ class BigQueryOptions:
             spark_override=self.spark_override.to_proto() if self.spark_override else None,
         )
 
+@dataclass
+class MaxComputeOptions:
+    """
+    DataSource MaxCompute options used to source features from MaxCompute query
+    """
+    table_ref: str
+
+    @classmethod
+    def from_proto(cls, maxcompute_options_proto: DataSourceProto.MaxComputeOptions):
+        """
+        Creates a MaxComputeOptions from a protobuf representation of a MaxCompute option
+        Args:
+            maxcompute_options_proto: A protobuf representation of a DataSource
+        Returns:
+            Returns a MaxComputeOptions object based on the maxcompute_options protobuf
+        """
+
+        return cls(
+            table_ref=maxcompute_options_proto.table_ref,
+        )
+
+    def to_proto(self) -> DataSourceProto.MaxComputeOptions:
+        """
+        Converts an MaxComputeOptionsProto object to its protobuf representation.
+        Returns:
+            MaxComputeOptionsProto protobuf
+        """
+
+        return DataSourceProto.MaxComputeOptions(
+            table_ref=self.table_ref,
+        )
+
 
 @dataclass
 class FileSource:
@@ -170,6 +203,26 @@ class BigQuerySource:
             created_timestamp_column=self.created_timestamp_column,
             date_partition_column=self.date_partition_column,
         )
+
+@dataclass
+class MaxComputeSource:
+    event_timestamp_column: str
+    table_ref: str
+    created_timestamp_column: str = ""
+    field_mapping: Optional[Dict[str, str]] = None
+    date_partition_column: str = ""
+    spark_override: Optional[SparkOverride] = None
+
+    def to_proto(self) -> DataSourceProto:
+        return DataSourceProto(
+            type=DataSourceProto.BATCH_MAXCOMPUTE,
+            field_mapping=self.field_mapping,
+            maxcompute_options=MaxComputeOptions(self.table_ref).to_proto(),
+            event_timestamp_column=self.event_timestamp_column,
+            created_timestamp_column=self.created_timestamp_column,
+            date_partition_column=self.date_partition_column,
+        )
+
 
 
 @dataclass
@@ -237,7 +290,7 @@ class KafkaSource:
         )
 
 
-def new_batch_source_from_proto(data_source: DataSourceProto) -> Union[BigQuerySource, FileSource]:
+def new_batch_source_from_proto(data_source: DataSourceProto) -> Union[BigQuerySource, FileSource, MaxComputeSource]:
     """
     Convert data source config in FeatureTable spec proto to one of the data source model.
     """
@@ -260,6 +313,14 @@ def new_batch_source_from_proto(data_source: DataSourceProto) -> Union[BigQueryS
             created_timestamp_column=data_source.created_timestamp_column,
             date_partition_column=data_source.date_partition_column,
             spark_override=SparkOverride.from_proto(data_source.bigquery_options.spark_override),
+        )
+    elif data_source.maxcompute_options.table_ref:
+        return MaxComputeSource(
+            field_mapping=dict(data_source.field_mapping),
+            table_ref=data_source.maxcompute_options.table_ref,
+            event_timestamp_column=data_source.event_timestamp_column,
+            created_timestamp_column=data_source.created_timestamp_column,
+            date_partition_column=data_source.date_partition_column,
         )
     else:
         raise ValueError("Could not identify the source type being added")

@@ -3,6 +3,7 @@ package dev.caraml.spark
 import dev.caraml.spark.metrics.IngestionPipelineMetrics
 import dev.caraml.spark.sources.bq.BigQueryReader
 import dev.caraml.spark.sources.file.FileReader
+import dev.caraml.spark.sources.maxCompute.MaxComputeReader
 import dev.caraml.spark.validation.RowValidator
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.SparkEnv
@@ -40,6 +41,13 @@ object BatchPipeline extends BasePipeline {
       case source: FileSource =>
         FileReader.createBatchSource(
           sparkSession.sqlContext,
+          source,
+          config.startTime,
+          config.endTime
+        )
+      case source: MaxComputeSource =>
+        MaxComputeReader.createBatchSource(
+          sparkSession,
           source,
           config.startTime,
           config.endTime

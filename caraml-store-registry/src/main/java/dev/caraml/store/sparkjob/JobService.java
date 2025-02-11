@@ -397,6 +397,7 @@ public class JobService {
           case BATCH_FILE -> dataSource.getFileOptions().getSparkOverride();
           case BATCH_BIGQUERY -> dataSource.getBigqueryOptions().getSparkOverride();
           case STREAM_KAFKA -> dataSource.getKafkaOptions().getSparkOverride();
+          case BATCH_MAXCOMPUTE -> dataSource.getBigqueryOptions().getSparkOverride();
           default -> throw new IllegalArgumentException(
               String.format("%s is not a valid data source", dataSource.getType()));
         };
