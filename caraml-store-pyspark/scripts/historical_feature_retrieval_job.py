@@ -6,9 +6,8 @@ import os
 from dataclasses import dataclass
 from datetime import timedelta, datetime
 from logging.config import dictConfig
-from typing import Any, Dict, List, NamedTuple, Optional, cast
+from typing import Any, Dict, List, NamedTuple, Optional
 
-from jinja2 import FileSystemLoader, Environment
 from pyspark import SparkContext
 from pyspark.sql import DataFrame, SparkSession, Window
 from pyspark.sql import functions as func
@@ -18,7 +17,6 @@ from pyspark.sql.functions import (
     monotonically_increasing_id,
     row_number,
 )
-from pyspark.sql.types import LongType
 
 EVENT_TIMESTAMP_ALIAS = "event_timestamp"
 ENTITY_EVENT_TIMESTAMP_ALIAS = "event_timestamp_entity"
@@ -106,6 +104,9 @@ class Source(abc.ABC):
         the spark cluster which the historical feature retrieval job will run on.
         """
         raise NotImplementedError
+
+    def load(self, spark_session: SparkSession) -> DataFrame:
+        return spark.read.format(self.spark_format).options(**self.spark_read_options).load(self.spark_path)
 
 
 class FileSource(Source):
@@ -218,6 +219,92 @@ class BigQuerySource(Source):
         return opts
 
 
+class MaxComputeSource(Source):
+    READ_FORMAT = "jdbc"
+    OPTION_URL = "url"
+    OPTION_DRIVER = "driver"
+    OPTION_QUERY_TIMEOUT = "queryTimeout"
+    OPTION_DB_TABLE = "dbtable"
+    OPTION_FETCH_SIZE = "fetchSize"
+    _custom_dialect_class = "dev.caraml.spark.odps.CustomDialect"
+
+    def __init__(
+        self,
+        event_timestamp_column: str,
+        created_timestamp_column: Optional[str],
+        field_mapping: Optional[Dict[str, str]],
+        project: str,
+        schema: str,
+        table: str,
+    ):
+        super().__init__(
+            event_timestamp_column, created_timestamp_column, field_mapping
+        )
+        self.project = project
+        self.schema = schema
+        self.table = table
+        self.endpoint = os.environ.get("ALI_ODPS_ENDPOINT")
+        self.access_id = os.environ.get("ALI_ODPS_ACCESS_ID")
+        self.secret_key = os.environ.get("ALI_ODPS_SECRET_KEY")
+        self.jdbc_driver = os.environ.get("ALI_ODPS_JDBC_DRIVER", "com.aliyun.odps.jdbc.OdpsDriver")
+        self.query_timeout = os.environ.get("ALI_ODPS_QUERY_TIMEOUT", "300")
+        self.interactive_mode = os.environ.get("ALI_ODPS_INTERACTIVE_MODE", "true")
+        self.fetch_size = os.environ.get("ALI_ODPS_FETCH_SIZE", "0")
+
+        if not self.project:
+            raise ValueError("project field is empty")
+        if not self.schema:
+            raise ValueError("schema field is empty")
+        if not self.table:
+            raise ValueError("table field is empty")
+        if not self.endpoint:
+            raise ValueError("ALI_ODPS_ENDPOINT is not set")
+        if not self.access_id:
+            raise ValueError("ALI_ODPS_ACCESS_ID is not set")
+        if not self.secret_key:
+            raise ValueError("ALI_ODPS_SECRET_KEY is not set")
+
+    @property
+    def spark_format(self) -> str:
+        return self.READ_FORMAT
+
+    @property
+    def spark_path(self) -> str:
+        return self.jdbc_url
+
+    @property
+    def jdbc_url(self):
+        # this will return jdbc:odps:https://service.odps.aliyun.com/api?project=<your_project_name>"
+        return (f"jdbc:odps:{self.endpoint}?"
+                f"project={self.project}&"
+                f"accessId={self.access_id}&"
+                f"accessKey={self.secret_key}&"
+                f"interactiveMode={self.interactive_mode}&"
+                f"odpsNamespaceSchema=true&"
+                f"schema={self.schema}&"
+                f"enableLimit=false")
+
+    def load(self, spark_session: SparkSession) -> DataFrame:
+        from py4j.java_gateway import java_import
+
+        gw = spark_session.sparkContext._gateway # type: ignore
+        java_import(gw.jvm, self._custom_dialect_class)
+        gw.jvm.org.apache.spark.sql.jdbc.JdbcDialects.registerDialect(
+            gw.jvm.dev.caraml.spark.odps.CustomDialect()
+        )
+        reader = (
+            spark_session.read.format(self.spark_format)
+            .option(self.OPTION_DRIVER, self.jdbc_driver)
+            .option(self.OPTION_URL, self.jdbc_url)
+            .option(self.OPTION_QUERY_TIMEOUT, self.query_timeout)
+            .option(self.OPTION_DB_TABLE, self.table)
+            .option(self.OPTION_FETCH_SIZE, self.fetch_size)
+        )
+        if self.spark_read_options is not None:
+            reader.options(**self.spark_read_options)
+        return reader.load()
+
+
 def source_from_dict(dct: Dict) -> Source:
     if "file" in dct.keys():
         return FileSource(
@@ -230,6 +317,16 @@ def source_from_dict(dct: Dict) -> Source:
             field_mapping=dct["file"].get("fieldMapping"),
             options=dct["file"].get("options"),
         )
+    elif "maxcompute" in dct.keys():
+        conf = dct["maxcompute"]
+        return MaxComputeSource(
+            project=conf["project"],
+            schema=conf["schema"],
+            table=conf["table"],
+            field_mapping=conf.get("fieldMapping", {}),
+            event_timestamp_column=conf["eventTimestampColumn"],
+            created_timestamp_column=conf.get("createdTimestampColumn"),
+        )
     else:
         return BigQuerySource(
             project=dct["bq"]["project"],
@@ -239,6 +336,58 @@ def source_from_dict(dct: Dict) -> Source:
             event_timestamp_column=dct["bq"]["eventTimestampColumn"],
             created_timestamp_column=dct["bq"].get("createdTimestampColumn"),
             materialization=dct["bq"].get("materialization"),
+        )
+
+
+class Sink(abc.ABC):
+    def __init__(self, format: str, path: str):
+        self.format = format
+        self.path = path
+
+        if not self.format:
+            raise ValueError("format field is empty")
+        if not self.path:
+            raise ValueError("path field is empty")
+
+    @property
+    def spark_format(self) -> str:
+        return self.format
+
+    @property
+    def spark_path(self) -> str:
+        return self.path
+
+    def save(self, df: DataFrame) -> None:
+        df.write.format(self.spark_format).mode("overwrite").save(self.spark_path)
+
+
+class OssSink(Sink):
+    def __init__(self, format: str, path: str):
+        super().__init__(format, path)
+
+        endpoint = os.environ.get("ALI_OSS_ENDPOINT")
+        access_id = os.environ.get("ALI_OSS_ACCESS_ID")
+        secret_key = os.environ.get("ALI_OSS_SECRET_KEY")
+
+        if not endpoint:
+            raise ValueError("ALI_OSS_ENDPOINT is not set")
+        if not access_id:
+            raise ValueError("ALI_OSS_ACCESS_ID is not set")
+        if not secret_key:
+            raise ValueError("ALI_OSS_SECRET_KEY is not set")
+
+
+def sink_from_dict(dct: Dict) -> Sink:
+    dest = FileDestination(**dct)
+    if dest.path.startswith("oss://"):
+        return OssSink(
+            format=dest.format,
+            path=dest.path,
+        )
+    else:
+        return Sink(
+            format=dest.format,
+            path=dest.path,
         )
 
 
@@ -662,11 +811,7 @@ def filter_feature_table_by_time_range(
 def _read_and_verify_entity_df_from_source(
     spark: SparkSession, source: Source
 ) -> DataFrame:
-    entity_df = (
-        spark.read.format(source.spark_format)
-        .options(**source.spark_read_options)
-        .load(source.spark_path)
-    )
+    entity_df = source.load(spark)
     mapped_entity_df = _map_column(entity_df, source.field_mapping)
 
     if source.event_timestamp_column not in mapped_entity_df.columns:
@@ -696,11 +841,7 @@ def _type_casting_allowed(feature_type: str, source_col_type):
 def _read_and_verify_feature_table_df_from_source(
     spark: SparkSession, feature_table: FeatureTable, source: Source,
 ) -> DataFrame:
-    source_df = (
-        spark.read.format(source.spark_format)
-        .options(**source.spark_read_options)
-        .load(source.spark_path)
-    )
+    source_df = source.load(spark)
 
     mapped_source_df = _map_column(source_df, source.field_mapping)
 
@@ -853,35 +994,6 @@ def retrieve_historical_features(
         feature_tables,
     )
 
-
-def retrieve_historical_features_bq(
-    spark: SparkSession,
-    entity_source: BigQuerySource,
-    feature_table_sources: List[BigQuerySource],
-    feature_tables: List[FeatureTable],
-) -> DataFrame:
-    loader = FileSystemLoader("templates")
-    env = Environment(loader=loader)
-    extract_timestamps_template = env.get_template("extract_timestamps.jinja2")
-    extract_timestamps_sql = extract_timestamps_template.render({"entity_source": entity_source})
-    row = spark.read.format("bigquery") \
-        .options(**entity_source.spark_read_options)\
-        .load(extract_timestamps_sql).first()
-    min_entity_event_timestamp = row.min_event_timestamp
-    max_entity_event_timestamp = row.max_event_timestamp
-    feature_views = [BigQueryFeatureView.from_feature_table(feature_table, feature_table_source, min_entity_event_timestamp, max_entity_event_timestamp)
-                     for feature_table, feature_table_source in zip(feature_tables, feature_table_sources)]
-    retrieval_template = env.get_template("retrieval.jinja2")
-    retrieval_sql = retrieval_template.render({
-        "entity_source": entity_source,
-        "feature_views": feature_views,
-    })
-
-    return spark.read.format("bigquery") \
-        .options(**entity_source.spark_read_options)\
-        .load(retrieval_sql)
-
-
 def start_job(
     spark: SparkSession,
     entity_source_conf: Dict,
@@ -889,18 +1001,21 @@ def start_job(
     feature_tables_conf: List[Dict],
     destination_conf: Dict,
 ):
+    # initialize sources & sink
     feature_tables = [feature_table_from_dict(dct) for dct in feature_tables_conf]
     feature_tables_sources = [
         source_from_dict(dct) for dct in feature_tables_sources_conf
     ]
     entity_source = source_from_dict(entity_source_conf)
+    destination = sink_from_dict(destination_conf)
+
+    # run the job
     result = retrieve_historical_features(
         spark, entity_source, feature_tables_sources, feature_tables
     )
 
-    destination = FileDestination(**destination_conf)
-
-    result.write.format(destination.format).mode("overwrite").save(destination.path)
+    # save the result
+    destination.save(result)
 
 
 def _get_args():
@@ -941,7 +1056,13 @@ def feature_table_from_dict(dct: Dict[str, Any]) -> FeatureTable:
 
 
 if __name__ == "__main__":
-    spark = SparkSession.builder.getOrCreate()
+    spark = (SparkSession.builder
+             .config("spark.hadoop.fs.AbstractFileSystem.oss.impl", "org.apache.hadoop.fs.aliyun.oss.OSS")
+             .config("spark.hadoop.fs.oss.impl", "org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem")
+             .config("spark.hadoop.fs.oss.endpoint", os.environ.get("ALI_OSS_ENDPOINT"))
+             .config("spark.hadoop.fs.oss.accessKeyId", os.environ.get("ALI_OSS_ACCESS_ID"))
+             .config("spark.hadoop.fs.oss.accessKeySecret", os.environ.get("ALI_OSS_SECRET_KEY"))
+             .getOrCreate())
     args = _get_args()
     feature_tables_conf = json.loads(args.feature_tables)
     feature_tables_sources_conf = json.loads(args.feature_tables_sources)
