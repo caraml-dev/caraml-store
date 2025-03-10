@@ -19,10 +19,9 @@ object MaxComputeReader {
       "jdbc:odps:https://service.ap-southeast-5.maxcompute.aliyun.com/api/?project=%s&interactiveMode=True&enableLimit=False" format source.project
 
     val sqlQuery =
-      "(select * from `%s.%s`  where to_millis(%s) > %d and to_millis(%s) < %d)" format (
-        source.dataset, source.table, source.eventTimestampColumn, start.getMillis, source.eventTimestampColumn, end.getMillis
+      "(select * from `%s.%s` where %s > cast(to_date('%s','yyyy-mm-ddThh:mi:ss.ff3Z') as timestamp) and %s < cast(to_date('%s','yyyy-mm-ddThh:mi:ss.ff3Z') as timestamp))" format (
+        source.dataset, source.table, source.eventTimestampColumn, start, source.eventTimestampColumn, end
       )
-    println("query to maxcompute is", sqlQuery)
 
     val customDialect = new CustomDialect()
     JdbcDialects.registerDialect(customDialect)
@@ -36,8 +35,6 @@ object MaxComputeReader {
       .option("user", maxComputeAccessID)
       .option("password", maxComputeAccessKey)
       .load()
-
-    println("total rows fetched from maxcompute", data.toDF().count())
 
     data.toDF()
   }
