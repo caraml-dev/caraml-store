@@ -18,7 +18,7 @@ from feast.core.CoreService_pb2 import (
     ListEntitiesRequest,
     ApplyEntityRequest,
 )
-from feast.data_source import FileSource, BigQuerySource
+from feast.data_source import FileSource, BigQuerySource, MaxComputeSource
 from feast.entity import Entity
 from feast.feature import build_feature_references
 from feast.feature_table import FeatureTable
@@ -345,7 +345,7 @@ class Client:
     def get_historical_features(
         self,
         feature_refs: List[str],
-        entity_source: Union[FileSource, BigQuerySource],
+        entity_source: Union[FileSource, BigQuerySource, MaxComputeSource],
         output_location: str,
         project: str,
         output_format: str = "parquet",

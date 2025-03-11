@@ -243,13 +243,13 @@ class MaxComputeSource(Source):
         self.project = project
         self.schema = schema
         self.table = table
-        self.endpoint = os.environ.get("ALI_ODPS_ENDPOINT")
-        self.access_id = os.environ.get("ALI_ODPS_ACCESS_ID")
-        self.secret_key = os.environ.get("ALI_ODPS_SECRET_KEY")
-        self.jdbc_driver = os.environ.get("ALI_ODPS_JDBC_DRIVER", "com.aliyun.odps.jdbc.OdpsDriver")
-        self.query_timeout = os.environ.get("ALI_ODPS_QUERY_TIMEOUT", "300")
-        self.interactive_mode = os.environ.get("ALI_ODPS_INTERACTIVE_MODE", "true")
-        self.fetch_size = os.environ.get("ALI_ODPS_FETCH_SIZE", "0")
+        self.endpoint = os.environ.get("CARAML_SPARK_MAXCOMPUTE_ENDPOINT")
+        self.access_id = os.environ.get("CARAML_SPARK_MAXCOMPUTE_ACCESS_ID")
+        self.access_key = os.environ.get("CARAML_SPARK_MAXCOMPUTE_ACCESS_KEY")
+        self.jdbc_driver = os.environ.get("CARAML_SPARK_MAXCOMPUTE_JDBC_DRIVER", "com.aliyun.odps.jdbc.OdpsDriver")
+        self.query_timeout = os.environ.get("CARAML_SPARK_MAXCOMPUTE_QUERY_TIMEOUT", "300")
+        self.interactive_mode = os.environ.get("CARAML_SPARK_MAXCOMPUTE_INTERACTIVE_MODE", "true")
+        self.fetch_size = os.environ.get("CARAML_SPARK_MAXCOMPUTE_FETCH_SIZE", "0")
 
         if not self.project:
             raise ValueError("project field is empty")
@@ -258,11 +258,11 @@ class MaxComputeSource(Source):
         if not self.table:
             raise ValueError("table field is empty")
         if not self.endpoint:
-            raise ValueError("ALI_ODPS_ENDPOINT is not set")
+            raise ValueError("CARAML_SPARK_MAXCOMPUTE_ENDPOINT is not set")
         if not self.access_id:
-            raise ValueError("ALI_ODPS_ACCESS_ID is not set")
-        if not self.secret_key:
-            raise ValueError("ALI_ODPS_SECRET_KEY is not set")
+            raise ValueError("CARAML_SPARK_MAXCOMPUTE_ACCESS_ID is not set")
+        if not self.access_key:
+            raise ValueError("CARAML_SPARK_MAXCOMPUTE_ACCESS_KEY is not set")
 
     @property
     def spark_format(self) -> str:
@@ -278,7 +278,7 @@ class MaxComputeSource(Source):
         return (f"jdbc:odps:{self.endpoint}?"
                 f"project={self.project}&"
                 f"accessId={self.access_id}&"
-                f"accessKey={self.secret_key}&"
+                f"accessKey={self.access_key}&"
                 f"interactiveMode={self.interactive_mode}&"
                 f"odpsNamespaceSchema=true&"
                 f"schema={self.schema}&"
@@ -317,11 +317,11 @@ def source_from_dict(dct: Dict) -> Source:
             field_mapping=dct["file"].get("fieldMapping"),
             options=dct["file"].get("options"),
         )
-    elif "maxcompute" in dct.keys():
-        conf = dct["maxcompute"]
+    elif "maxCompute" in dct.keys():
+        conf = dct["maxCompute"]
         return MaxComputeSource(
             project=conf["project"],
-            schema=conf["schema"],
+            schema=conf["dataset"],
             table=conf["table"],
             field_mapping=conf.get("fieldMapping", {}),
             event_timestamp_column=conf["eventTimestampColumn"],
@@ -365,16 +365,16 @@ class OssSink(Sink):
     def __init__(self, format: str, path: str):
         super().__init__(format, path)
 
-        endpoint = os.environ.get("ALI_OSS_ENDPOINT")
-        access_id = os.environ.get("ALI_OSS_ACCESS_ID")
-        secret_key = os.environ.get("ALI_OSS_SECRET_KEY")
+        endpoint = os.environ.get("CARAML_SPARK_OSS_ENDPOINT")
+        access_id = os.environ.get("CARAML_SPARK_OSS_ACCESS_ID")
+        access_key = os.environ.get("CARAML_SPARK_OSS_ACCESS_KEY")
 
         if not endpoint:
-            raise ValueError("ALI_OSS_ENDPOINT is not set")
+            raise ValueError("CARAML_SPARK_OSS_ENDPOINT is not set")
         if not access_id:
-            raise ValueError("ALI_OSS_ACCESS_ID is not set")
-        if not secret_key:
-            raise ValueError("ALI_OSS_SECRET_KEY is not set")
+            raise ValueError("CARAML_SPARK_OSS_ACCESS_ID is not set")
+        if not access_key:
+            raise ValueError("CARAML_SPARK_OSS_ACCESS_KEY is not set")
 
 
 def sink_from_dict(dct: Dict) -> Sink:
@@ -1059,10 +1059,14 @@ if __name__ == "__main__":
     spark = (SparkSession.builder
              .config("spark.hadoop.fs.AbstractFileSystem.oss.impl", "org.apache.hadoop.fs.aliyun.oss.OSS")
              .config("spark.hadoop.fs.oss.impl", "org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem")
-             .config("spark.hadoop.fs.oss.endpoint", os.environ.get("ALI_OSS_ENDPOINT"))
-             .config("spark.hadoop.fs.oss.accessKeyId", os.environ.get("ALI_OSS_ACCESS_ID"))
-             .config("spark.hadoop.fs.oss.accessKeySecret", os.environ.get("ALI_OSS_SECRET_KEY"))
+             .config("spark.hadoop.fs.oss.endpoint", os.environ.get("CARAML_SPARK_OSS_ENDPOINT"))
+             .config("spark.hadoop.fs.oss.accessKeyId", os.environ.get("CARAML_SPARK_OSS_ACCESS_ID"))
+             .config("spark.hadoop.fs.oss.accessKeySecret", os.environ.get("CARAML_SPARK_OSS_ACCESS_KEY"))
              .getOrCreate())
+    log_level = os.environ.get("SPARK_LOG_LEVEL")
+    if log_level is not None:
+        spark.sparkContext.setLogLevel(log_level)
+
     args = _get_args()
     feature_tables_conf = json.loads(args.feature_tables)
     feature_tables_sources_conf = json.loads(args.feature_tables_sources)
