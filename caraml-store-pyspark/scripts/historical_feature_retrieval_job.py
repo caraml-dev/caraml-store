@@ -306,7 +306,7 @@ class MaxComputeSource(Source):
         return reader.load()
 
 
-def source_from_dict(spark_builder: SparkSession.Builder, dct: Dict) -> Source:
+def source_from_dict(dct: Dict) -> Source:
     if "file" in dct.keys():
         return FileSource(
             format=FileSource.PROTO_FORMAT_TO_SPARK[
@@ -337,67 +337,6 @@ def source_from_dict(spark_builder: SparkSession.Builder, dct: Dict) -> Source:
             event_timestamp_column=dct["bq"]["eventTimestampColumn"],
             created_timestamp_column=dct["bq"].get("createdTimestampColumn"),
             materialization=dct["bq"].get("materialization"),
-        )
-
-
-class Sink(abc.ABC):
-    def __init__(self, spark_builder: SparkSession.Builder, format: str, path: str):
-        self.format = format
-        self.path = path
-
-        if not self.format:
-            raise ValueError("format field is empty")
-        if not self.path:
-            raise ValueError("path field is empty")
-
-    @property
-    def spark_format(self) -> str:
-        return self.format
-
-    @property
-    def spark_path(self) -> str:
-        return self.path
-
-    def save(self, df: DataFrame) -> None:
-        df.write.format(self.spark_format).mode("overwrite").save(self.spark_path)
-
-
-class OssSink(Sink):
-    def __init__(self, spark_builder: SparkSession.Builder, format: str, path: str):
-        endpoint = os.environ.get("CARAML_SPARK_OSS_ENDPOINT")
-        access_id = os.environ.get("CARAML_SPARK_OSS_ACCESS_ID")
-        access_key = os.environ.get("CARAML_SPARK_OSS_ACCESS_KEY")
-
-        if not endpoint:
-            raise ValueError("CARAML_SPARK_OSS_ENDPOINT is not set")
-        if not access_id:
-            raise ValueError("CARAML_SPARK_OSS_ACCESS_ID is not set")
-        if not access_key:
-            raise ValueError("CARAML_SPARK_OSS_ACCESS_KEY is not set")
-
-        (spark_builder
-         .config("spark.hadoop.fs.AbstractFileSystem.oss.impl", "org.apache.hadoop.fs.aliyun.oss.OSS")
-         .config("spark.hadoop.fs.oss.impl", "org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem")
-         .config("spark.hadoop.fs.oss.endpoint", endpoint)
-         .config("spark.hadoop.fs.oss.accessKeyId", access_id)
-         .config("spark.hadoop.fs.oss.accessKeySecret", access_key))
-
-        super().__init__(spark_builder, format, path)
-
-
-def sink_from_dict(spark_builder: SparkSession.Builder, dct: Dict) -> Sink:
-    dest = FileDestination(**dct)
-    if dest.path.startswith("oss://"):
-        return OssSink(
-            spark_builder=spark_builder,
-            format=dest.format,
-            path=dest.path,
-        )
-    else:
-        return Sink(
-            spark_builder=spark_builder,
-            format=dest.format,
-            path=dest.path,
         )
 
 
@@ -1034,44 +973,24 @@ def retrieve_historical_features_bq(
 
 
 def start_job(
-    spark_builder: SparkSession.Builder,
+    spark: SparkSession,
     entity_source_conf: Dict,
     feature_tables_sources_conf: List[Dict],
     feature_tables_conf: List[Dict],
     destination_conf: Dict,
-    checkpoint_dir: Optional[str] = None,
-    log_level: Optional[str] = None,
 ):
-    spark: Optional[SparkSession] = None
-    try:
-        # initialize sources & sink
-        feature_tables = [feature_table_from_dict(spark_builder, dct) for dct in feature_tables_conf]
-        feature_tables_sources = [
-            source_from_dict(spark_builder, dct) for dct in feature_tables_sources_conf
-        ]
-        entity_source = source_from_dict(spark_builder, entity_source_conf)
-        destination = sink_from_dict(spark_builder, destination_conf)
+    feature_tables = [feature_table_from_dict(dct) for dct in feature_tables_conf]
+    feature_tables_sources = [
+        source_from_dict(dct) for dct in feature_tables_sources_conf
+    ]
+    entity_source = source_from_dict(entity_source_conf)
+    result = retrieve_historical_features(
+        spark, entity_source, feature_tables_sources, feature_tables
+    )
 
-        # create spark session
-        spark = spark_builder.getOrCreate()
-        if log_level is not None:
-            spark.sparkContext.setLogLevel(log_level)
-        if checkpoint_dir is not None:
-            spark.sparkContext.setCheckpointDir(checkpoint_dir)
+    destination = FileDestination(**destination_conf)
 
-        # run the job
-        result = retrieve_historical_features(
-            spark, entity_source, feature_tables_sources, feature_tables
-        )
-
-        # save the result
-        destination.save(result)
-    except Exception as e:
-        logger.exception(e)
-        raise e
-    finally:
-        if spark is not None:
-            spark.stop()
+    result.write.format(destination.format).mode("overwrite").save(destination.path)
 
 
 def _get_args():
@@ -1097,7 +1016,35 @@ def _get_args():
     return parser.parse_args()
 
 
-def feature_table_from_dict(spark_builder: SparkSession.Builder, dct: Dict[str, Any]) -> FeatureTable:
+def create_spark_session(
+    destination_conf: Dict
+) -> SparkSession:
+    builder = SparkSession.builder
+
+    destination = FileDestination(**destination_conf)
+    if destination.path.startswith("oss://"):
+        endpoint = os.environ.get("CARAML_SPARK_OSS_ENDPOINT")
+        access_id = os.environ.get("CARAML_SPARK_OSS_ACCESS_ID")
+        access_key = os.environ.get("CARAML_SPARK_OSS_ACCESS_KEY")
+
+        if not endpoint:
+            raise ValueError("CARAML_SPARK_OSS_ENDPOINT is not set")
+        if not access_id:
+            raise ValueError("CARAML_SPARK_OSS_ACCESS_ID is not set")
+        if not access_key:
+            raise ValueError("CARAML_SPARK_OSS_ACCESS_KEY is not set")
+
+        (builder
+         .config("spark.hadoop.fs.AbstractFileSystem.oss.impl", "org.apache.hadoop.fs.aliyun.oss.OSS")
+         .config("spark.hadoop.fs.oss.impl", "org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem")
+         .config("spark.hadoop.fs.oss.endpoint", endpoint)
+         .config("spark.hadoop.fs.oss.accessKeyId", access_id)
+         .config("spark.hadoop.fs.oss.accessKeySecret", access_key))
+
+    return builder.getOrCreate()
+
+
+def feature_table_from_dict(dct: Dict[str, Any]) -> FeatureTable:
     assert (
         dct.get("maxAge") is not None and dct["maxAge"] > 0
     ), "FeatureTable.maxAge must not be None and should be a positive number"
@@ -1112,8 +1059,6 @@ def feature_table_from_dict(spark_builder: SparkSession.Builder, dct: Dict[str, 
 
 
 if __name__ == "__main__":
-    spark_builder = SparkSession.builder
-
     log_level = os.environ.get("SPARK_LOG_LEVEL")
     args = _get_args()
     feature_tables_conf = json.loads(args.feature_tables)
@@ -1131,12 +1076,22 @@ if __name__ == "__main__":
             if bq_source is not None:
                 source_conf["bq"]["materialization"] = bq_conf.get("materialization")
 
-    start_job(
-        spark_builder,
-        entity_source_conf,
-        feature_tables_sources_conf,
-        feature_tables_conf,
-        destination_conf,
-        checkpoint,
-        log_level,
-    )
+    spark = create_spark_session(destination_conf)
+    if log_level is not None:
+        spark.sparkContext.setLogLevel(log_level)
+    if checkpoint is not None:
+        spark.sparkContext.setCheckpointDir(checkpoint)
+
+    try:
+        start_job(
+            spark,
+            entity_source_conf,
+            feature_tables_sources_conf,
+            feature_tables_conf,
+            destination_conf,
+        )
+    except Exception as e:
+        logger.exception(e)
+        raise e
+    finally:
+        spark.stop()
