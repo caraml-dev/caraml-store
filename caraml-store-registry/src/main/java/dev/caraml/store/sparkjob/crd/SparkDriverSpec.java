@@ -1,6 +1,7 @@
 package dev.caraml.store.sparkjob.crd;
 
 import io.kubernetes.client.openapi.models.V1Affinity;
+import io.kubernetes.client.openapi.models.V1EnvVar;
 import io.kubernetes.client.openapi.models.V1Toleration;
 import java.util.List;
 import java.util.Map;
@@ -26,4 +27,5 @@ public class SparkDriverSpec {
   private Map<String, String> serviceAnnotations;
   private List<SecretInfo> secrets;
   private Map<String, Map<String, String>> envSecretKeyRefs;
+  private List<V1EnvVar> env;
 }
