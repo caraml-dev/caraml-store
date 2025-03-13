@@ -1077,12 +1077,13 @@ if __name__ == "__main__":
                 source_conf["bq"]["materialization"] = bq_conf.get("materialization")
 
     spark = create_spark_session(destination_conf)
-    if log_level is not None:
-        spark.sparkContext.setLogLevel(log_level)
-    if checkpoint is not None:
-        spark.sparkContext.setCheckpointDir(checkpoint)
 
     try:
+        if log_level:
+            spark.sparkContext.setLogLevel(log_level)
+        if checkpoint:
+            spark.sparkContext.setCheckpointDir(checkpoint)
+
         start_job(
             spark,
             entity_source_conf,
