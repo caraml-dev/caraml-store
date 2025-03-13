@@ -1034,19 +1034,44 @@ def retrieve_historical_features_bq(
 
 
 def start_job(
-    spark: SparkSession,
-    entity_source: Source,
-    feature_tables_sources: List[Source],
-    feature_tables: List[FeatureTable],
-    destination: Sink,
+    spark_builder: SparkSession.Builder,
+    entity_source_conf: Dict,
+    feature_tables_sources_conf: List[Dict],
+    feature_tables_conf: List[Dict],
+    destination_conf: Dict,
+    checkpoint_dir: Optional[str] = None,
+    log_level: Optional[str] = None,
 ):
-    # run the job
-    result = retrieve_historical_features(
-        spark, entity_source, feature_tables_sources, feature_tables
-    )
+    spark: Optional[SparkSession] = None
+    try:
+        # initialize sources & sink
+        feature_tables = [feature_table_from_dict(spark_builder, dct) for dct in feature_tables_conf]
+        feature_tables_sources = [
+            source_from_dict(spark_builder, dct) for dct in feature_tables_sources_conf
+        ]
+        entity_source = source_from_dict(spark_builder, entity_source_conf)
+        destination = sink_from_dict(spark_builder, destination_conf)
 
-    # save the result
-    destination.save(result)
+        # create spark session
+        spark = spark_builder.getOrCreate()
+        if log_level is not None:
+            spark.sparkContext.setLogLevel(log_level)
+        if checkpoint_dir is not None:
+            spark.sparkContext.setCheckpointDir(checkpoint_dir)
+
+        # run the job
+        result = retrieve_historical_features(
+            spark, entity_source, feature_tables_sources, feature_tables
+        )
+
+        # save the result
+        destination.save(result)
+    except Exception as e:
+        logger.exception(e)
+        raise e
+    finally:
+        if spark is not None:
+            spark.stop()
 
 
 def _get_args():
@@ -1095,6 +1120,7 @@ if __name__ == "__main__":
     feature_tables_sources_conf = json.loads(args.feature_tables_sources)
     entity_source_conf = json.loads(args.entity_source)
     destination_conf = json.loads(args.destination)
+    checkpoint = args.checkpoint
     if args.bq:
         bq_conf = json.loads(args.bq)
         bq_source = entity_source_conf.get("bq")
@@ -1105,31 +1131,12 @@ if __name__ == "__main__":
             if bq_source is not None:
                 source_conf["bq"]["materialization"] = bq_conf.get("materialization")
 
-    try:
-        # initialize sources & sink
-        feature_tables = [feature_table_from_dict(spark_builder, dct) for dct in feature_tables_conf]
-        feature_tables_sources = [
-            source_from_dict(spark_builder, dct) for dct in feature_tables_sources_conf
-        ]
-        entity_source = source_from_dict(spark_builder, entity_source_conf)
-        destination = sink_from_dict(spark_builder, destination_conf)
-
-        # create spark session
-        spark = spark_builder.getOrCreate()
-        if log_level is not None:
-            spark.sparkContext.setLogLevel(log_level)
-        if args.checkpoint:
-            spark.sparkContext.setCheckpointDir(args.checkpoint)
-
-        start_job(
-            spark,
-            entity_source,
-            feature_tables_sources,
-            feature_tables,
-            destination,
-        )
-    except Exception as e:
-        logger.exception(e)
-        raise e
-
-    spark.stop()
+    start_job(
+        spark_builder,
+        entity_source_conf,
+        feature_tables_sources_conf,
+        feature_tables_conf,
+        destination_conf,
+        checkpoint,
+        log_level,
+    )
