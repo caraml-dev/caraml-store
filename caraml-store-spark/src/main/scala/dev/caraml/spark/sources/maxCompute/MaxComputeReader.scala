@@ -19,7 +19,7 @@ object MaxComputeReader {
       "jdbc:odps:https://service.ap-southeast-5.maxcompute.aliyun.com/api/?project=%s&interactiveMode=True&enableLimit=False" format source.project
 
     val sqlQuery =
-      "(select * from `%s.%s` where %s > cast(to_date('%s','yyyy-mm-ddThh:mi:ss.ff3Z') as timestamp) and %s < cast(to_date('%s','yyyy-mm-ddThh:mi:ss.ff3Z') as timestamp))" format (
+      "(select * from `%s.%s` where %s >= cast(to_date('%s','yyyy-mm-ddThh:mi:ss.ff3Z') as timestamp) and %s < cast(to_date('%s','yyyy-mm-ddThh:mi:ss.ff3Z') as timestamp))" format (
         source.dataset, source.table, source.eventTimestampColumn, start, source.eventTimestampColumn, end
       )
 
