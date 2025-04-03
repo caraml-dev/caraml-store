@@ -64,7 +64,7 @@ object BatchPipeline extends BasePipeline {
       )
 
     val projected = if (config.debug || config.deadLetterPath.nonEmpty) {
-      input.select(projection: _*).persist()
+      input.select(projection: _*).cache()
     } else {
       input.select(projection: _*)
     }
