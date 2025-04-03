@@ -116,6 +116,16 @@ object IngestionJob {
     opt[String](name = "bq")
       .action((x, c) => c.copy(bq = Some(parseJSON(x).extract[BQConfig])))
 
+    opt[Unit]("debug")
+      .action((_, c) => c.copy(debug = true))
+      .text("Enable debug mode with additional metrics and data persistence")
+
+    opt[String](name = "maxcompute")
+      .action((x, c) => 
+        c.copy(maxCompute = Some(parseJSON(x).camelizeKeys.extract[MaxComputeConfig]))
+      )
+      .text("JSON-encoded MaxCompute configuration")
+
   }
 
   def main(args: Array[String]): Unit = {

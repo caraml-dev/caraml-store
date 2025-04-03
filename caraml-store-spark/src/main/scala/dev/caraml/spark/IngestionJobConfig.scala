@@ -131,6 +131,13 @@ case class ExpectationSpec(
     expectations: List[Expectation]
 )
 
+case class MaxComputeConfig(
+  endpoint: String = "",
+  interactiveMode: Boolean = true,
+  enableLimit: Boolean = false,
+  autoSelectLimit: String = "1000000000"
+)
+
 case class IngestionJobConfig(
     mode: Modes = Modes.Offline,
     featureTable: FeatureTable = null,
@@ -148,5 +155,7 @@ case class IngestionJobConfig(
     expectationSpec: Option[ExpectationSpec] = None,
     doNotIngestInvalidRows: Boolean = false,
     checkpointPath: Option[String] = None,
-    bq: Option[BQConfig] = None
+    bq: Option[BQConfig] = None,
+    debug: Boolean = false,
+    maxCompute: Option[MaxComputeConfig] = None
 )

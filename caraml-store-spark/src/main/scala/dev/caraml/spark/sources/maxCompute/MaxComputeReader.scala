@@ -1,6 +1,6 @@
 package dev.caraml.spark.sources.maxCompute
 
-import dev.caraml.spark.MaxComputeSource
+import dev.caraml.spark.{MaxComputeSource, MaxComputeConfig}
 import org.joda.time.DateTime
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.jdbc.JdbcDialects
@@ -10,18 +10,30 @@ object MaxComputeReader {
   def createBatchSource(
       sparkSession: SparkSession,
       source: MaxComputeSource,
+      maxComputeConfig: Option[MaxComputeConfig],
       start: DateTime,
       end: DateTime
   ): DataFrame = {
-    val maxComputeAccessID  = sys.env("CARAML_SPARK_MAXCOMPUTE_ACCESS_ID")
+    val maxComputeAccessID = sys.env("CARAML_SPARK_MAXCOMPUTE_ACCESS_ID")
     val maxComputeAccessKey = sys.env("CARAML_SPARK_MAXCOMPUTE_ACCESS_KEY")
+    
+    val config = maxComputeConfig.getOrElse(MaxComputeConfig())
+    
     val maxComputeJDBCConnectionURL =
-      "jdbc:odps:https://service.ap-southeast-5.maxcompute.aliyun.com/api/?project=%s&interactiveMode=True&enableLimit=False" format source.project
+      "jdbc:odps:%s/?project=%s&interactiveMode=%s&enableLimit=%s&autoSelectLimit=%s"
+        .format(
+          config.endpoint,
+          source.project,
+          config.interactiveMode,
+          config.enableLimit,
+          config.autoSelectLimit
+        )
 
     val sqlQuery =
       "(select * from `%s.%s` where %s >= cast(to_date('%s','yyyy-mm-ddThh:mi:ss.ff3Z') as timestamp) and %s < cast(to_date('%s','yyyy-mm-ddThh:mi:ss.ff3Z') as timestamp))" format (
         source.dataset, source.table, source.eventTimestampColumn, start, source.eventTimestampColumn, end
       )
+    print(sqlQuery)
 
     val customDialect = new CustomDialect()
     JdbcDialects.registerDialect(customDialect)
