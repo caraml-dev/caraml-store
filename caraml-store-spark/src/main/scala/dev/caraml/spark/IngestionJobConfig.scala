@@ -132,10 +132,10 @@ case class ExpectationSpec(
 )
 
 case class MaxComputeConfig(
-  endpoint: String = "",
-  interactiveMode: Boolean = true,
-  enableLimit: Boolean = false,
-  autoSelectLimit: String = "1000000000"
+    endpoint: String = "",
+    interactiveMode: Boolean = true,
+    enableLimit: Boolean = false,
+    autoSelectLimit: String = "1000000000"
 )
 
 case class IngestionJobConfig(

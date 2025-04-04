@@ -14,11 +14,11 @@ object MaxComputeReader {
       start: DateTime,
       end: DateTime
   ): DataFrame = {
-    val maxComputeAccessID = sys.env("CARAML_SPARK_MAXCOMPUTE_ACCESS_ID")
+    val maxComputeAccessID  = sys.env("CARAML_SPARK_MAXCOMPUTE_ACCESS_ID")
     val maxComputeAccessKey = sys.env("CARAML_SPARK_MAXCOMPUTE_ACCESS_KEY")
-    
+
     val config = maxComputeConfig.getOrElse(MaxComputeConfig())
-    
+
     val maxComputeJDBCConnectionURL =
       "jdbc:odps:%s/?project=%s&interactiveMode=%s&enableLimit=%s&autoSelectLimit=%s"
         .format(

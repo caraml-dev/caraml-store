@@ -32,8 +32,7 @@ object IngestionJob {
         val json = parseJSON(x)
         JsonUtils
           .mapFieldWithParent(json) {
-            case (parent: String, (key: String, v: JValue))
-                if !parent.equals("fieldMapping") =>
+            case (parent: String, (key: String, v: JValue)) if !parent.equals("fieldMapping") =>
               JsonUtils.camelize(key) -> v
             case (_, x) => x
           }
@@ -58,8 +57,7 @@ object IngestionJob {
 
         c.copy(
           featureTable = ft,
-          streamingTriggeringSecs =
-            ft.labels.getOrElse("_streaming_trigger_secs", "0").toInt,
+          streamingTriggeringSecs = ft.labels.getOrElse("_streaming_trigger_secs", "0").toInt,
           validationConfig = ft.labels
             .get("_validation")
             .map(parseJSON(_).camelizeKeys.extract[ValidationConfig]),
@@ -99,17 +97,13 @@ object IngestionJob {
       .action((x, c) => c.copy(store = parseJSON(x).extract[RedisConfig]))
 
     opt[String](name = "bigtable")
-      .action((x, c) =>
-        c.copy(store = parseJSON(x).camelizeKeys.extract[BigTableConfig])
-      )
+      .action((x, c) => c.copy(store = parseJSON(x).camelizeKeys.extract[BigTableConfig]))
 
     opt[String](name = "hbase")
       .action((x, c) => c.copy(store = parseJSON(x).extract[HBaseConfig]))
 
     opt[String](name = "statsd")
-      .action((x, c) =>
-        c.copy(metrics = Some(parseJSON(x).extract[StatsDConfig]))
-      )
+      .action((x, c) => c.copy(metrics = Some(parseJSON(x).extract[StatsDConfig])))
 
     opt[String](name = "deadletter-path")
       .action((x, c) => c.copy(deadLetterPath = Some(x)))
@@ -137,7 +131,7 @@ object IngestionJob {
       .text("Enable debug mode with additional metrics and data persistence")
 
     opt[String](name = "maxcompute")
-      .action((x, c) => 
+      .action((x, c) =>
         c.copy(maxCompute = Some(parseJSON(x).camelizeKeys.extract[MaxComputeConfig]))
       )
       .text("JSON-encoded MaxCompute configuration")

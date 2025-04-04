@@ -92,7 +92,6 @@ object BatchPipeline extends BasePipeline {
       println(s"[DEBUG] Valid rows count: $validRowCount")
     }
 
-
     val onlineStore = config.store match {
       case _: RedisConfig    => "redis"
       case _: BigTableConfig => "bigtable"
@@ -115,16 +114,18 @@ object BatchPipeline extends BasePipeline {
       .save()
 
     if (config.debug && config.deadLetterPath.isDefined) {
-      val invalidRows = projected.filter(!rowValidator.allChecks)
+      val invalidRows     = projected.filter(!rowValidator.allChecks)
       val invalidRowCount = invalidRows.count()
       println(s"[DEBUG] Invalid rows count: $invalidRowCount")
-      
+
       invalidRows
         .map(metrics.incrementDeadLetters)
         .write
         .format("parquet")
         .mode(SaveMode.Append)
-        .save(StringUtils.stripEnd(config.deadLetterPath.get, "/") + "/" + SparkEnv.get.conf.getAppId)
+        .save(
+          StringUtils.stripEnd(config.deadLetterPath.get, "/") + "/" + SparkEnv.get.conf.getAppId
+        )
     } else {
       config.deadLetterPath foreach { path =>
         projected
