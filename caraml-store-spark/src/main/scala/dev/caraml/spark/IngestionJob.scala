@@ -10,7 +10,8 @@ import org.json4s.jackson.JsonMethods.{parse => parseJSON}
 
 object IngestionJob {
   import Modes._
-  implicit val modesRead: scopt.Read[Modes.Value] = scopt.Read.reads(Modes withName _.capitalize)
+  implicit val modesRead: scopt.Read[Modes.Value] =
+    scopt.Read.reads(Modes withName _.capitalize)
   implicit val formats: Formats = DefaultFormats +
     new JavaEnumNameSerializer[ValueType.Enum]() +
     ShortTypeHints(List(classOf[ProtoFormat], classOf[AvroFormat]))
@@ -36,15 +37,19 @@ object IngestionJob {
             case (_, x) => x
           }
           .extract[Sources] match {
-          case Sources(file: Some[FileSource], _, _, _)   => c.copy(source = file.get)
-          case Sources(_, bq: Some[BQSource], _, _)       => c.copy(source = bq.get)
-          case Sources(_, _, kafka: Some[KafkaSource], _) => c.copy(source = kafka.get)
+          case Sources(file: Some[FileSource], _, _, _) =>
+            c.copy(source = file.get)
+          case Sources(_, bq: Some[BQSource], _, _) => c.copy(source = bq.get)
+          case Sources(_, _, kafka: Some[KafkaSource], _) =>
+            c.copy(source = kafka.get)
           case Sources(_, _, _, maxCompute: Some[MaxComputeSource]) =>
             c.copy(source = maxCompute.get)
         }
       })
       .required()
-      .text("""JSON-encoded source object (e.g. {"kafka":{"bootstrapServers":...}}""")
+      .text(
+        """JSON-encoded source object (e.g. {"kafka":{"bootstrapServers":...}}"""
+      )
 
     opt[String](name = "feature-table")
       .action((x, c) => {
@@ -53,10 +58,12 @@ object IngestionJob {
         c.copy(
           featureTable = ft,
           streamingTriggeringSecs = ft.labels.getOrElse("_streaming_trigger_secs", "0").toInt,
-          validationConfig =
-            ft.labels.get("_validation").map(parseJSON(_).camelizeKeys.extract[ValidationConfig]),
-          expectationSpec =
-            ft.labels.get("_expectations").map(parseJSON(_).camelizeKeys.extract[ExpectationSpec])
+          validationConfig = ft.labels
+            .get("_validation")
+            .map(parseJSON(_).camelizeKeys.extract[ValidationConfig]),
+          expectationSpec = ft.labels
+            .get("_expectations")
+            .map(parseJSON(_).camelizeKeys.extract[ExpectationSpec])
         )
       })
       .required()
@@ -72,13 +79,16 @@ object IngestionJob {
 
     opt[String](name = "entity-max-age")
       .action((x, c) => c.copy(entityMaxAge = Some(x.toLong)))
-      .text("Maximum max age for all the feature table sharing the same entities")
+      .text(
+        "Maximum max age for all the feature table sharing the same entities"
+      )
 
     opt[String](name = "ingestion-timespan")
       .action((x, c) => {
         val currentTimeUTC = new DateTime(DateTimeZone.UTC);
-        val startTime      = currentTimeUTC.withTimeAtStartOfDay().minusDays(x.toInt - 1)
-        val endTime        = currentTimeUTC.withTimeAtStartOfDay().plusDays(1)
+        val startTime =
+          currentTimeUTC.withTimeAtStartOfDay().minusDays(x.toInt - 1)
+        val endTime = currentTimeUTC.withTimeAtStartOfDay().plusDays(1)
         c.copy(startTime = startTime, endTime = endTime)
       })
       .text("Ingestion timespan")
@@ -116,6 +126,16 @@ object IngestionJob {
     opt[String](name = "bq")
       .action((x, c) => c.copy(bq = Some(parseJSON(x).extract[BQConfig])))
 
+    opt[Unit]("debug")
+      .action((_, c) => c.copy(debug = true))
+      .text("Enable debug mode with additional metrics and data persistence")
+
+    opt[String](name = "maxcompute")
+      .action((x, c) =>
+        c.copy(maxCompute = Some(parseJSON(x).camelizeKeys.extract[MaxComputeConfig]))
+      )
+      .text("JSON-encoded MaxCompute configuration")
+
   }
 
   def main(args: Array[String]): Unit = {
@@ -137,7 +157,10 @@ object IngestionJob {
           case Modes.Online =>
             val sparkSession = BasePipeline.createSparkSession(config)
             try {
-              StreamingPipeline.createPipeline(sparkSession, config).get.awaitTermination
+              StreamingPipeline
+                .createPipeline(sparkSession, config)
+                .get
+                .awaitTermination
             } catch {
               case e: Throwable =>
                 logger.fatal("Streaming ingestion failed", e)

@@ -49,6 +49,7 @@ object BatchPipeline extends BasePipeline {
         MaxComputeReader.createBatchSource(
           sparkSession,
           source,
+          config.maxCompute,
           config.startTime,
           config.endTime
         )
@@ -62,17 +63,34 @@ object BatchPipeline extends BasePipeline {
         input.schema
       )
 
-    val projected = if (config.deadLetterPath.nonEmpty) {
+    val projected = if (config.debug || config.deadLetterPath.nonEmpty) {
       input.select(projection: _*).cache()
     } else {
       input.select(projection: _*)
     }
 
+    if (config.debug) {
+      val projectedCount = projected.count()
+      println(s"[DEBUG] After projection - row count: $projectedCount")
+    }
+
     implicit val rowEncoder: Encoder[Row] = RowEncoder(projected.schema)
 
-    val validRows = projected
-      .map(metrics.incrementRead)
-      .filter(rowValidator.allChecks)
+    val validRows = if (config.debug) {
+      projected
+        .map(metrics.incrementRead)
+        .filter(rowValidator.allChecks)
+        .persist()
+    } else {
+      projected
+        .map(metrics.incrementRead)
+        .filter(rowValidator.allChecks)
+    }
+
+    if (config.debug) {
+      val validRowCount = validRows.count()
+      println(s"[DEBUG] Valid rows count: $validRowCount")
+    }
 
     val onlineStore = config.store match {
       case _: RedisConfig    => "redis"
@@ -95,14 +113,29 @@ object BatchPipeline extends BasePipeline {
       .option("entity_max_age", config.entityMaxAge.getOrElse(0L))
       .save()
 
-    config.deadLetterPath foreach { path =>
-      projected
-        .filter(!rowValidator.allChecks)
+    if (config.debug && config.deadLetterPath.isDefined) {
+      val invalidRows     = projected.filter(!rowValidator.allChecks)
+      val invalidRowCount = invalidRows.count()
+      println(s"[DEBUG] Invalid rows count: $invalidRowCount")
+
+      invalidRows
         .map(metrics.incrementDeadLetters)
         .write
         .format("parquet")
         .mode(SaveMode.Append)
-        .save(StringUtils.stripEnd(path, "/") + "/" + SparkEnv.get.conf.getAppId)
+        .save(
+          StringUtils.stripEnd(config.deadLetterPath.get, "/") + "/" + SparkEnv.get.conf.getAppId
+        )
+    } else {
+      config.deadLetterPath foreach { path =>
+        projected
+          .filter(!rowValidator.allChecks)
+          .map(metrics.incrementDeadLetters)
+          .write
+          .format("parquet")
+          .mode(SaveMode.Append)
+          .save(StringUtils.stripEnd(path, "/") + "/" + SparkEnv.get.conf.getAppId)
+      }
     }
 
     None
