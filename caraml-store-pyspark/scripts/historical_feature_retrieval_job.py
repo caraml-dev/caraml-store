@@ -227,6 +227,7 @@ class MaxComputeSource(Source):
     OPTION_QUERY_TIMEOUT = "queryTimeout"
     OPTION_DB_TABLE = "dbtable"
     OPTION_FETCH_SIZE = "fetchSize"
+    OPTION_SESSION_INIT_STATEMENT = "sessionInitStatement"
     _custom_dialect_class = "dev.caraml.spark.odps.CustomDialect"
 
     def __init__(
@@ -251,6 +252,7 @@ class MaxComputeSource(Source):
         self.query_timeout = os.environ.get("CARAML_SPARK_MAXCOMPUTE_QUERY_TIMEOUT", "300")
         self.interactive_mode = os.environ.get("CARAML_SPARK_MAXCOMPUTE_INTERACTIVE_MODE", "true")
         self.fetch_size = os.environ.get("CARAML_SPARK_MAXCOMPUTE_FETCH_SIZE", "0")
+        self.auto_select_limit = os.environ.get("CARAML_SPARK_MAXCOMPUTE_AUTO_SELECT_LIMIT", "1000000000")
 
         if not self.project:
             raise ValueError("project field is empty")
@@ -283,7 +285,8 @@ class MaxComputeSource(Source):
                 f"interactiveMode={self.interactive_mode}&"
                 f"odpsNamespaceSchema=true&"
                 f"schema={self.schema}&"
-                f"enableLimit=false")
+                f"enableLimit=false&"
+                f"autoSelectLimit={self.auto_select_limit}")
 
     def load(self, spark_session: SparkSession) -> DataFrame:
         from py4j.java_gateway import java_import
@@ -300,6 +303,7 @@ class MaxComputeSource(Source):
             .option(self.OPTION_QUERY_TIMEOUT, self.query_timeout)
             .option(self.OPTION_DB_TABLE, self.table)
             .option(self.OPTION_FETCH_SIZE, self.fetch_size)
+            .option(self.OPTION_SESSION_INIT_STATEMENT, "SET odps.sql.allow.fullscan=true;") # to allow fullscan table on partitioned table
         )
         if self.spark_read_options is not None:
             reader.options(**self.spark_read_options)
