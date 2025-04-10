@@ -5,8 +5,6 @@ from datetime import datetime, timedelta
 from feast.data_source import MaxComputeSource
 from odps import ODPS
 from odps import df
-import numpy as np
-from odps.models import TableSchema, Column, Partition
 
 
 def stage_entities_to_maxcompute(
