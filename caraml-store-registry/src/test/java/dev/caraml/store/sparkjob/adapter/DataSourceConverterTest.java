@@ -28,28 +28,30 @@ class DataSourceConverterTest {
 
   @Test
   void getArgumentsForMaxcomputeSource() throws JsonProcessingException {
-    DataSource source = 
-      DataSource.newBuilder()
-      .setEventTimestampColumn("event_timestamp")
-      .setType(DataSource.SourceType.BATCH_MAXCOMPUTE)
-      .setMaxcomputeOptions(
-        DataSource.MaxComputeOptions.newBuilder()
-          .setTableRef("project.schema.table")
-          .build())
-      .build();
+    DataSource source =
+        DataSource.newBuilder()
+            .setEventTimestampColumn("event_timestamp")
+            .setType(DataSource.SourceType.BATCH_MAXCOMPUTE)
+            .setMaxcomputeOptions(
+                DataSource.MaxComputeOptions.newBuilder()
+                    .setTableRef("project.schema.table")
+                    .build())
+            .build();
     DataSourceConverter dataSourceConverter = new DataSourceConverter();
-    String expected =  "{\"maxcompute\":{\"project\":\"project\",\"dataset\":\"dataset\",\"table\":\"table\",\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}";
+    String expected =
+        "{\"maxcompute\":{\"project\":\"project\",\"dataset\":\"dataset\",\"table\":\"table\",\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}";
     assertEquals(expected, dataSourceConverter.convert(source));
-    DataSource source2 = 
-      DataSource.newBuilder()
-      .setEventTimestampColumn("event_timestamp")
-      .setType(DataSource.SourceType.BATCH_MAXCOMPUTE)
-      .setMaxcomputeOptions(
-        DataSource.MaxComputeOptions.newBuilder()
-          .setTableRef("project:schema.table")
-          .build())
-      .build();
-    String expected2 =  "{\"maxcompute\":{\"project\":\"project\",\"dataset\":\"dataset\",\"table\":\"table\",\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}";
+    DataSource source2 =
+        DataSource.newBuilder()
+            .setEventTimestampColumn("event_timestamp")
+            .setType(DataSource.SourceType.BATCH_MAXCOMPUTE)
+            .setMaxcomputeOptions(
+                DataSource.MaxComputeOptions.newBuilder()
+                    .setTableRef("project:schema.table")
+                    .build())
+            .build();
+    String expected2 =
+        "{\"maxcompute\":{\"project\":\"project\",\"dataset\":\"dataset\",\"table\":\"table\",\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}";
     assertEquals(expected2, dataSourceConverter.convert(source2));
   }
 
