@@ -133,13 +133,13 @@ class DataSourceConverter {
       case MAXCOMPUTE_OPTIONS -> {
         DataSourceProto.DataSource.MaxComputeOptions options =
             sourceProtobuf.getMaxcomputeOptions();
-        Pattern pattern = Pattern.compile("(?<project>[^:]+):(?<dataset>[^.]+).(?<table>.+)");
+        Pattern pattern = Pattern.compile("(?<project>[^.:]+)[.:](?<dataset>[^.]+).(?<table>.+)");
         Matcher matcher = pattern.matcher(options.getTableRef());
         matcher.find();
         if (!matcher.matches()) {
           throw new IllegalArgumentException(
               String.format(
-                  "Table ref '%s' is not in the form of <project>:<dataset>.<table>",
+                  "Table ref '%s' is not in the form of <project>:<dataset>.<table> or <project>.<dataset>.<table>",
                   options.getTableRef()));
         }
         String project = matcher.group("project");
