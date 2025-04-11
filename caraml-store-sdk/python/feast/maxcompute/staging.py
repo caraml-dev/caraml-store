@@ -6,12 +6,24 @@ from feast.data_source import MaxComputeSource
 from odps import ODPS
 from odps import df
 
+# Create table schema based on DataFrame columns
+# Map pandas dtypes to MaxCompute types
+dtype_to_mc_type = {
+    "object": "STRING",
+    "string": "STRING",
+    "int64": "BIGINT",
+    "int32": "INT",
+    "float64": "DOUBLE",
+    "float32": "FLOAT",
+    "bool": "BOOLEAN",
+    "datetime64[ns]": "TIMESTAMP",
+}
+
 
 def stage_entities_to_maxcompute(
     entity_source: pd.DataFrame,
     project: str,
     schema: str,
-    table_name: str,
     timestamp_column: str = "event_timestamp",
     endpoint: str = "",
     access_key: str = "",
@@ -49,30 +61,22 @@ def stage_entities_to_maxcompute(
     # Initialize MaxCompute client
     odps_client = ODPS(access_key, secret_key, project, endpoint=endpoint)
 
+    entity_source[timestamp_column] = (
+        entity_source[timestamp_column].dt.tz_convert("UTC").dt.tz_localize(None)
+    )
     # Prevent casting ns -> ms exception inside pyarrow
     entity_source[timestamp_column] = entity_source[timestamp_column].dt.floor("ms")
 
     # Create table with timestamp partitioning
-    full_table_name = f"{project}.{schema}.{table_name}_{uuid.uuid4()}".replace(
-        "-", "_"
-    )
-    # Create table schema based on DataFrame columns
-    # Map pandas dtypes to MaxCompute types
-    dtype_to_mc_type = {
-        "object": "STRING",
-        "string": "STRING",
-        "int64": "BIGINT",
-        "int32": "INT",
-        "float64": "DOUBLE",
-        "float32": "FLOAT",
-        "bool": "BOOLEAN",
-        "datetime64[ns]": "TIMESTAMP",
-    }
+    full_table_name = f"{project}.{schema}.entities_{uuid.uuid4()}".replace("-", "_")
 
     # Create columns for the table schema
     columns = []
     for col_name, dtype in entity_source.dtypes.items():
-        mc_type = dtype_to_mc_type.get(str(dtype), "STRING")
+        if col_name == timestamp_column:
+            mc_type = "TIMESTAMP_NTZ"
+        else:
+            mc_type = dtype_to_mc_type.get(str(dtype), "STRING")
         columns.append(f"{col_name} {mc_type}")
 
     timestamp_column = "event_timestamp"
