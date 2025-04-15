@@ -33,7 +33,8 @@ object MaxComputeReader {
       "(select * from `%s.%s` where %s >= cast(to_date('%s','yyyy-mm-ddThh:mi:ss.ff3Z') as timestamp) and %s < cast(to_date('%s','yyyy-mm-ddThh:mi:ss.ff3Z') as timestamp))" format (
         source.dataset, source.table, source.eventTimestampColumn, start, source.eventTimestampColumn, end
       )
-    print(sqlQuery)
+
+    println("query to maxcompute is", sqlQuery)
 
     val customDialect = new CustomDialect()
     JdbcDialects.registerDialect(customDialect)
@@ -47,6 +48,8 @@ object MaxComputeReader {
       .option("user", maxComputeAccessID)
       .option("password", maxComputeAccessKey)
       .load()
+
+    println("total rows fetched from maxcompute", data.toDF().count())
 
     data.toDF()
   }
