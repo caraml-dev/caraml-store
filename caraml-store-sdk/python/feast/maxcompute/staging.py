@@ -84,7 +84,7 @@ def stage_entities_to_maxcompute(
 
     # Create the table
     mc_event_timestamp_column = f"{timestamp_column}_pt"
-    create_table_query = f"create table {full_table_name} ( {', '.join(columns)} )  auto partitioned by (trunc_time({timestamp_column}, 'day') as {mc_event_timestamp_column}) lifecycle 1"
+    create_table_query = f"create table if not exists {full_table_name} ( {', '.join(columns)} )  auto partitioned by (trunc_time({timestamp_column}, 'day') as {mc_event_timestamp_column}) lifecycle 1"
     print(f"query: {create_table_query}")
     odps_client.execute_sql(create_table_query)
 
