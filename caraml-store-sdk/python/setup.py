@@ -18,6 +18,9 @@ EXTRA_REQUIRED = {
     "gcp": [
         "pandas>=1.0.0",
         "google-cloud-bigquery>=3.0.0",
+    ],
+    "maxcompute": [
+        "pyodps==0.12.2.1",
     ]
 }
 
