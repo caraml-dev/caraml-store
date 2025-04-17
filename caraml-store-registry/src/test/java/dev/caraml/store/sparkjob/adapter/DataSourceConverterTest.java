@@ -39,7 +39,7 @@ class DataSourceConverterTest {
             .build();
     DataSourceConverter dataSourceConverter = new DataSourceConverter();
     String expected =
-        "{\"maxcompute\":{\"project\":\"project\",\"dataset\":\"schema\",\"table\":\"table\",\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}";
+        "{\"maxCompute\":{\"project\":\"project\",\"dataset\":\"schema\",\"table\":\"table\",\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}";
     assertEquals(expected, dataSourceConverter.convert(source));
     DataSource source2 =
         DataSource.newBuilder()
@@ -51,7 +51,7 @@ class DataSourceConverterTest {
                     .build())
             .build();
     String expected2 =
-        "{\"maxcompute\":{\"project\":\"project\",\"dataset\":\"schema\",\"table\":\"table\",\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}";
+        "{\"maxCompute\":{\"project\":\"project\",\"dataset\":\"schema\",\"table\":\"table\",\"eventTimestampColumn\":\"event_timestamp\",\"fieldMapping\":{}}}";
     assertEquals(expected2, dataSourceConverter.convert(source2));
   }
 
