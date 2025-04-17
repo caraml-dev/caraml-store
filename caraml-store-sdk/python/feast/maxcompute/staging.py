@@ -69,12 +69,13 @@ def stage_entities_to_maxcompute(
 
     # Create table with timestamp partitioning
     full_table_name = f"{project}.{schema}.entities_{uuid.uuid4()}".replace("-", "_")
+    print("entity full_table_name: ", full_table_name)
 
     # Create columns for the table schema
     columns = []
     for col_name, dtype in entity_source.dtypes.items():
         if col_name == timestamp_column:
-            mc_type = "TIMESTAMP_NTZ"
+            mc_type = "TIMESTAMP"
         else:
             mc_type = dtype_to_mc_type.get(str(dtype), "STRING")
         columns.append(f"{col_name} {mc_type}")
@@ -83,7 +84,7 @@ def stage_entities_to_maxcompute(
 
     # Create the table
     mc_event_timestamp_column = f"{timestamp_column}_pt"
-    create_table_query = f"create table {full_table_name} ( {', '.join(columns)} )  auto partitioned by (trunc_time({timestamp_column}, 'day') as {mc_event_timestamp_column})"
+    create_table_query = f"create table {full_table_name} ( {', '.join(columns)} )  auto partitioned by (trunc_time({timestamp_column}, 'day') as {mc_event_timestamp_column}) lifecycle 1"
     print(f"query: {create_table_query}")
     odps_client.execute_sql(create_table_query)
 
