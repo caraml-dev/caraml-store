@@ -294,13 +294,16 @@ public class RegistryService {
     // Create or update depending on whether there is an existing Feature Table
     Optional<FeatureTable> existingTable =
         tableRepository.findFeatureTableByNameAndProject_Name(applySpec.getName(), projectName);
-    FeatureTable table = FeatureTable.fromProto(projectName, applySpec, entityRepository, defaultMaxAgeSeconds);
+    FeatureTable table =
+        FeatureTable.fromProto(projectName, applySpec, entityRepository, defaultMaxAgeSeconds);
     if (existingTable.isPresent() && table.equals(existingTable.get())) {
       // Skip update if no change is detected
       return ApplyFeatureTableResponse.newBuilder().setTable(existingTable.get().toProto()).build();
     }
     if (existingTable.isPresent()) {
-      existingTable.get().updateFromProto(projectName, applySpec, entityRepository, defaultMaxAgeSeconds);
+      existingTable
+          .get()
+          .updateFromProto(projectName, applySpec, entityRepository, defaultMaxAgeSeconds);
       table = existingTable.get();
     }
 
