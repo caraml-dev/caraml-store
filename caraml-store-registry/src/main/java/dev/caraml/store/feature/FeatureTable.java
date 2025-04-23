@@ -124,7 +124,7 @@ public class FeatureTable extends AbstractTimestampEntity {
    * @return constructed FeatureTable from the given Protobuf spec.
    */
   public static FeatureTable fromProto(
-      String projectName, FeatureTableSpec spec, EntityRepository entityRepo) {
+      String projectName, FeatureTableSpec spec, EntityRepository entityRepo, Long defaultMaxAgeSeconds) {
     FeatureTable table = new FeatureTable();
     table.setName(spec.getName());
     table.setProject(new Project(projectName));
@@ -143,7 +143,12 @@ public class FeatureTable extends AbstractTimestampEntity {
     String labelsJSON = TypeConversion.convertMapToJsonString(spec.getLabelsMap());
     table.setLabelsJSON(labelsJSON);
 
-    table.setMaxAgeSecs(spec.getMaxAge().getSeconds());
+    Long maxAge = defaultMaxAgeSeconds;
+    if (spec.hasMaxAge()) {
+      maxAge = spec.getMaxAge().getSeconds();
+    }
+
+    table.setMaxAgeSecs(maxAge);
     table.setBatchSource(DataSource.fromProto(spec.getBatchSource()));
     table.setOnlineStore(OnlineStore.fromProto(spec.getOnlineStore()));
 
@@ -162,7 +167,7 @@ public class FeatureTable extends AbstractTimestampEntity {
    * @throws IllegalArgumentException if the update will make prohibited changes.
    */
   public void updateFromProto(
-      String projectName, FeatureTableSpec spec, EntityRepository entityRepo) {
+      String projectName, FeatureTableSpec spec, EntityRepository entityRepo, Long defaultMaxAgeSeconds) {
     // Check for prohibited changes made in spec:
     // - Name cannot be changed
     if (!getName().equals(spec.getName())) {
@@ -197,7 +202,11 @@ public class FeatureTable extends AbstractTimestampEntity {
                 })
             .collect(Collectors.toSet()));
 
-    this.maxAgeSecs = spec.getMaxAge().getSeconds();
+
+    if (spec.hasMaxAge()) {
+      this.maxAgeSecs = spec.getMaxAge().getSeconds();
+    }
+    
     this.labelsJSON = TypeConversion.convertMapToJsonString(spec.getLabelsMap());
 
     this.batchSource = DataSource.fromProto(spec.getBatchSource());

@@ -44,6 +44,7 @@ public class RegistryService {
   private final ProjectRepository projectRepository;
   private final OnlineStoreRepository onlineStoreRepository;
   private final ProjectValidator projectValidator;
+  private final RegistryConfig registryConfig;
 
   @Autowired
   public RegistryService(
@@ -51,12 +52,14 @@ public class RegistryService {
       FeatureTableRepository tableRepository,
       ProjectRepository projectRepository,
       OnlineStoreRepository onlineStoreRepository,
-      ProjectValidator projectValidator) {
+      ProjectValidator projectValidator,
+      RegistryConfig registryConfig) {
     this.entityRepository = entityRepository;
     this.tableRepository = tableRepository;
     this.projectRepository = projectRepository;
     this.onlineStoreRepository = onlineStoreRepository;
     this.projectValidator = projectValidator;
+    this.registryConfig = registryConfig;
   }
 
   /**
@@ -266,6 +269,7 @@ public class RegistryService {
   @Transactional
   public ApplyFeatureTableResponse applyFeatureTable(ApplyFeatureTableRequest request) {
     String projectName = resolveProjectName(request.getProject());
+    Long defaultMaxAgeSeconds = this.registryConfig.getFeatureTableDefaultMaxAgeSeconds();
 
     Matchers.checkValidCharactersAllowDash(projectName, "project");
     // temporarily map empty storeNames to a dummy store, to make it backward compatible
@@ -290,13 +294,13 @@ public class RegistryService {
     // Create or update depending on whether there is an existing Feature Table
     Optional<FeatureTable> existingTable =
         tableRepository.findFeatureTableByNameAndProject_Name(applySpec.getName(), projectName);
-    FeatureTable table = FeatureTable.fromProto(projectName, applySpec, entityRepository);
+    FeatureTable table = FeatureTable.fromProto(projectName, applySpec, entityRepository, defaultMaxAgeSeconds);
     if (existingTable.isPresent() && table.equals(existingTable.get())) {
       // Skip update if no change is detected
       return ApplyFeatureTableResponse.newBuilder().setTable(existingTable.get().toProto()).build();
     }
     if (existingTable.isPresent()) {
-      existingTable.get().updateFromProto(projectName, applySpec, entityRepository);
+      existingTable.get().updateFromProto(projectName, applySpec, entityRepository, defaultMaxAgeSeconds);
       table = existingTable.get();
     }
 

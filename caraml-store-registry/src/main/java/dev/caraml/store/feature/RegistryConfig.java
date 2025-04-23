@@ -11,4 +11,5 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class RegistryConfig {
   private Boolean syncIngestionJobOnSpecUpdate;
+  private Long featureTableDefaultMaxAgeSeconds;
 }
