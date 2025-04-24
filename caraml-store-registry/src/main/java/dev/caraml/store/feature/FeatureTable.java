@@ -170,9 +170,7 @@ public class FeatureTable extends AbstractTimestampEntity {
    * @throws IllegalArgumentException if the update will make prohibited changes.
    */
   public void updateFromProto(
-      String projectName,
-      FeatureTableSpec spec,
-      EntityRepository entityRepo) {
+      String projectName, FeatureTableSpec spec, EntityRepository entityRepo) {
     // Check for prohibited changes made in spec:
     // - Name cannot be changed
     if (!getName().equals(spec.getName())) {

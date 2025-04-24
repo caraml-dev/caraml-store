@@ -124,20 +124,21 @@ public class RegistryGrpcServiceIT extends BaseIT {
                 DataGenerator.createFileDataSourceSpec("file:///path/to/file", "ts_col", ""))
             .build();
 
-    exampleNoMaxAge = DataGenerator.createFeatureTableSpec(
-                    "featuretable1",
-                    Arrays.asList("entity1", "entity2"),
-                    new HashMap<>() {
-                      {
-                        put("feature1", STRING);
-                        put("feature2", FLOAT);
-                      }
-                    },
-                    null,
-                    Map.of("feat_key2", "feat_value2"))
+    exampleNoMaxAge =
+        DataGenerator.createFeatureTableSpec(
+                "featuretable1",
+                Arrays.asList("entity1", "entity2"),
+                new HashMap<>() {
+                  {
+                    put("feature1", STRING);
+                    put("feature2", FLOAT);
+                  }
+                },
+                null,
+                Map.of("feat_key2", "feat_value2"))
             .toBuilder()
             .setBatchSource(
-                    DataGenerator.createFileDataSourceSpec("file:///path/to/file", "ts_col", ""))
+                DataGenerator.createFileDataSourceSpec("file:///path/to/file", "ts_col", ""))
             .setOnlineStore(DataGenerator.createOnlineStore("default"))
             .build();
 
@@ -444,15 +445,15 @@ public class RegistryGrpcServiceIT extends BaseIT {
           .build();
     }
 
-     private FeatureTableProto.FeatureTableSpec getTestSpecNoMaxAge() {
-       return exampleNoMaxAge.toBuilder()
-               .setName("apply_test")
-               .setOnlineStore(DataGenerator.createOnlineStore("default"))
-               .setStreamSource(
-                       DataGenerator.createKafkaDataSourceSpec(
-                               "localhost:9092", "topic", "class.path", "ts_col"))
-               .build();
-     }
+    private FeatureTableProto.FeatureTableSpec getTestSpecNoMaxAge() {
+      return exampleNoMaxAge.toBuilder()
+          .setName("apply_test")
+          .setOnlineStore(DataGenerator.createOnlineStore("default"))
+          .setStreamSource(
+              DataGenerator.createKafkaDataSourceSpec(
+                  "localhost:9092", "topic", "class.path", "ts_col"))
+          .build();
+    }
 
     @Test
     public void shouldApplyNewValidTable() {
@@ -467,9 +468,12 @@ public class RegistryGrpcServiceIT extends BaseIT {
       FeatureTableProto.FeatureTableSpec spec = getTestSpecNoMaxAge();
       FeatureTableProto.FeatureTable table = apiClient.applyFeatureTable("default", spec);
 
-      Duration expectedDefaultMaxAge = Duration.newBuilder().setSeconds(2200L).build(); // default max age set in application-it.yaml
-      FeatureTableProto.FeatureTableSpec expectedSpec = getTestSpecNoMaxAge().toBuilder()
-          .setMaxAge(expectedDefaultMaxAge).build();
+      Duration expectedDefaultMaxAge =
+          Duration.newBuilder()
+              .setSeconds(2200L)
+              .build(); // default max age set in application-it.yaml
+      FeatureTableProto.FeatureTableSpec expectedSpec =
+          getTestSpecNoMaxAge().toBuilder().setMaxAge(expectedDefaultMaxAge).build();
 
       assertTrue(TestUtil.compareFeatureTableSpec(table.getSpec(), expectedSpec));
       assertThat(table.getSpec().getMaxAge(), equalTo(expectedDefaultMaxAge));
@@ -494,6 +498,34 @@ public class RegistryGrpcServiceIT extends BaseIT {
           apiClient.applyFeatureTable("default", updatedSpec);
 
       assertTrue(TestUtil.compareFeatureTableSpec(updatedTable.getSpec(), updatedSpec));
+      assertThat(updatedTable.getMeta().getRevision(), equalTo(table.getMeta().getRevision() + 1L));
+      assertThat(
+          updatedTable.getSpec().getOnlineStore(),
+          equalTo(DataGenerator.createOnlineStore("default")));
+    }
+
+    @Test
+    public void shouldRetainMaxAgeIfUpdateDoesntProvideMaxAge() {
+      FeatureTableProto.FeatureTable table = apiClient.applyFeatureTable("default", getTestSpec());
+
+      FeatureTableProto.FeatureTableSpec expectedSpec =
+          getTestSpec().toBuilder()
+              .clearFeatures()
+              .addFeatures(
+                  DataGenerator.createFeatureSpec("feature5", FLOAT, Collections.emptyMap()))
+              .setStreamSource(
+                  DataGenerator.createKafkaDataSourceSpec(
+                      "localhost:9092", "new_topic", "new.class", "ts_col"))
+              .setOnlineStore(DataGenerator.createOnlineStore("default"))
+              .build();
+
+      FeatureTableProto.FeatureTableSpec parameterSpec =
+          expectedSpec.toBuilder().clearMaxAge().build();
+
+      FeatureTableProto.FeatureTable updatedTable =
+          apiClient.applyFeatureTable("default", parameterSpec);
+
+      assertTrue(TestUtil.compareFeatureTableSpec(updatedTable.getSpec(), expectedSpec));
       assertThat(updatedTable.getMeta().getRevision(), equalTo(table.getMeta().getRevision() + 1L));
       assertThat(
           updatedTable.getSpec().getOnlineStore(),

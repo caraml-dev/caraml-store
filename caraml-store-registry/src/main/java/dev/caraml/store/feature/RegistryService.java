@@ -301,9 +301,7 @@ public class RegistryService {
       return ApplyFeatureTableResponse.newBuilder().setTable(existingTable.get().toProto()).build();
     }
     if (existingTable.isPresent()) {
-      existingTable
-          .get()
-          .updateFromProto(projectName, applySpec, entityRepository);
+      existingTable.get().updateFromProto(projectName, applySpec, entityRepository);
       table = existingTable.get();
     }
 
