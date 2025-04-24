@@ -63,6 +63,7 @@ public class RegistryGrpcServiceIT extends BaseIT {
 
   private FeatureTableProto.FeatureTableSpec example1;
   private FeatureTableProto.FeatureTableSpec example2;
+  private FeatureTableProto.FeatureTableSpec exampleNoMaxAge;
 
   @BeforeEach
   public void initState() {
@@ -121,6 +122,23 @@ public class RegistryGrpcServiceIT extends BaseIT {
             .toBuilder()
             .setBatchSource(
                 DataGenerator.createFileDataSourceSpec("file:///path/to/file", "ts_col", ""))
+            .build();
+
+    exampleNoMaxAge = DataGenerator.createFeatureTableSpec(
+                    "featuretable1",
+                    Arrays.asList("entity1", "entity2"),
+                    new HashMap<>() {
+                      {
+                        put("feature1", STRING);
+                        put("feature2", FLOAT);
+                      }
+                    },
+                    null,
+                    Map.of("feat_key2", "feat_value2"))
+            .toBuilder()
+            .setBatchSource(
+                    DataGenerator.createFileDataSourceSpec("file:///path/to/file", "ts_col", ""))
+            .setOnlineStore(DataGenerator.createOnlineStore("default"))
             .build();
 
     apiClient.registerOnlineStore(DataGenerator.createOnlineStore("unset"));
@@ -426,12 +444,35 @@ public class RegistryGrpcServiceIT extends BaseIT {
           .build();
     }
 
+     private FeatureTableProto.FeatureTableSpec getTestSpecNoMaxAge() {
+       return exampleNoMaxAge.toBuilder()
+               .setName("apply_test")
+               .setOnlineStore(DataGenerator.createOnlineStore("default"))
+               .setStreamSource(
+                       DataGenerator.createKafkaDataSourceSpec(
+                               "localhost:9092", "topic", "class.path", "ts_col"))
+               .build();
+     }
+
     @Test
     public void shouldApplyNewValidTable() {
       FeatureTableProto.FeatureTable table = apiClient.applyFeatureTable("default", getTestSpec());
 
       assertTrue(TestUtil.compareFeatureTableSpec(table.getSpec(), getTestSpec()));
       assertThat(table.getMeta().getRevision(), equalTo(0L));
+    }
+
+    @Test
+    public void shouldApplyNewValidTableWithDefaultMaxAge() {
+      FeatureTableProto.FeatureTableSpec spec = getTestSpecNoMaxAge();
+      FeatureTableProto.FeatureTable table = apiClient.applyFeatureTable("default", spec);
+
+      Duration expectedDefaultMaxAge = Duration.newBuilder().setSeconds(2200L).build(); // default max age set in application-it.yaml
+      FeatureTableProto.FeatureTableSpec expectedSpec = getTestSpecNoMaxAge().toBuilder()
+          .setMaxAge(expectedDefaultMaxAge).build();
+
+      assertTrue(TestUtil.compareFeatureTableSpec(table.getSpec(), expectedSpec));
+      assertThat(table.getSpec().getMaxAge(), equalTo(expectedDefaultMaxAge));
     }
 
     @Test
@@ -835,7 +876,7 @@ public class RegistryGrpcServiceIT extends BaseIT {
     public void shouldReturnOnlineStoreIfExists() {
       CoreServiceProto.GetOnlineStoreResponse response = apiClient.getOnlineStore("default");
       assertEquals(response.getOnlineStore(), DataGenerator.createOnlineStore("default"));
-      assertEquals(response.getStatus(), CoreServiceProto.GetOnlineStoreResponse.Status.ACTIVE);
+      assertEquals(CoreServiceProto.GetOnlineStoreResponse.Status.ACTIVE, response.getStatus());
     }
 
     @Test

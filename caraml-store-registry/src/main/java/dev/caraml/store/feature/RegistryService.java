@@ -303,7 +303,7 @@ public class RegistryService {
     if (existingTable.isPresent()) {
       existingTable
           .get()
-          .updateFromProto(projectName, applySpec, entityRepository, defaultMaxAgeSeconds);
+          .updateFromProto(projectName, applySpec, entityRepository);
       table = existingTable.get();
     }
 

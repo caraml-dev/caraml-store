@@ -71,38 +71,42 @@ public class DataGenerator {
       String name,
       List<String> entities,
       Map<String, ValueProto.ValueType.Enum> features,
-      int maxAgeSecs,
+      Integer maxAgeSecs,
       Map<String, String> labels) {
 
-    return FeatureTableSpec.newBuilder()
-        .setName(name)
-        .addAllEntities(entities)
-        .addAllFeatures(
-            features.entrySet().stream()
-                .map(
-                    entry ->
-                        FeatureSpec.newBuilder()
-                            .setName(entry.getKey())
-                            .setValueType(entry.getValue())
-                            .putAllLabels(labels)
+    FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder()
+            .setName(name)
+            .addAllEntities(entities)
+            .addAllFeatures(
+                    features.entrySet().stream()
+                            .map(
+                                    entry ->
+                                            FeatureSpec.newBuilder()
+                                                    .setName(entry.getKey())
+                                                    .setValueType(entry.getValue())
+                                                    .putAllLabels(labels)
+                                                    .build())
+                            .collect(Collectors.toList()))
+            .setBatchSource(
+                    DataSource.newBuilder()
+                            .setEventTimestampColumn("ts")
+                            .setType(DataSource.SourceType.BATCH_FILE)
+                            .setFileOptions(
+                                    FileOptions.newBuilder()
+                                            .setFileFormat(
+                                                    FileFormat.newBuilder()
+                                                            .setParquetFormat(ParquetFormat.newBuilder().build())
+                                                            .build())
+                                            .setFileUrl("/dev/null")
+                                            .build())
                             .build())
-                .collect(Collectors.toList()))
-        .setMaxAge(Duration.newBuilder().setSeconds(3600).build())
-        .setBatchSource(
-            DataSource.newBuilder()
-                .setEventTimestampColumn("ts")
-                .setType(DataSource.SourceType.BATCH_FILE)
-                .setFileOptions(
-                    FileOptions.newBuilder()
-                        .setFileFormat(
-                            FileFormat.newBuilder()
-                                .setParquetFormat(ParquetFormat.newBuilder().build())
-                                .build())
-                        .setFileUrl("/dev/null")
-                        .build())
-                .build())
-        .putAllLabels(labels)
-        .build();
+            .putAllLabels(labels);
+
+    if (maxAgeSecs != null) {
+      builder.setMaxAge(Duration.newBuilder().setSeconds(maxAgeSecs).build());
+    }
+
+    return builder.build();
   }
 
   public static FeatureTableSpec createFeatureTableSpec(

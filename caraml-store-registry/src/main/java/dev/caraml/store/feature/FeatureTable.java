@@ -172,8 +172,7 @@ public class FeatureTable extends AbstractTimestampEntity {
   public void updateFromProto(
       String projectName,
       FeatureTableSpec spec,
-      EntityRepository entityRepo,
-      Long defaultMaxAgeSeconds) {
+      EntityRepository entityRepo) {
     // Check for prohibited changes made in spec:
     // - Name cannot be changed
     if (!getName().equals(spec.getName())) {
