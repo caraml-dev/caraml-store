@@ -94,7 +94,9 @@ public class JobServiceTest {
     when(entityRepository.findEntityByNameAndProject_Name("entity1", project))
         .thenReturn(
             new Entity("entity1", "", ValueProto.ValueType.Enum.STRING, Collections.emptyMap()));
-    FeatureTable featureTable = FeatureTable.fromProto(project, spec, entityRepository);
+    Long defaultMaxAgeSeconds = 100L;
+    FeatureTable featureTable =
+        FeatureTable.fromProto(project, spec, entityRepository, defaultMaxAgeSeconds);
     when(tableRepository.findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
             "batch_feature_table", project))
         .thenReturn(Optional.of(featureTable));
@@ -188,8 +190,9 @@ public class JobServiceTest {
     when(entityRepository.findEntityByNameAndProject_Name("entity1", project))
         .thenReturn(
             new Entity("entity1", "", ValueProto.ValueType.Enum.STRING, Collections.emptyMap()));
+    Long defaultMaxAgeSeconds = 100L;
     List<FeatureTable> featureTables =
-        List.of(FeatureTable.fromProto(project, spec, entityRepository));
+        List.of(FeatureTable.fromProto(project, spec, entityRepository, defaultMaxAgeSeconds));
     when(tableRepository.findAllByProject_Name(project)).thenReturn(featureTables);
     jobservice.createOrUpdateStreamingIngestionJob(project, spec);
     SparkApplication expectedSparkApplication = new SparkApplication();

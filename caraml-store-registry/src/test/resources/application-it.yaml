@@ -1,3 +1,4 @@
 caraml:
   registry:
     syncIngestionJobOnSpecUpdate: false
+    featureTableDefaultMaxAgeSeconds: 2200

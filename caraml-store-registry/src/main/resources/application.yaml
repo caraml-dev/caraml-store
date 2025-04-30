@@ -2,6 +2,7 @@ caraml:
   registry:
     # Whether to create/update streaming ingestion jobs on feature table creation/update
     syncIngestionJobOnSpecUpdate: true
+    featureTableDefaultMaxAgeSeconds: 604800 # 7 days
 
   # Enable integration with MLP server
   mlp:
