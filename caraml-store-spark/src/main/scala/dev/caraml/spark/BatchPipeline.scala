@@ -76,16 +76,9 @@ object BatchPipeline extends BasePipeline {
 
     implicit val rowEncoder: Encoder[Row] = RowEncoder(projected.schema)
 
-    val validRows = if (config.debug) {
-      projected
-        .map(metrics.incrementRead)
-        .filter(rowValidator.allChecks)
-        .persist()
-    } else {
-      projected
-        .map(metrics.incrementRead)
-        .filter(rowValidator.allChecks)
-    }
+    val validRows = projected
+      .map(metrics.incrementRead)
+      .filter(rowValidator.allChecks)
 
     if (config.debug) {
       val validRowCount = validRows.count()
