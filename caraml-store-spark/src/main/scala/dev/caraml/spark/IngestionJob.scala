@@ -2,7 +2,7 @@ package dev.caraml.spark
 
 import dev.caraml.spark.utils.JsonUtils
 import dev.caraml.store.protobuf.types.ValueProto.ValueType
-import org.apache.log4j.Logger
+import org.apache.log4j.{Level, Logger}
 import org.joda.time.{DateTime, DateTimeZone}
 import org.json4s._
 import org.json4s.ext.JavaEnumNameSerializer
@@ -17,6 +17,7 @@ object IngestionJob {
     ShortTypeHints(List(classOf[ProtoFormat], classOf[AvroFormat]))
 
   private val logger = Logger.getLogger(getClass.getCanonicalName)
+  Logger.getRootLogger.setLevel(Level.DEBUG) // Sets Log4j root logger level
 
   val parser = new scopt.OptionParser[IngestionJobConfig]("IngestionJob") {
     // ToDo: read version from Manifest
