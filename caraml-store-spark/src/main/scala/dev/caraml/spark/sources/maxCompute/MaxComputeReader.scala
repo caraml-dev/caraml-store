@@ -47,6 +47,7 @@ object MaxComputeReader {
       .option("user", maxComputeAccessID)
       .option("password", maxComputeAccessKey)
       .option("queryTimeout", 21600)
+      .option("fetchsize", 1000000)
       .load()
 
     data.toDF()
