@@ -46,7 +46,7 @@ object MaxComputeReader {
       .option("dbtable", sqlQuery)
       .option("user", maxComputeAccessID)
       .option("password", maxComputeAccessKey)
-      // .option("fetchsize", 1000000)
+      .option("fetchsize", config.fetchSize)
       .load()
 
     data.toDF()
