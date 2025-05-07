@@ -20,7 +20,7 @@ object MaxComputeReader {
     val config = maxComputeConfig.getOrElse(MaxComputeConfig())
 
     val maxComputeJDBCConnectionURL =
-      "jdbc:odps:%s/?project=%s&interactiveMode=%s&enableLimit=%s&autoSelectLimit=%s"
+      "jdbc:odps:%s/?project=%s&interactiveMode=%s&enableLimit=%s&autoSelectLimit=%s&enableOdpsLogger=true"
         .format(
           config.endpoint,
           source.project,
@@ -46,6 +46,7 @@ object MaxComputeReader {
       .option("dbtable", sqlQuery)
       .option("user", maxComputeAccessID)
       .option("password", maxComputeAccessKey)
+      .option("queryTimeout", 21600)
       .load()
 
     data.toDF()
