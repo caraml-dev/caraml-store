@@ -105,7 +105,6 @@ object BasePipeline {
       .builder()
       .config(conf)
       .getOrCreate()
-    spark.sparkContext.setLogLevel("DEBUG") // Sets log level to DEBUG
     spark
   }
 
