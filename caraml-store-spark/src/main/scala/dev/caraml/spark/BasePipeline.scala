@@ -89,10 +89,12 @@ object BasePipeline {
       case None => ()
     }
 
-    SparkSession
+    val spark = SparkSession
       .builder()
       .config(conf)
       .getOrCreate()
+    spark.sparkContext.setLogLevel("DEBUG") // Sets log level to DEBUG
+    spark
   }
 
   /**
