@@ -18,6 +18,13 @@ object BasePipeline {
 
     val conf = new SparkConf()
 
+    // OSS connection and credential
+    conf.set("spark.hadoop.fs.AbstractFileSystem.oss.impl", "org.apache.hadoop.fs.aliyun.oss.OSS")
+    conf.set("spark.hadoop.fs.oss.impl", "org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem")
+    conf.set("spark.hadoop.fs.oss.endpoint", sys.env("OSS_ENDPOINT"))
+    conf.set("spark.hadoop.fs.oss.accessKeyId", sys.env("OSS_ACCESS_KEY_ID"))
+    conf.set("spark.hadoop.fs.oss.accessKeySecret", sys.env("OSS_ACCESS_KEY_SECRET"))
+
     jobConfig.store match {
       case RedisConfig(host, port, password, ssl, properties) =>
         conf
