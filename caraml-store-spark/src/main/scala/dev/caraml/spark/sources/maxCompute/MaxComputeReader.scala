@@ -38,7 +38,7 @@ object MaxComputeReader {
     val customDialect = new CustomDialect()
     JdbcDialects.registerDialect(customDialect)
 
-    val data = sparkSession.read
+    sparkSession.read
       .format("jdbc")
       .option("url", maxComputeJDBCConnectionURL)
       // Not setting queryTimeout will fail the query, whereas setting it up actually doesn't make an impact
@@ -49,6 +49,5 @@ object MaxComputeReader {
       .option("fetchsize", config.fetchSize)
       .load()
 
-    data.toDF()
   }
 }
