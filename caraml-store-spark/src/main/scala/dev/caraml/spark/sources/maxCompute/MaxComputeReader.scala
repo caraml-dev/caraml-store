@@ -20,7 +20,7 @@ object MaxComputeReader {
     val config = maxComputeConfig.getOrElse(MaxComputeConfig())
 
     val maxComputeJDBCConnectionURL =
-      "jdbc:odps:%s/?project=%s&interactiveMode=%s&enableLimit=%s&autoSelectLimit=%s&enableOdpsLogger=true"
+      "jdbc:odps:%s/?project=%s&interactiveMode=%s&enableLimit=%s&autoSelectLimit=%s&enableOdpsLogger=true&alwaysFallback=true"
         .format(
           config.endpoint,
           source.project,
