@@ -42,10 +42,15 @@ object MaxComputeReader {
       .format("jdbc")
       .option("url", maxComputeJDBCConnectionURL)
       // Not setting queryTimeout will fail the query, whereas setting it up actually doesn't make an impact
+      .option("sessionInitStatement", "set odps.stage.reducer.num=50")
       .option("queryTimeout", 5000)
       .option("dbtable", sqlQuery)
       .option("user", maxComputeAccessID)
       .option("password", maxComputeAccessKey)
+      .option("partitionColumn", source.eventTimestampColumn)
+      .option("lowerBound", start.toString())
+      .option("upperBound", end.toString())
+      .option("numPartitions", 5)
       .option("fetchsize", config.fetchSize)
       .load()
 
