@@ -17,7 +17,6 @@ object IngestionJob {
     ShortTypeHints(List(classOf[ProtoFormat], classOf[AvroFormat]))
 
   private val logger = Logger.getLogger(getClass.getCanonicalName)
-  Logger.getRootLogger.setLevel(Level.DEBUG) // Sets Log4j root logger level
 
   val parser = new scopt.OptionParser[IngestionJobConfig]("IngestionJob") {
     // ToDo: read version from Manifest
