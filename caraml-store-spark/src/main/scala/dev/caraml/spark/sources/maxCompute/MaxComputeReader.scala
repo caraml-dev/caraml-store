@@ -41,8 +41,8 @@ object MaxComputeReader {
     sparkSession.read
       .format("jdbc")
       .option("url", maxComputeJDBCConnectionURL)
-      // Not setting queryTimeout will fail the query, whereas setting it up actually doesn't make an impact
       .option("sessionInitStatement", "set odps.stage.reducer.num=50")
+      // Not setting queryTimeout will fail the query, whereas setting it up actually doesn't make an impact
       .option("queryTimeout", 5000)
       .option("dbtable", sqlQuery)
       .option("user", maxComputeAccessID)
