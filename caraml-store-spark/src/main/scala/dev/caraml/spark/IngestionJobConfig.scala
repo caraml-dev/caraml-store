@@ -135,7 +135,8 @@ case class MaxComputeConfig(
     endpoint: String = "",
     interactiveMode: Boolean = true,
     enableLimit: Boolean = false,
-    autoSelectLimit: String = "1000000000"
+    autoSelectLimit: String = "1000000000",
+    fetchSize: Int = 10000
 )
 
 case class IngestionJobConfig(

@@ -20,7 +20,7 @@ object MaxComputeReader {
     val config = maxComputeConfig.getOrElse(MaxComputeConfig())
 
     val maxComputeJDBCConnectionURL =
-      "jdbc:odps:%s/?project=%s&interactiveMode=%s&enableLimit=%s&autoSelectLimit=%s"
+      "jdbc:odps:%s/?project=%s&interactiveMode=%s&enableLimit=%s&autoSelectLimit=%s&enableOdpsLogger=true&alwaysFallback=true"
         .format(
           config.endpoint,
           source.project,
@@ -38,16 +38,21 @@ object MaxComputeReader {
     val customDialect = new CustomDialect()
     JdbcDialects.registerDialect(customDialect)
 
-    val data = sparkSession.read
+    sparkSession.read
       .format("jdbc")
       .option("url", maxComputeJDBCConnectionURL)
+      .option("sessionInitStatement", "set odps.stage.reducer.num=50")
       // Not setting queryTimeout will fail the query, whereas setting it up actually doesn't make an impact
       .option("queryTimeout", 5000)
       .option("dbtable", sqlQuery)
       .option("user", maxComputeAccessID)
       .option("password", maxComputeAccessKey)
+      .option("partitionColumn", source.eventTimestampColumn)
+      .option("lowerBound", start.toString())
+      .option("upperBound", end.toString())
+      .option("numPartitions", 5)
+      .option("fetchsize", config.fetchSize)
       .load()
 
-    data.toDF()
   }
 }

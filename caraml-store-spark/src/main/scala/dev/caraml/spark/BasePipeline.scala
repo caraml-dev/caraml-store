@@ -19,8 +19,8 @@ object BasePipeline {
     val conf = new SparkConf()
 
     // OSS connection and credential if needed
-    val dlPath = jobConfig.deadLetterPath.getOrElse("")
-    val cpPath = jobConfig.checkpointPath.getOrElse("")
+    val dlPath    = jobConfig.deadLetterPath.getOrElse("")
+    val cpPath    = jobConfig.checkpointPath.getOrElse("")
     val ossPrefix = "oss://"
     if (dlPath.startsWith(ossPrefix) || cpPath.startsWith(ossPrefix)) {
       conf.set("spark.hadoop.fs.AbstractFileSystem.oss.impl", "org.apache.hadoop.fs.aliyun.oss.OSS")
@@ -101,10 +101,11 @@ object BasePipeline {
       case None => ()
     }
 
-    SparkSession
+    val spark = SparkSession
       .builder()
       .config(conf)
       .getOrCreate()
+    spark
   }
 
   /**
