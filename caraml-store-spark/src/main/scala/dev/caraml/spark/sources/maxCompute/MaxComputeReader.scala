@@ -5,8 +5,10 @@ import org.joda.time.DateTime
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.jdbc.JdbcDialects
 import com.caraml.odps.CustomDialect
+import org.apache.log4j.Logger
 
 object MaxComputeReader {
+  private val logger = Logger.getLogger(getClass.getCanonicalName)
   def createBatchSource(
       sparkSession: SparkSession,
       source: MaxComputeSource,
@@ -33,7 +35,8 @@ object MaxComputeReader {
       "(select * from `%s.%s` where %s >= cast(to_date('%s','yyyy-mm-ddThh:mi:ss.ff3Z') as timestamp) and %s < cast(to_date('%s','yyyy-mm-ddThh:mi:ss.ff3Z') as timestamp))" format (
         source.dataset, source.table, source.eventTimestampColumn, start, source.eventTimestampColumn, end
       )
-    print(sqlQuery)
+    logger.info(s"MaxCompute JDBC Connection URL: $maxComputeJDBCConnectionURL")
+    logger.info(s"MaxCompute SQL Query: $sqlQuery")
 
     val customDialect = new CustomDialect()
     JdbcDialects.registerDialect(customDialect)
@@ -50,7 +53,7 @@ object MaxComputeReader {
       .option("partitionColumn", source.eventTimestampColumn)
       .option("lowerBound", start.toString())
       .option("upperBound", end.toString())
-      .option("numPartitions", 5)
+      .option("numPartitions", config.numPartitions)
       .option("fetchsize", config.fetchSize)
       .load()
 
