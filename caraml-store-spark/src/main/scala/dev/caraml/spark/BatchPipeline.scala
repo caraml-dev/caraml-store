@@ -11,6 +11,7 @@ import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.streaming.StreamingQuery
 import org.apache.spark.sql.{Encoder, Row, SaveMode, SparkSession}
 import org.apache.log4j.Logger
+
 /**
   * Batch Ingestion Flow:
   * 1. Read from source (BQ | File)
