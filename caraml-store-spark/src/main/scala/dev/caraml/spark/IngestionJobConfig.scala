@@ -136,7 +136,8 @@ case class MaxComputeConfig(
     interactiveMode: Boolean = true,
     enableLimit: Boolean = false,
     autoSelectLimit: String = "1000000000",
-    fetchSize: Int = 10000
+    fetchSize: Int = 10000,
+    numPartitions: Int = 10
 )
 
 case class IngestionJobConfig(

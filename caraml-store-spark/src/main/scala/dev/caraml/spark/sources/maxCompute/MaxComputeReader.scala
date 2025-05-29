@@ -53,7 +53,7 @@ object MaxComputeReader {
       .option("partitionColumn", source.eventTimestampColumn)
       .option("lowerBound", start.toString())
       .option("upperBound", end.toString())
-      .option("numPartitions", 5)
+      .option("numPartitions", config.numPartitions)
       .option("fetchsize", config.fetchSize)
       .load()
 
