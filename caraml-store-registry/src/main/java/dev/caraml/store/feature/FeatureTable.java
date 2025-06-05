@@ -35,6 +35,7 @@ import javax.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import dev.caraml.store.sparkjob.BatchJobRecord;
 
 @Getter
 @javax.persistence.Entity
@@ -110,6 +111,9 @@ public class FeatureTable extends AbstractTimestampEntity {
   @ManyToOne(optional = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "online_store_name")
   private OnlineStore onlineStore;
+
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "featureTable")
+  private Set<BatchJobRecord> batchJobRecords;
 
   public FeatureTable() {}
 
