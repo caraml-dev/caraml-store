@@ -118,7 +118,7 @@ public class BatchJobRecord {
 
         }
         return Pair.of(
-                Timestamp.valueOf(startTime),
-                Timestamp.valueOf(endTime));
+                Timestamp.valueOf(startTime.replace("T", " ").replace("Z", "")),
+                Timestamp.valueOf(endTime.replace("T", " ").replace("Z", "")));
     }
 }
