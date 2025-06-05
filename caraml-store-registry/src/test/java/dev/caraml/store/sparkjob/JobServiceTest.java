@@ -39,6 +39,7 @@ public class JobServiceTest {
   @Mock private FeatureTableRepository tableRepository;
   @Mock private SparkOperatorApi api;
   @Mock private ProjectContextProvider projectContextProvider;
+  @Mock private BatchJobRecordRepository batchJobRecordRepository;
 
   @BeforeEach
   public void setUp() {
@@ -78,7 +79,7 @@ public class JobServiceTest {
         new IngestionJobTemplate("store", new SparkApplicationSpec());
     jobs.add(batchJobProperty);
     JobService jobservice =
-        new JobService(properties, entityRepository, tableRepository, api, projectContextProvider);
+        new JobService(properties, entityRepository, tableRepository, batchJobRecordRepository, api, projectContextProvider);
     FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder();
     String project = "project";
     String jsonString;
@@ -175,7 +176,7 @@ public class JobServiceTest {
         new IngestionJobTemplate("store", templateSparkApplicationSpec);
     jobs.add(streamJobProperty);
     JobService jobservice =
-        new JobService(properties, entityRepository, tableRepository, api, projectContextProvider);
+        new JobService(properties, entityRepository, tableRepository, batchJobRecordRepository, api, projectContextProvider);
     FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder();
     String project = "project";
     String jsonString;
