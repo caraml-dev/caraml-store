@@ -33,8 +33,7 @@ public class BatchJobRecord {
 
     @Column(name = "id")
     @Id
-    @GeneratedValue
-    private long id;
+    private String id;
 
     private String ingestionJobId;
 
@@ -55,11 +54,11 @@ public class BatchJobRecord {
     private String status;
 
     // The start time of the ingestion job
-    @Column(name = "job_start_time")
+    @Column(name = "job_end_time")
     private long jobEndTime;
 
     // The end time of the ingestion job
-    @Column(name = "job_end_time")
+    @Column(name = "job_start_time")
     private long jobStartTime;
 
     // start parameters passed into spark job

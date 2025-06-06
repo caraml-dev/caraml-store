@@ -1,7 +1,7 @@
 -- Create table for BatchJobRecord
 CREATE TABLE batch_job_records
 (
-    id                       BIGINT NOT NULL,
+    id                       VARCHAR(255) NOT NULL,
     ingestion_job_id         VARCHAR(255),
     job_type                 INTEGER NOT NULL,
     project                  VARCHAR(255) NOT NULL,
