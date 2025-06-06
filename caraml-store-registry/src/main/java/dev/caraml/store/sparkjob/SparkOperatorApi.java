@@ -3,7 +3,6 @@ package dev.caraml.store.sparkjob;
 import dev.caraml.store.sparkjob.crd.ScheduledSparkApplication;
 import dev.caraml.store.sparkjob.crd.SparkApplication;
 import io.kubernetes.client.util.Watchable;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +12,8 @@ public interface SparkOperatorApi {
 
   SparkApplication create(SparkApplication app) throws SparkOperatorApiException;
 
-  Watchable<SparkApplication> watch(String namespace, String labelSelector) throws SparkOperatorApiException;
+  Watchable<SparkApplication> watch(String namespace, String labelSelector)
+      throws SparkOperatorApiException;
 
   ScheduledSparkApplication update(ScheduledSparkApplication app) throws SparkOperatorApiException;
 

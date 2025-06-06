@@ -24,14 +24,13 @@ import dev.caraml.store.sparkjob.crd.SparkApplication;
 import dev.caraml.store.sparkjob.crd.SparkApplicationSpec;
 import dev.caraml.store.sparkjob.hash.HashUtils;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
+import io.kubernetes.client.util.Watch;
+import io.kubernetes.client.util.Watchable;
 import java.text.ParseException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import io.kubernetes.client.util.Watch;
-import io.kubernetes.client.util.Watchable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -48,7 +47,8 @@ public class JobService {
   private final String namespace;
   private final String sparkImage;
   private final DefaultStore defaultStore;
-  private final Map<JobType, Map<String, IngestionJobTemplate>> ingestionJobTemplateByTypeAndStoreName = new HashMap<>();
+  private final Map<JobType, Map<String, IngestionJobTemplate>>
+      ingestionJobTemplateByTypeAndStoreName = new HashMap<>();
   private final HistoricalRetrievalJobTemplate retrievalJobTemplate;
   private final DeltaIngestionDataset deltaIngestionDataset;
   private final EntityRepository entityRepository;
@@ -110,7 +110,8 @@ public class JobService {
 
   private Job sparkApplicationToJob(SparkApplication app) {
     Map<String, String> labels = app.getMetadata().getLabels();
-    Timestamp startTime = Timestamps.fromSeconds(app.getMetadata().getCreationTimestamp().toEpochSecond());
+    Timestamp startTime =
+        Timestamps.fromSeconds(app.getMetadata().getCreationTimestamp().toEpochSecond());
 
     JobStatus jobStatus = JobStatus.JOB_STATUS_PENDING;
     if (app.getStatus() != null) {
@@ -121,21 +122,23 @@ public class JobService {
           throw new RuntimeException(e);
         }
       }
-      jobStatus = switch (app.getStatus().getApplicationState().getState()) {
-        case "COMPLETED" -> JobStatus.JOB_STATUS_DONE;
-        case "FAILED" -> JobStatus.JOB_STATUS_ERROR;
-        case "RUNNING" -> JobStatus.JOB_STATUS_RUNNING;
-        default -> JobStatus.JOB_STATUS_PENDING;
-      };
+      jobStatus =
+          switch (app.getStatus().getApplicationState().getState()) {
+            case "COMPLETED" -> JobStatus.JOB_STATUS_DONE;
+            case "FAILED" -> JobStatus.JOB_STATUS_ERROR;
+            case "RUNNING" -> JobStatus.JOB_STATUS_RUNNING;
+            default -> JobStatus.JOB_STATUS_PENDING;
+          };
     }
     String project = labels.getOrDefault(PROJECT_LABEL, "");
     String tableName = labels.getOrDefault(FEATURE_TABLE_LABEL, "");
 
-    Job.Builder builder = Job.newBuilder()
-        .setId(app.getMetadata().getName())
-        .setProject(project)
-        .setStartTime(startTime)
-        .setStatus(jobStatus);
+    Job.Builder builder =
+        Job.newBuilder()
+            .setId(app.getMetadata().getName())
+            .setProject(project)
+            .setStartTime(startTime)
+            .setStatus(jobStatus);
     switch (JobType.valueOf(labels.get(JOB_TYPE_LABEL))) {
       case BATCH_INGESTION_JOB -> {
         builder.setBatchIngestion(Job.OfflineToOnlineMeta.newBuilder().setTableName(tableName));
@@ -158,23 +161,25 @@ public class JobService {
     Map<String, String> labels = app.getMetadata().getLabels();
     List<String> args = app.getSpec().getTemplate().getArguments();
     int ingestionTimespan = Integer.parseInt(args.get(args.size() - 1));
-    ScheduledJob.Builder builder = ScheduledJob.newBuilder()
-        .setId(app.getMetadata().getName())
-        .setTableName(labels.getOrDefault(FEATURE_TABLE_LABEL, ""))
-        .setProject(labels.getOrDefault(PROJECT_LABEL, ""))
-        .setCronSchedule(app.getSpec().getSchedule())
-        .setIngestionTimespan(ingestionTimespan);
+    ScheduledJob.Builder builder =
+        ScheduledJob.newBuilder()
+            .setId(app.getMetadata().getName())
+            .setTableName(labels.getOrDefault(FEATURE_TABLE_LABEL, ""))
+            .setProject(labels.getOrDefault(PROJECT_LABEL, ""))
+            .setCronSchedule(app.getSpec().getSchedule())
+            .setIngestionTimespan(ingestionTimespan);
     return builder.build();
   }
 
   public Job createOrUpdateStreamingIngestionJob(String project, String featureTableName) {
-    FeatureTableSpec spec = tableRepository
-        .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(featureTableName, project)
-        .map(ft -> ft.toProto().getSpec())
-        .orElseThrow(
-            () -> {
-              throw new FeatureTableNotFoundException(project, featureTableName);
-            });
+    FeatureTableSpec spec =
+        tableRepository
+            .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(featureTableName, project)
+            .map(ft -> ft.toProto().getSpec())
+            .orElseThrow(
+                () -> {
+                  throw new FeatureTableNotFoundException(project, featureTableName);
+                });
     return createOrUpdateStreamingIngestionJob(project, spec);
   }
 
@@ -197,7 +202,8 @@ public class JobService {
   }
 
   private String getDefaultStoreIfAbsent(FeatureTableSpec spec, JobType jobType) {
-    String defaultStoreName = jobType == JobType.BATCH_INGESTION_JOB ? defaultStore.batch() : defaultStore.stream();
+    String defaultStoreName =
+        jobType == JobType.BATCH_INGESTION_JOB ? defaultStore.batch() : defaultStore.stream();
     String onlineStoreName = spec.getOnlineStore().getName();
     return onlineStoreName.isEmpty() || onlineStoreName.equals("unset")
         ? defaultStoreName
@@ -207,8 +213,9 @@ public class JobService {
   public Job createOrUpdateStreamingIngestionJob(String project, FeatureTableSpec spec) {
     Map<String, String> entityNameToType = getEntityToTypeMap(project, spec);
     Long entityMaxAge = computeMaxEntityAge(project, spec.getEntitiesList());
-    List<String> arguments = new StreamIngestionArgumentAdapter(project, spec, entityNameToType, entityMaxAge)
-        .getArguments();
+    List<String> arguments =
+        new StreamIngestionArgumentAdapter(project, spec, entityNameToType, entityMaxAge)
+            .getArguments();
     return createOrUpdateIngestionJob(JobType.STREAM_INGESTION_JOB, project, spec, arguments);
   }
 
@@ -218,9 +225,10 @@ public class JobService {
         .map(FeatureTable::getMaxAgeSecs)
         .max(Comparator.comparingLong(Long::valueOf))
         .orElseThrow(
-            () -> new IllegalArgumentException(
-                String.format(
-                    "No feature tables refers to %s in project %s", entity, project)));
+            () ->
+                new IllegalArgumentException(
+                    String.format(
+                        "No feature tables refers to %s in project %s", entity, project)));
   }
 
   public Job createOrUpdateBatchIngestionJob(
@@ -231,13 +239,14 @@ public class JobService {
       Boolean deltaIngestion)
       throws SparkOperatorApiException {
 
-    FeatureTableSpec spec = tableRepository
-        .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(featureTableName, project)
-        .map(ft -> ft.toProto().getSpec())
-        .orElseThrow(
-            () -> {
-              throw new FeatureTableNotFoundException(project, featureTableName);
-            });
+    FeatureTableSpec spec =
+        tableRepository
+            .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(featureTableName, project)
+            .map(ft -> ft.toProto().getSpec())
+            .orElseThrow(
+                () -> {
+                  throw new FeatureTableNotFoundException(project, featureTableName);
+                });
 
     Map<String, String> entityNameToType = getEntityToTypeMap(project, spec);
 
@@ -251,66 +260,74 @@ public class JobService {
     }
 
     Long maxEntityAge = computeMaxEntityAge(project, spec.getEntitiesList());
-    List<String> arguments = new BatchIngestionArgumentAdapter(
-        project, spec, entityNameToType, startTime, endTime, maxEntityAge)
-        .getArguments();
+    List<String> arguments =
+        new BatchIngestionArgumentAdapter(
+                project, spec, entityNameToType, startTime, endTime, maxEntityAge)
+            .getArguments();
     return createOrUpdateIngestionJob(JobType.BATCH_INGESTION_JOB, project, spec, arguments);
   }
 
   public void scheduleBatchIngestionJob(
       String project, String featureTableName, String schedule, Integer ingestionTimespan) {
-    FeatureTableSpec featureTableSpec = tableRepository
-        .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(featureTableName, project)
-        .map(ft -> ft.toProto().getSpec())
-        .orElseThrow(
-            () -> {
-              throw new FeatureTableNotFoundException(project, featureTableName);
-            });
+    FeatureTableSpec featureTableSpec =
+        tableRepository
+            .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(featureTableName, project)
+            .map(ft -> ft.toProto().getSpec())
+            .orElseThrow(
+                () -> {
+                  throw new FeatureTableNotFoundException(project, featureTableName);
+                });
     String onlineStoreName = getDefaultStoreIfAbsent(featureTableSpec, JobType.BATCH_INGESTION_JOB);
-    IngestionJobTemplate batchIngestionJobTemplate = ingestionJobTemplateByTypeAndStoreName
-        .get(JobType.BATCH_INGESTION_JOB)
-        .get(onlineStoreName);
+    IngestionJobTemplate batchIngestionJobTemplate =
+        ingestionJobTemplateByTypeAndStoreName
+            .get(JobType.BATCH_INGESTION_JOB)
+            .get(onlineStoreName);
     if (batchIngestionJobTemplate == null) {
       throw new IllegalArgumentException(
           String.format("Job template not found for store name: %s", onlineStoreName));
     }
 
-    String ingestionJobId = getIngestionJobId(JobType.BATCH_INGESTION_JOB, project, featureTableSpec);
-    Optional<ScheduledSparkApplication> existingScheduledApplication = sparkOperatorApi
-        .getScheduledSparkApplication(namespace, ingestionJobId);
+    String ingestionJobId =
+        getIngestionJobId(JobType.BATCH_INGESTION_JOB, project, featureTableSpec);
+    Optional<ScheduledSparkApplication> existingScheduledApplication =
+        sparkOperatorApi.getScheduledSparkApplication(namespace, ingestionJobId);
 
-    ScheduledSparkApplication scheduledSparkApplication = existingScheduledApplication.orElseGet(
-        () -> {
-          ScheduledSparkApplication scheduledApp = new ScheduledSparkApplication();
-          scheduledApp.setMetadata(new V1ObjectMeta());
-          scheduledApp.getMetadata().setName(ingestionJobId);
-          scheduledApp.getMetadata().setNamespace(namespace);
-          scheduledApp.addLabels(
-              Map.of(
-                  JOB_TYPE_LABEL,
-                  JobType.BATCH_INGESTION_JOB.toString(),
-                  STORE_LABEL,
-                  onlineStoreName,
-                  PROJECT_LABEL,
-                  project,
-                  FEATURE_TABLE_HASH_LABEL,
-                  generateProjectTableHash(project, featureTableName),
-                  FEATURE_TABLE_LABEL,
-                  StringUtils.truncate(featureTableName, LABEL_CHARACTERS_LIMIT)));
-          return scheduledApp;
-        });
+    ScheduledSparkApplication scheduledSparkApplication =
+        existingScheduledApplication.orElseGet(
+            () -> {
+              ScheduledSparkApplication scheduledApp = new ScheduledSparkApplication();
+              scheduledApp.setMetadata(new V1ObjectMeta());
+              scheduledApp.getMetadata().setName(ingestionJobId);
+              scheduledApp.getMetadata().setNamespace(namespace);
+              scheduledApp.addLabels(
+                  Map.of(
+                      JOB_TYPE_LABEL,
+                      JobType.BATCH_INGESTION_JOB.toString(),
+                      STORE_LABEL,
+                      onlineStoreName,
+                      PROJECT_LABEL,
+                      project,
+                      FEATURE_TABLE_HASH_LABEL,
+                      generateProjectTableHash(project, featureTableName),
+                      FEATURE_TABLE_LABEL,
+                      StringUtils.truncate(featureTableName, LABEL_CHARACTERS_LIMIT)));
+              return scheduledApp;
+            });
     JobTemplateRenderer renderer = new JobTemplateRenderer();
-    SparkApplicationSpec appSpec = renderer.render(
-        batchIngestionJobTemplate.sparkApplicationSpec(),
-        getIngestionJobContext(project, featureTableName));
+    SparkApplicationSpec appSpec =
+        renderer.render(
+            batchIngestionJobTemplate.sparkApplicationSpec(),
+            getIngestionJobContext(project, featureTableName));
     appSpec.setImage(sparkImage);
     Map<String, String> entityNameToType = getEntityToTypeMap(project, featureTableSpec);
     Long entityMaxAge = computeMaxEntityAge(project, featureTableSpec.getEntitiesList());
-    List<String> arguments = new ScheduledBatchIngestionArgumentAdapter(
-        project, featureTableSpec, entityNameToType, ingestionTimespan, entityMaxAge)
-        .getArguments();
+    List<String> arguments =
+        new ScheduledBatchIngestionArgumentAdapter(
+                project, featureTableSpec, entityNameToType, ingestionTimespan, entityMaxAge)
+            .getArguments();
     appSpec.addArguments(arguments);
-    ScheduledSparkApplicationSpec scheduledAppSpec = new ScheduledSparkApplicationSpec(schedule, appSpec);
+    ScheduledSparkApplicationSpec scheduledAppSpec =
+        new ScheduledSparkApplicationSpec(schedule, appSpec);
     scheduledSparkApplication.setSpec(scheduledAppSpec);
     if (existingScheduledApplication.isPresent()) {
       sparkOperatorApi.update(scheduledSparkApplication);
@@ -320,10 +337,11 @@ public class JobService {
   }
 
   private Map<String, String> getIngestionJobContext(String project, String featureTableName) {
-    Map<String, String> jobContext = Map.of(
-        "project", project,
-        "featureTable", featureTableName,
-        "hash", HashUtils.projectFeatureTableHash(project, featureTableName));
+    Map<String, String> jobContext =
+        Map.of(
+            "project", project,
+            "featureTable", featureTableName,
+            "hash", HashUtils.projectFeatureTableHash(project, featureTableName));
     Map<String, String> projectContext = projectContextProvider.getContext(project);
     return Stream.concat(jobContext.entrySet().stream(), projectContext.entrySet().stream())
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -339,7 +357,8 @@ public class JobService {
   private Job createOrUpdateIngestionJob(
       JobType jobType, String project, FeatureTableSpec spec, List<String> additionalArguments) {
 
-    Map<String, IngestionJobTemplate> jobTemplateByStoreName = ingestionJobTemplateByTypeAndStoreName.get(jobType);
+    Map<String, IngestionJobTemplate> jobTemplateByStoreName =
+        ingestionJobTemplateByTypeAndStoreName.get(jobType);
     if (jobTemplateByStoreName == null) {
       throw new IllegalArgumentException(
           String.format("Job template not found for job type: %s", jobType.toString()));
@@ -352,55 +371,61 @@ public class JobService {
     }
 
     String ingestionJobId = getIngestionJobId(jobType, project, spec);
-    Optional<SparkApplication> existingApplication = sparkOperatorApi.getSparkApplication(namespace, ingestionJobId);
-    SparkApplication sparkApplication = existingApplication.orElseGet(
-        () -> {
-          SparkApplication app = new SparkApplication();
-          app.setMetadata(new V1ObjectMeta());
-          app.getMetadata().setName(ingestionJobId);
-          app.getMetadata().setNamespace(namespace);
-          app.addLabels(
-              Map.of(
-                  JOB_TYPE_LABEL,
-                  jobType.toString(),
-                  STORE_LABEL,
-                  onlineStoreName,
-                  PROJECT_LABEL,
-                  project,
-                  FEATURE_TABLE_HASH_LABEL,
-                  generateProjectTableHash(project, spec.getName()),
-                  FEATURE_TABLE_LABEL,
-                  StringUtils.truncate(spec.getName(), LABEL_CHARACTERS_LIMIT)));
-          return app;
-        });
+    Optional<SparkApplication> existingApplication =
+        sparkOperatorApi.getSparkApplication(namespace, ingestionJobId);
+    SparkApplication sparkApplication =
+        existingApplication.orElseGet(
+            () -> {
+              SparkApplication app = new SparkApplication();
+              app.setMetadata(new V1ObjectMeta());
+              app.getMetadata().setName(ingestionJobId);
+              app.getMetadata().setNamespace(namespace);
+              app.addLabels(
+                  Map.of(
+                      JOB_TYPE_LABEL,
+                      jobType.toString(),
+                      STORE_LABEL,
+                      onlineStoreName,
+                      PROJECT_LABEL,
+                      project,
+                      FEATURE_TABLE_HASH_LABEL,
+                      generateProjectTableHash(project, spec.getName()),
+                      FEATURE_TABLE_LABEL,
+                      StringUtils.truncate(spec.getName(), LABEL_CHARACTERS_LIMIT)));
+              return app;
+            });
 
-    if (enableBatchJobHistory){
+    if (enableBatchJobHistory) {
       // add or update label with uuid
       sparkApplication.addLabels(Map.of(RECORD_JOB_LABEL, UUID.randomUUID().toString()));
     }
     JobTemplateRenderer renderer = new JobTemplateRenderer();
-    SparkApplicationSpec newSparkApplicationSpec = renderer.render(
-        jobTemplate.sparkApplicationSpec(), getIngestionJobContext(project, spec.getName()));
+    SparkApplicationSpec newSparkApplicationSpec =
+        renderer.render(
+            jobTemplate.sparkApplicationSpec(), getIngestionJobContext(project, spec.getName()));
     newSparkApplicationSpec.setImage(sparkImage);
 
-    DataSource dataSource = jobType == JobType.BATCH_INGESTION_JOB ? spec.getBatchSource() : spec.getStreamSource();
-    SparkOverride sparkOverride = switch (dataSource.getType()) {
-      case BATCH_FILE -> dataSource.getFileOptions().getSparkOverride();
-      case BATCH_BIGQUERY -> dataSource.getBigqueryOptions().getSparkOverride();
-      case STREAM_KAFKA -> dataSource.getKafkaOptions().getSparkOverride();
-      case BATCH_MAXCOMPUTE -> dataSource.getBigqueryOptions().getSparkOverride();
-      default -> throw new IllegalArgumentException(
-          String.format("%s is not a valid data source", dataSource.getType()));
-    };
+    DataSource dataSource =
+        jobType == JobType.BATCH_INGESTION_JOB ? spec.getBatchSource() : spec.getStreamSource();
+    SparkOverride sparkOverride =
+        switch (dataSource.getType()) {
+          case BATCH_FILE -> dataSource.getFileOptions().getSparkOverride();
+          case BATCH_BIGQUERY -> dataSource.getBigqueryOptions().getSparkOverride();
+          case STREAM_KAFKA -> dataSource.getKafkaOptions().getSparkOverride();
+          case BATCH_MAXCOMPUTE -> dataSource.getBigqueryOptions().getSparkOverride();
+          default -> throw new IllegalArgumentException(
+              String.format("%s is not a valid data source", dataSource.getType()));
+        };
 
     overrideSparkApplicationSpecWithUserProvidedConfiguration(
         newSparkApplicationSpec, sparkOverride);
     sparkApplication.setSpec(newSparkApplicationSpec);
     sparkApplication.getSpec().addArguments(additionalArguments);
 
-    SparkApplication updatedApplication = existingApplication.isPresent()
-        ? sparkOperatorApi.update(sparkApplication)
-        : sparkOperatorApi.create(sparkApplication);
+    SparkApplication updatedApplication =
+        existingApplication.isPresent()
+            ? sparkOperatorApi.update(sparkApplication)
+            : sparkOperatorApi.create(sparkApplication);
     Job job = sparkApplicationToJob(updatedApplication);
     return job;
   }
@@ -431,31 +456,35 @@ public class JobService {
       throw new IllegalArgumentException(
           "Historical retrieval job properties have not been configured");
     }
-    Map<String, List<String>> featuresGroupedByFeatureTable = featureRefs.stream()
-        .map(ref -> ref.split(":"))
-        .collect(
-            Collectors.toMap(
-                splitRef -> splitRef[0],
-                splitRef -> List.of(splitRef[1]),
-                (left, right) -> Stream.concat(left.stream(), right.stream()).toList()));
-    List<FeatureTableSpec> featureTableSpecs = featuresGroupedByFeatureTable.entrySet().stream()
-        .map(
-            es -> {
-              FeatureTableSpec featureTableSpec = tableRepository
-                  .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
-                      es.getKey(), project)
-                  .map(ft -> ft.toProto().getSpec())
-                  .orElseThrow(
-                      () -> new FeatureTableNotFoundException(project, es.getKey()));
-              List<FeatureSpec> filteredFeatures = featureTableSpec.getFeaturesList().stream()
-                  .filter(f -> es.getValue().contains(f.getName()))
-                  .toList();
-              return featureTableSpec.toBuilder()
-                  .clearFeatures()
-                  .addAllFeatures(filteredFeatures)
-                  .build();
-            })
-        .toList();
+    Map<String, List<String>> featuresGroupedByFeatureTable =
+        featureRefs.stream()
+            .map(ref -> ref.split(":"))
+            .collect(
+                Collectors.toMap(
+                    splitRef -> splitRef[0],
+                    splitRef -> List.of(splitRef[1]),
+                    (left, right) -> Stream.concat(left.stream(), right.stream()).toList()));
+    List<FeatureTableSpec> featureTableSpecs =
+        featuresGroupedByFeatureTable.entrySet().stream()
+            .map(
+                es -> {
+                  FeatureTableSpec featureTableSpec =
+                      tableRepository
+                          .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
+                              es.getKey(), project)
+                          .map(ft -> ft.toProto().getSpec())
+                          .orElseThrow(
+                              () -> new FeatureTableNotFoundException(project, es.getKey()));
+                  List<FeatureSpec> filteredFeatures =
+                      featureTableSpec.getFeaturesList().stream()
+                          .filter(f -> es.getValue().contains(f.getName()))
+                          .toList();
+                  return featureTableSpec.toBuilder()
+                      .clearFeatures()
+                      .addAllFeatures(filteredFeatures)
+                      .build();
+                })
+            .toList();
 
     SparkApplication app = new SparkApplication();
     app.setMetadata(new V1ObjectMeta());
@@ -463,14 +492,16 @@ public class JobService {
     app.getMetadata().setNamespace(namespace);
     app.addLabels(Map.of(JOB_TYPE_LABEL, JobType.RETRIEVAL_JOB.toString(), PROJECT_LABEL, project));
     JobTemplateRenderer renderer = new JobTemplateRenderer();
-    SparkApplicationSpec newSparkApplicationSpec = renderer.render(
-        retrievalJobTemplate.sparkApplicationSpec(), getHistoricalRetrievalJobContext(project));
+    SparkApplicationSpec newSparkApplicationSpec =
+        renderer.render(
+            retrievalJobTemplate.sparkApplicationSpec(), getHistoricalRetrievalJobContext(project));
     newSparkApplicationSpec.setImage(sparkImage);
     app.setSpec(newSparkApplicationSpec);
     Map<String, String> entityNameToType = getEntityToTypeMap(project, featureTableSpecs);
-    List<String> arguments = new HistoricalRetrievalArgumentAdapter(
-        project, featureTableSpecs, entityNameToType, entitySource, outputFormat, outputUri)
-        .getArguments();
+    List<String> arguments =
+        new HistoricalRetrievalArgumentAdapter(
+                project, featureTableSpecs, entityNameToType, entitySource, outputFormat, outputUri)
+            .getArguments();
     app.getSpec().addArguments(arguments);
 
     return sparkApplicationToJob(sparkOperatorApi.create(app));
@@ -488,10 +519,12 @@ public class JobService {
     if (jobType != JobType.INVALID_JOB) {
       selectorMap.put(JOB_TYPE_LABEL, jobType.toString());
     }
-    String labelSelectors = selectorMap.entrySet().stream()
-        .map(es -> String.format("%s=%s", es.getKey(), es.getValue()))
-        .collect(Collectors.joining(","));
-    Stream<Job> jobStream = sparkOperatorApi.list(namespace, labelSelectors).stream().map(this::sparkApplicationToJob);
+    String labelSelectors =
+        selectorMap.entrySet().stream()
+            .map(es -> String.format("%s=%s", es.getKey(), es.getValue()))
+            .collect(Collectors.joining(","));
+    Stream<Job> jobStream =
+        sparkOperatorApi.list(namespace, labelSelectors).stream().map(this::sparkApplicationToJob);
     if (!includeTerminated) {
       jobStream = jobStream.filter(job -> job.getStatus() == JobStatus.JOB_STATUS_RUNNING);
     }
@@ -506,9 +539,10 @@ public class JobService {
     if (!tableName.isEmpty() && !project.isEmpty()) {
       selectorMap.put(FEATURE_TABLE_HASH_LABEL, generateProjectTableHash(project, tableName));
     }
-    String labelSelectors = selectorMap.entrySet().stream()
-        .map(es -> String.format("%s=%s", es.getKey(), es.getValue()))
-        .collect(Collectors.joining(","));
+    String labelSelectors =
+        selectorMap.entrySet().stream()
+            .map(es -> String.format("%s=%s", es.getKey(), es.getValue()))
+            .collect(Collectors.joining(","));
     return sparkOperatorApi.listScheduled(namespace, labelSelectors).stream()
         .map(this::scheduledSparkApplicationToScheduledJob)
         .toList();
@@ -541,28 +575,37 @@ public class JobService {
 
   public BatchJobRecord newBatchJobRecordFromJob(Job job) {
     if (job.getType().equals(JobType.STREAM_INGESTION_JOB)) {
-      throw new IllegalArgumentException("Cannot create BatchJobRecord from a stream ingestion job");
+      throw new IllegalArgumentException(
+          "Cannot create BatchJobRecord from a stream ingestion job");
     }
-    SparkApplication sparkApp = this.sparkOperatorApi.getSparkApplication(namespace, job.getId()).orElseThrow();
+    SparkApplication sparkApp =
+        this.sparkOperatorApi.getSparkApplication(namespace, job.getId()).orElseThrow();
     if (job.getType().equals(JobType.BATCH_INGESTION_JOB)) {
       String featureTableName = job.getBatchIngestion().getTableName();
       // Retrieve feature table object from the database
-      FeatureTable table = this.tableRepository
-          .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
-              featureTableName, job.getProject())
-          .orElseThrow(
-              () -> new FeatureTableNotFoundException(job.getProject(), featureTableName));
+      FeatureTable table =
+          this.tableRepository
+              .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(
+                  featureTableName, job.getProject())
+              .orElseThrow(
+                  () -> new FeatureTableNotFoundException(job.getProject(), featureTableName));
       long jobStartTime = job.getStartTime().getSeconds();
-      Pair<java.sql.Timestamp, java.sql.Timestamp> startEndTimeParams = BatchJobRecord
-          .getStartEndTimeParamsFromSparkApplication(sparkApp);
-      BatchJobRecord record = BatchJobRecord.builder()
-              .id(sparkApp.getMetadata().getLabels().getOrDefault(RECORD_JOB_LABEL, UUID.randomUUID().toString()))
+      Pair<java.sql.Timestamp, java.sql.Timestamp> startEndTimeParams =
+          BatchJobRecord.getStartEndTimeParamsFromSparkApplication(sparkApp);
+      BatchJobRecord record =
+          BatchJobRecord.builder()
+              .id(
+                  sparkApp
+                      .getMetadata()
+                      .getLabels()
+                      .getOrDefault(RECORD_JOB_LABEL, UUID.randomUUID().toString()))
               .ingestionJobId(job.getId())
               .jobType(job.getType())
               .project(job.getProject())
               .featureTable(table)
               .status(job.getStatus().toString())
-              .jobStartTime(jobStartTime).jobEndTime(-1)
+              .jobStartTime(jobStartTime)
+              .jobEndTime(-1)
               .sparkApplicationManifest(sparkApp.toString())
               .startTime(startEndTimeParams.getLeft())
               .endTime(startEndTimeParams.getRight())
@@ -571,7 +614,6 @@ public class JobService {
       return record;
     }
     return null;
-
   }
 
   public void watchSparkApplications(String namespace, String labelSelector) {
@@ -584,45 +626,68 @@ public class JobService {
     for (Watch.Response<SparkApplication> sparkApp : watch) {
       SparkApplication sparkApplication = sparkApp.object;
       String eventType = sparkApp.type;
-      log.debug("Received Spark Application event: type={}, name={}", eventType, sparkApplication.getMetadata().getName());
+      log.debug(
+          "Received Spark Application event: type={}, name={}",
+          eventType,
+          sparkApplication.getMetadata().getName());
       try {
         String recordId = sparkApplication.getMetadata().getLabels().get(RECORD_JOB_LABEL);
         switch (eventType) {
           case "ADDED":
             log.debug("Spark Application added: {}", sparkApplication.getMetadata().getName());
             // Check if a BatchJobRecord already exists for this Spark Application
-            this.batchJobRecordRepository.findById(recordId)
-                    .ifPresentOrElse(
-                            record -> log.debug("Batch job record already exists for Spark Application: {}", record.getId()),
-                            () -> {
-                              log.debug("Creating new BatchJobRecord for Spark Application: {}", sparkApplication.getMetadata().getName());
-                              BatchJobRecord record = newBatchJobRecordFromJob(sparkApplicationToJob(sparkApplication));
-                              this.batchJobRecordRepository.save(record);
-                            });
+            this.batchJobRecordRepository
+                .findById(recordId)
+                .ifPresentOrElse(
+                    record ->
+                        log.debug(
+                            "Batch job record already exists for Spark Application: {}",
+                            record.getId()),
+                    () -> {
+                      log.debug(
+                          "Creating new BatchJobRecord for Spark Application: {}",
+                          sparkApplication.getMetadata().getName());
+                      BatchJobRecord record =
+                          newBatchJobRecordFromJob(sparkApplicationToJob(sparkApplication));
+                      this.batchJobRecordRepository.save(record);
+                    });
             break;
           case "MODIFIED":
             log.debug("Spark Application modified: {}", sparkApplication.getMetadata().getName());
-            this.batchJobRecordRepository.findById(recordId)
-                    .ifPresentOrElse(
-                            record -> {
-                              log.debug("Batch job record already exists for Spark Application: {}", record.getId());
-                              Job job = this.sparkApplicationToJob(sparkApplication);
-                              BatchJobRecord newRecord = newBatchJobRecordFromJob(job);
-                              long jobEndTime = job.getStatus().equals(JobStatus.JOB_STATUS_DONE) ? System.currentTimeMillis() / 1000 : -1;
-                              newRecord.setJobEndTime(jobEndTime);
-                              if (!record.equals(newRecord)) {
-                                log.debug("Updating BatchJobRecord for Spark Application: {}", sparkApplication.getMetadata().getName());
-                                this.batchJobRecordRepository.save(newRecord);
-                              } else {
-                                log.debug("No changes detected in BatchJobRecord for Spark Application: {}", sparkApplication.getMetadata().getName());
-                              }
-                              // Optionally, update the record if needed
-                            },
-                            () -> {
-                              log.debug("Creating new BatchJobRecord for Spark Application: {}", sparkApplication.getMetadata().getName());
-                              BatchJobRecord record = newBatchJobRecordFromJob(sparkApplicationToJob(sparkApplication));
-                              this.batchJobRecordRepository.save(record);
-                            });
+            this.batchJobRecordRepository
+                .findById(recordId)
+                .ifPresentOrElse(
+                    record -> {
+                      log.debug(
+                          "Batch job record already exists for Spark Application: {}",
+                          record.getId());
+                      Job job = this.sparkApplicationToJob(sparkApplication);
+                      BatchJobRecord newRecord = newBatchJobRecordFromJob(job);
+                      long jobEndTime =
+                          job.getStatus().equals(JobStatus.JOB_STATUS_DONE)
+                              ? System.currentTimeMillis() / 1000
+                              : -1;
+                      newRecord.setJobEndTime(jobEndTime);
+                      if (!record.equals(newRecord)) {
+                        // Update the record if there are changes
+                        log.debug(
+                            "Updating BatchJobRecord for Spark Application: {}",
+                            sparkApplication.getMetadata().getName());
+                        this.batchJobRecordRepository.save(newRecord);
+                      } else {
+                        log.debug(
+                            "No changes detected in BatchJobRecord for Spark Application: {}",
+                            sparkApplication.getMetadata().getName());
+                      }
+                    },
+                    () -> {
+                      log.debug(
+                          "Creating new BatchJobRecord for Spark Application: {}",
+                          sparkApplication.getMetadata().getName());
+                      BatchJobRecord record =
+                          newBatchJobRecordFromJob(sparkApplicationToJob(sparkApplication));
+                      this.batchJobRecordRepository.save(record);
+                    });
             break;
           case "DELETED":
             log.debug("Spark Application deleted: {}", sparkApplication.getMetadata().getName());
@@ -638,11 +703,14 @@ public class JobService {
   }
 
   @Async
-  public void startWatcher(){
-    if (this.enableBatchJobHistory){
+  public void startWatcher() {
+    if (this.enableBatchJobHistory) {
       log.info("Batch job history enabled, starting watcher for Spark applications");
-      this.watchSparkApplications(namespace, String.format("%s=%s,%s", JOB_TYPE_LABEL,  JobType.BATCH_INGESTION_JOB.toString(),
-              RECORD_JOB_LABEL));
+      this.watchSparkApplications(
+          namespace,
+          String.format(
+              "%s=%s,%s",
+              JOB_TYPE_LABEL, JobType.BATCH_INGESTION_JOB.toString(), RECORD_JOB_LABEL));
     }
   }
 }

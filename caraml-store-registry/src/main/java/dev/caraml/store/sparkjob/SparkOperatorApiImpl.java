@@ -165,16 +165,17 @@ public class SparkOperatorApiImpl implements SparkOperatorApi {
   }
 
   @Override
-    public Watchable<SparkApplication> watch(String namespace, String labelSelector) throws SparkOperatorApiException {
+  public Watchable<SparkApplication> watch(String namespace, String labelSelector)
+      throws SparkOperatorApiException {
     ListOptions options = new ListOptions();
     if (!labelSelector.isEmpty()) {
-        options.setLabelSelector(labelSelector);
+      options.setLabelSelector(labelSelector);
     }
-        try {
-         Watchable<SparkApplication> watchable = sparkApplicationApi.watch(namespace, options);
-         return watchable;
-        } catch (ApiException e) {
-        throw new SparkOperatorApiException(e.getMessage());
-        }
+    try {
+      Watchable<SparkApplication> watchable = sparkApplicationApi.watch(namespace, options);
+      return watchable;
+    } catch (ApiException e) {
+      throw new SparkOperatorApiException(e.getMessage());
     }
+  }
 }

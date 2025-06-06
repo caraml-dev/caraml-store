@@ -7,6 +7,7 @@ import dev.caraml.store.protobuf.core.DataSourceProto;
 import dev.caraml.store.protobuf.core.FeatureProto;
 import dev.caraml.store.protobuf.core.FeatureTableProto;
 import dev.caraml.store.protobuf.core.FeatureTableProto.FeatureTableSpec;
+import dev.caraml.store.sparkjob.BatchJobRecord;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -35,7 +36,6 @@ import javax.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import dev.caraml.store.sparkjob.BatchJobRecord;
 
 @Getter
 @javax.persistence.Entity
