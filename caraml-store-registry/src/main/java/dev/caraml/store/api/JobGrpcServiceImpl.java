@@ -36,6 +36,7 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
   @Autowired
   public JobGrpcServiceImpl(JobService jobService) {
     this.jobService = jobService;
+    this.jobService.startWatcher();
   }
 
   @Override

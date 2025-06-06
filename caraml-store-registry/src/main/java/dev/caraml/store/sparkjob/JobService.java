@@ -59,6 +59,7 @@ public class JobService {
   private final SparkOperatorApi sparkOperatorApi;
   private final ProjectContextProvider projectContextProvider;
   private final BatchJobRecordRepository batchJobRecordRepository;
+  private final boolean enableBatchJobHistory;
 
   @Autowired
   public JobService(
@@ -81,16 +82,12 @@ public class JobService {
             .collect(Collectors.toMap(IngestionJobTemplate::store, Function.identity())));
     retrievalJobTemplate = config.getHistoricalRetrieval();
     deltaIngestionDataset = config.getDeltaIngestionDataset();
+    enableBatchJobHistory = config.isEnableBatchJobHistory();
     this.entityRepository = entityRepository;
     this.tableRepository = tableRepository;
     this.sparkOperatorApi = sparkOperatorApi;
     this.projectContextProvider = projectContextProvider;
     this.batchJobRecordRepository = batchJobRecordRepository;
-  }
-
-  @PostConstruct
-  public void init() {
-    this.watchSparkApplications(namespace, String.format("%s=%s", JOB_TYPE_LABEL, JobType.BATCH_INGESTION_JOB));
   }
 
   static final String LABEL_PREFIX = "caraml.dev/";
@@ -99,6 +96,7 @@ public class JobService {
   static final String FEATURE_TABLE_LABEL = LABEL_PREFIX + "table";
   static final String FEATURE_TABLE_HASH_LABEL = LABEL_PREFIX + "hash";
   static final String PROJECT_LABEL = LABEL_PREFIX + "project";
+  static final String RECORD_JOB_LABEL = LABEL_PREFIX + "record";
 
   static final Integer JOB_ID_LENGTH = 16;
   static final Integer LABEL_CHARACTERS_LIMIT = 63;
@@ -376,6 +374,9 @@ public class JobService {
                   generateProjectTableHash(project, spec.getName()),
                   FEATURE_TABLE_LABEL,
                   StringUtils.truncate(spec.getName(), LABEL_CHARACTERS_LIMIT)));
+          if (enableBatchJobHistory){
+            app.addLabels(Map.of(RECORD_JOB_LABEL, "true"));
+          }
           return app;
         });
     JobTemplateRenderer renderer = new JobTemplateRenderer();
@@ -575,7 +576,6 @@ public class JobService {
 
   }
 
-  @Async
   public void watchSparkApplications(String namespace, String labelSelector) {
     Watchable<SparkApplication> watch;
     try {
@@ -587,24 +587,50 @@ public class JobService {
       SparkApplication sparkApplication = sparkApp.object;
       String eventType = sparkApp.type;
       log.debug("Received Spark Application event: type={}, name={}", eventType, sparkApplication.getMetadata().getName());
-      switch (eventType) {
-        case "ADDED":
-          log.debug("Spark Application added: {}", sparkApplication.getMetadata().getName());
-          this.batchJobRecordRepository.findById(sparkApplication.getMetadata().getUid())
-              .ifPresentOrElse(
-                  record -> log.debug("Batch job record already exists for Spark Application: {}", record.getId()),
-                  () -> log.debug("Creating new BatchJobRecord for Spark Application: {}", sparkApplication.getMetadata().getName()));
-//          createBatchJobRecordFromJob(sparkApplicationToJob(sparkApplication));
-          break;
-        case "MODIFIED":
-          log.debug("Spark Application modified: {}", sparkApplication.getMetadata().getName());
-          break;
-        case "DELETED":
-          log.debug("Spark Application deleted: {}", sparkApplication.getMetadata().getName());
-          break;
-        default:
-          log.debug("Unknown event type: {}", eventType);
+      try {
+        switch (eventType) {
+          case "ADDED":
+            log.debug("Spark Application added: {}", sparkApplication.getMetadata().getName());
+            this.batchJobRecordRepository.findById(sparkApplication.getMetadata().getUid())
+                    .ifPresentOrElse(
+                            record -> log.debug("Batch job record already exists for Spark Application: {}", record.getId()),
+                            () -> {
+                              log.debug("Creating new BatchJobRecord for Spark Application: {}", sparkApplication.getMetadata().getName());
+                              createBatchJobRecordFromJob(sparkApplicationToJob(sparkApplication));
+                            });
+            break;
+          case "MODIFIED":
+            log.debug("Spark Application modified: {}", sparkApplication.getMetadata().getName());
+            this.batchJobRecordRepository.findById(sparkApplication.getMetadata().getUid())
+                    .ifPresentOrElse(
+                            record -> {
+                              log.debug("Batch job record already exists for Spark Application: {}", record.getId());
+                              // Optionally, update the record if needed
+                            },
+                            () -> {
+                              log.debug("Creating new BatchJobRecord for Spark Application: {}", sparkApplication.getMetadata().getName());
+                              createBatchJobRecordFromJob(sparkApplicationToJob(sparkApplication));
+                            });
+            break;
+          case "DELETED":
+            log.debug("Spark Application deleted: {}", sparkApplication.getMetadata().getName());
+            break;
+          default:
+            log.debug("Unknown event type: {}", eventType);
+        }
+
+      } catch (Exception e) {
+        log.error("Error processing Spark Application event: {}", e.getMessage(), e);
       }
+    }
+  }
+
+  @Async
+  public void startWatcher(){
+    if (this.enableBatchJobHistory){
+      log.info("Batch job history enabled, starting watcher for Spark applications");
+      this.watchSparkApplications(namespace, String.format("%s=%s,%s=%s", JOB_TYPE_LABEL,  JobType.BATCH_INGESTION_JOB.toString(),
+              RECORD_JOB_LABEL, "true"));
     }
   }
 }
