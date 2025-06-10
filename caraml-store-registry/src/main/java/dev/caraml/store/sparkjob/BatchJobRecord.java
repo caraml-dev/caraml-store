@@ -1,6 +1,7 @@
 package dev.caraml.store.sparkjob;
 
 import dev.caraml.store.feature.FeatureTable;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobType;
 import dev.caraml.store.sparkjob.crd.SparkApplication;
 import java.sql.Timestamp;
@@ -113,5 +114,28 @@ public class BatchJobRecord {
     return Pair.of(
         Timestamp.valueOf(startTime.replace("T", " ").replace("Z", "")),
         Timestamp.valueOf(endTime.replace("T", " ").replace("Z", "")));
+  }
+
+  public static JobServiceProto.BatchJobRecord toProto(BatchJobRecord record) {
+    if (record.getJobType() == JobType.BATCH_INGESTION_JOB){
+      JobServiceProto.BatchJobRecord.OfflineToOnlineMeta meta =
+          JobServiceProto.BatchJobRecord.OfflineToOnlineMeta.newBuilder()
+              .setTableName(record.getFeatureTable().getName())
+                  .setProject(record.getProject())
+              .setStartTime(com.google.protobuf.Timestamp.newBuilder().setSeconds(record.getStartTime().getTime() / 1000).build())
+              .setEndTime(com.google.protobuf.Timestamp.newBuilder().setSeconds(record.getEndTime().getTime() / 1000).build())
+              .build();
+      return JobServiceProto.BatchJobRecord.newBuilder()
+              .setId(record.getId())
+              .setJobId(record.getId())
+              .setType(record.getJobType())
+              .setBatchIngestion(meta)
+              .setStatus(JobServiceProto.JobStatus.valueOf(record.getStatus()))
+              .setJobStartTime(com.google.protobuf.Timestamp.newBuilder().setSeconds(record.jobStartTime).build())
+              .setJobEndTime(com.google.protobuf.Timestamp.newBuilder().setSeconds(record.jobEndTime).build())
+              .setSparkAppManifest(record.getSparkApplicationManifest())
+              .build();
+    }
+    return null;
   }
 }

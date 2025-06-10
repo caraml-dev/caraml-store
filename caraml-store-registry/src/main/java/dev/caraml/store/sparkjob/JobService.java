@@ -1,5 +1,6 @@
 package dev.caraml.store.sparkjob;
 
+import com.google.api.Backend;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import dev.caraml.store.feature.EntityRepository;
@@ -10,6 +11,7 @@ import dev.caraml.store.protobuf.core.DataSourceProto.DataSource;
 import dev.caraml.store.protobuf.core.FeatureProto.FeatureSpec;
 import dev.caraml.store.protobuf.core.FeatureTableProto.FeatureTableSpec;
 import dev.caraml.store.protobuf.core.SparkOverrideProto.SparkOverride;
+import dev.caraml.store.protobuf.jobservice.JobServiceProto;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.Job;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobStatus;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.JobType;
@@ -664,7 +666,7 @@ public class JobService {
                       Job job = this.sparkApplicationToJob(sparkApplication);
                       BatchJobRecord newRecord = newBatchJobRecordFromJob(job);
                       long jobEndTime =
-                          job.getStatus().equals(JobStatus.JOB_STATUS_DONE)
+                          job.getStatus().equals(JobStatus.JOB_STATUS_DONE) || job.getStatus().equals(JobStatus.JOB_STATUS_ERROR)
                               ? System.currentTimeMillis() / 1000
                               : -1;
                       newRecord.setJobEndTime(jobEndTime);
@@ -712,5 +714,28 @@ public class JobService {
               "%s=%s,%s",
               JOB_TYPE_LABEL, JobType.BATCH_INGESTION_JOB.toString(), RECORD_JOB_LABEL));
     }
+  }
+
+  public List<JobServiceProto.BatchJobRecord> listBatchJobRecords(String project, JobType type, String tableName, Long from, Long to){
+    List<JobServiceProto.BatchJobRecord> records = new ArrayList<>();
+    if (type == JobType.STREAM_INGESTION_JOB) {
+      throw new IllegalArgumentException("Cannot list batch job records for stream ingestion job");
+    }
+    if (type == JobType.RETRIEVAL_JOB) {
+        throw new IllegalArgumentException("batch job records for retrieval job not supported yet");
+    }
+    if (type == JobType.BATCH_INGESTION_JOB){
+      FeatureTable table = this.tableRepository
+              .findFeatureTableByNameAndProject_NameAndIsDeletedFalse(tableName, project)
+              .orElseThrow(
+                      () -> {
+                        throw new FeatureTableNotFoundException(project, tableName);
+                      });
+
+      return this.batchJobRecordRepository.findAllByJobTypeAndProjectAndFeatureTableAndJobStartTimeBetween(
+              type, project, table, from, to).stream().map(BatchJobRecord::toProto).toList();
+
+    }
+    return records;
   }
 }

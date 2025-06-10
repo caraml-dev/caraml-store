@@ -20,6 +20,7 @@ import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartStreamIngestion
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.StartStreamIngestionJobResponse;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.UnscheduleJobRequest;
 import dev.caraml.store.protobuf.jobservice.JobServiceProto.UnscheduleJobResponse;
+import dev.caraml.store.sparkjob.BatchJobRecord;
 import dev.caraml.store.sparkjob.JobNotFoundException;
 import dev.caraml.store.sparkjob.JobService;
 import io.grpc.stub.StreamObserver;
@@ -157,6 +158,16 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
       UnscheduleJobRequest request, StreamObserver<UnscheduleJobResponse> responseObserver) {
     jobService.unscheduleJob(request.getJobId());
     responseObserver.onNext(UnscheduleJobResponse.getDefaultInstance());
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void listBatchJobRecords(JobServiceProto.ListBatchJobRecordsRequest request, StreamObserver<JobServiceProto.ListBatchJobRecordsResponse> responseObserver){
+    List<JobServiceProto.BatchJobRecord> records =
+        jobService.listBatchJobRecords(request.getProject(), request.getType(), request.getTableName(), request.getFrom().getSeconds(), request.getTo().getSeconds());
+    JobServiceProto.ListBatchJobRecordsResponse response =
+        JobServiceProto.ListBatchJobRecordsResponse.newBuilder().addAllRecords(records).build();
+    responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 }
