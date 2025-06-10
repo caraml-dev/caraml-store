@@ -164,7 +164,7 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
   @Override
   public void listBatchJobRecords(JobServiceProto.ListBatchJobRecordsRequest request, StreamObserver<JobServiceProto.ListBatchJobRecordsResponse> responseObserver){
     List<JobServiceProto.BatchJobRecord> records =
-        jobService.listBatchJobRecords(request.getProject(), request.getType(), request.getTableName(), request.getFrom().getSeconds(), request.getTo().getSeconds());
+        jobService.listBatchJobRecords(request.getProject(), request.getType(), request.getTableName(), request.getStart().getSeconds(), request.getEnd().getSeconds());
     JobServiceProto.ListBatchJobRecordsResponse response =
         JobServiceProto.ListBatchJobRecordsResponse.newBuilder().addAllRecords(records).build();
     responseObserver.onNext(response);

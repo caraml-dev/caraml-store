@@ -127,7 +127,7 @@ public class BatchJobRecord {
               .build();
       return JobServiceProto.BatchJobRecord.newBuilder()
               .setId(record.getId())
-              .setJobId(record.getId())
+              .setJobId(record.getIngestionJobId())
               .setType(record.getJobType())
               .setBatchIngestion(meta)
               .setStatus(JobServiceProto.JobStatus.valueOf(record.getStatus()))

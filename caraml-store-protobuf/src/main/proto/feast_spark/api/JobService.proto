@@ -120,13 +120,14 @@ message Job {
 }
 
 message BatchJobRecord {
-  string job_id = 1;
+  string id = 1;
+  string job_id = 2;
   // Type of the Job
-  JobType type = 2;
+  JobType type = 3;
   // Current job status
-  JobStatus status = 3;
-  google.protobuf.Timestamp job_start_time = 4;
-  google.protobuf.Timestamp job_end_time = 5;
+  JobStatus status = 4;
+  google.protobuf.Timestamp job_start_time = 5;
+  google.protobuf.Timestamp job_end_time = 6;
   message OfflineToOnlineMeta {
     string table_name = 1;
     string project = 2;
@@ -135,10 +136,10 @@ message BatchJobRecord {
   }
   // JobType specific metadata on the job
   oneof meta {
-    OfflineToOnlineMeta batch_ingestion = 6;
+    OfflineToOnlineMeta batch_ingestion = 7;
     // TODO: add RetrievalJobMeta
   }
-  string spark_app_manifest = 7;
+  string spark_app_manifest = 8;
 }
 
 // Ingest data from offline store into online store
@@ -306,10 +307,10 @@ message ListBatchJobRecordsRequest {
   JobType type = 3;
 
   // Optional, Time range for the records to be listed. Defaults to preconfigured range
-  google.protobuf.Timestamp from = 4;
+  google.protobuf.Timestamp end = 4;
 
   // Optional, defaults to current time
-  google.protobuf.Timestamp to = 5;
+  google.protobuf.Timestamp start = 5;
 }
 
 message ListBatchJobRecordsResponse {

@@ -716,7 +716,7 @@ public class JobService {
     }
   }
 
-  public List<JobServiceProto.BatchJobRecord> listBatchJobRecords(String project, JobType type, String tableName, Long from, Long to){
+  public List<JobServiceProto.BatchJobRecord> listBatchJobRecords(String project, JobType type, String tableName, Long start, Long end){
     List<JobServiceProto.BatchJobRecord> records = new ArrayList<>();
     if (type == JobType.STREAM_INGESTION_JOB) {
       throw new IllegalArgumentException("Cannot list batch job records for stream ingestion job");
@@ -733,7 +733,7 @@ public class JobService {
                       });
 
       return this.batchJobRecordRepository.findAllByJobTypeAndProjectAndFeatureTableAndJobStartTimeBetween(
-              type, project, table, from, to).stream().map(BatchJobRecord::toProto).toList();
+              type, project, table, start, end).stream().map(BatchJobRecord::toProto).toList();
 
     }
     return records;
