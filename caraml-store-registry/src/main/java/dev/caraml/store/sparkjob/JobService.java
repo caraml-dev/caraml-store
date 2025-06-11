@@ -610,8 +610,8 @@ public class JobService {
               .jobStartTime(jobStartTime)
               .jobEndTime(-1)
               .sparkApplicationManifest(sparkAppManifestYaml)
-              .startTime(startEndTimeParams.getLeft())
-              .endTime(startEndTimeParams.getRight())
+              .ingestionJobStartTimeParam(startEndTimeParams.getLeft())
+              .ingestionJobEndTimeParam(startEndTimeParams.getRight())
               .build();
 
       return record;
@@ -639,24 +639,6 @@ public class JobService {
           String recordId = sparkApplication.getMetadata().getLabels().get(RECORD_JOB_LABEL);
           switch (eventType) {
             case "ADDED":
-//              log.debug("Spark Application added: {}", sparkApplication.getMetadata().getName());
-//              // Check if a BatchJobRecord already exists for this Spark Application
-//              this.batchJobRecordRepository
-//                  .findById(recordId)
-//                  .ifPresentOrElse(
-//                      record ->
-//                          log.debug(
-//                              "Batch job record already exists for Spark Application: {}",
-//                              record.getId()),
-//                      () -> {
-//                        log.debug(
-//                            "Creating new BatchJobRecord for Spark Application: {}",
-//                            sparkApplication.getMetadata().getName());
-//                        BatchJobRecord record =
-//                            newBatchJobRecordFromJob(sparkApplicationToJob(sparkApplication));
-//                        this.batchJobRecordRepository.save(record);
-//                      });
-//              break;
             case "MODIFIED":
               log.debug("Spark Application modified: {}", sparkApplication.getMetadata().getName());
               this.batchJobRecordRepository
@@ -671,7 +653,7 @@ public class JobService {
                         long jobEndTime =
                             job.getStatus().equals(JobStatus.JOB_STATUS_DONE)
                                     || job.getStatus().equals(JobStatus.JOB_STATUS_ERROR)
-                                ? System.currentTimeMillis() / 1000
+                                ? System.currentTimeMillis() / 1000 // time in UTC
                                 : -1;
                         newRecord.setJobEndTime(jobEndTime);
                         if (!record.equals(newRecord)) {
@@ -704,6 +686,12 @@ public class JobService {
         }
       } catch (Exception e) {
         log.error("Error processing Spark Application event: {}", e.getMessage(), e);
+        // Recreate watch
+        watch = sparkOperatorApi.watch(namespace, labelSelector);
+        try {
+            Thread.sleep(1000); // Sleep for a while before retrying
+        } catch (InterruptedException ex) {
+        }
       }
     }
   }

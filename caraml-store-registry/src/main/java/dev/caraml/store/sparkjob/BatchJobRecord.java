@@ -59,11 +59,11 @@ public class BatchJobRecord {
 
   // start parameters passed into spark job
   @Column(name = "start_time")
-  private Timestamp startTime;
+  private Timestamp ingestionJobStartTimeParam;
 
   // end parameters passed into spark job
   @Column(name = "end_time")
-  private Timestamp endTime;
+  private Timestamp ingestionJobEndTimeParam;
 
   // // Any error message associated with the ingestion job
   // private String errorMessage;
@@ -122,13 +122,13 @@ public class BatchJobRecord {
           JobServiceProto.BatchJobRecord.OfflineToOnlineMeta.newBuilder()
               .setTableName(record.getFeatureTable().getName())
               .setProject(record.getProject())
-              .setStartTime(
+              .setStartTimeParam(
                   com.google.protobuf.Timestamp.newBuilder()
-                      .setSeconds(record.getStartTime().getTime() / 1000)
+                      .setSeconds(record.getIngestionJobStartTimeParam().getTime() / 1000)
                       .build())
-              .setEndTime(
+              .setEndTimeParam(
                   com.google.protobuf.Timestamp.newBuilder()
-                      .setSeconds(record.getEndTime().getTime() / 1000)
+                      .setSeconds(record.getIngestionJobEndTimeParam().getTime() / 1000)
                       .build())
               .build();
       return JobServiceProto.BatchJobRecord.newBuilder()

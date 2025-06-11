@@ -131,8 +131,8 @@ message BatchJobRecord {
   message OfflineToOnlineMeta {
     string table_name = 1;
     string project = 2;
-    google.protobuf.Timestamp start_time = 3;
-    google.protobuf.Timestamp end_time = 4;
+    google.protobuf.Timestamp start_time_param = 3;
+    google.protobuf.Timestamp end_time_param = 4;
   }
   // JobType specific metadata on the job
   oneof meta {
