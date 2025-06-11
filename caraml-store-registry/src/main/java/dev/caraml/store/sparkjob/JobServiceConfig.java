@@ -20,4 +20,5 @@ public class JobServiceConfig {
   private HistoricalRetrievalJobTemplate historicalRetrieval;
   private DefaultStore defaultStore;
   private DeltaIngestionDataset deltaIngestionDataset;
+  private boolean enableBatchJobHistory = false;
 }

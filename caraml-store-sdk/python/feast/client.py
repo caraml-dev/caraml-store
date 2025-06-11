@@ -36,9 +36,12 @@ from feast_spark.api.JobService_pb2 import (
     UnscheduleJobRequest,
     Job,
     ScheduleOfflineToOnlineIngestionJobRequest, ScheduledJob, ListScheduledJobsRequest, StartStreamIngestionJobResponse,
-    StartStreamIngestionJobRequest, JobType, INVALID_JOB,
+    StartStreamIngestionJobRequest, JobType, INVALID_JOB, BATCH_INGESTION_JOB,
+    ListBatchJobRecordsRequest, ListBatchJobRecordsResponse
 )
 from feast_spark.api.JobService_pb2_grpc import JobServiceStub
+from google.protobuf.timestamp_pb2 import Timestamp
+from datetime import timezone, timedelta
 
 
 @dataclass
@@ -447,3 +450,17 @@ class Client:
         """
         request = UnscheduleJobRequest(job_id=job_id)
         self._job_service.UnscheduleJob(request)
+
+    def list_batch_job_records(self,  project: str, table_name: str, start_utc: datetime = None, end_utc: datetime = None, job_type: JobType = BATCH_INGESTION_JOB,):
+        if start_utc is None:
+            start_utc = datetime.now(timezone.utc) - timedelta(days=7)
+        if end_utc is None:
+            end_utc = datetime.now(timezone.utc)
+        
+        start_timestamp_proto = Timestamp()
+        start_timestamp_proto.FromDatetime(start_utc)
+        end_timestamp_proto = Timestamp()
+        end_timestamp_proto.FromDatetime(end_utc)
+        request = ListBatchJobRecordsRequest(project=project, table_name=table_name, start=start_timestamp_proto, end=end_timestamp_proto, type=job_type)
+        response = self._job_service.ListBatchJobRecords(request)
+        return response.records
