@@ -689,7 +689,7 @@ public class JobService {
         // Recreate watch
         watch = sparkOperatorApi.watch(namespace, labelSelector);
         try {
-            Thread.sleep(1000); // Sleep for a while before retrying
+          Thread.sleep(1000); // Sleep for a while before retrying
         } catch (InterruptedException ex) {
         }
       }

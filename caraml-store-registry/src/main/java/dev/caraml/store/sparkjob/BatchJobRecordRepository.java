@@ -6,10 +6,11 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BatchJobRecordRepository extends JpaRepository<BatchJobRecord, String> {
-  List<BatchJobRecord> findAllByJobTypeAndProjectAndFeatureTableAndJobStartTimeBetweenOrderByJobStartTimeDesc(
-      JobServiceProto.JobType jobType,
-      String project,
-      FeatureTable featureTable,
-      long startTime,
-      long endTime);
+  List<BatchJobRecord>
+      findAllByJobTypeAndProjectAndFeatureTableAndJobStartTimeBetweenOrderByJobStartTimeDesc(
+          JobServiceProto.JobType jobType,
+          String project,
+          FeatureTable featureTable,
+          long startTime,
+          long endTime);
 }

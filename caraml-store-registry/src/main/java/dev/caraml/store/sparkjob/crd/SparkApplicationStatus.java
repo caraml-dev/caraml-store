@@ -1,8 +1,7 @@
 package dev.caraml.store.sparkjob.crd;
 
-import lombok.Data;
-
 import java.util.Map;
+import lombok.Data;
 
 @Data
 public class SparkApplicationStatus {
