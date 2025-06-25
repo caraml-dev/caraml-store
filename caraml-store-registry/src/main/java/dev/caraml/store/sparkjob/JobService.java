@@ -315,6 +315,10 @@ public class JobService {
                       StringUtils.truncate(featureTableName, LABEL_CHARACTERS_LIMIT)));
               return scheduledApp;
             });
+    if (enableBatchJobHistory) {
+      // add or update label with uuid
+      scheduledSparkApplication.addLabels(Map.of(RECORD_JOB_LABEL, UUID.randomUUID().toString()));
+    }
     JobTemplateRenderer renderer = new JobTemplateRenderer();
     SparkApplicationSpec appSpec =
         renderer.render(
@@ -595,26 +599,35 @@ public class JobService {
       long jobStartTime = job.getStartTime().getSeconds();
       Pair<java.sql.Timestamp, java.sql.Timestamp> startEndTimeParams =
           BatchJobRecord.getStartEndTimeParamsFromSparkApplication(sparkApp);
-      BatchJobRecord record =
-          BatchJobRecord.builder()
-              .id(
-                  sparkApp
-                      .getMetadata()
-                      .getLabels()
-                      .getOrDefault(RECORD_JOB_LABEL, UUID.randomUUID().toString()))
-              .ingestionJobId(job.getId())
-              .jobType(job.getType())
-              .project(job.getProject())
-              .featureTable(table)
-              .status(job.getStatus().toString())
-              .jobStartTime(jobStartTime)
-              .jobEndTime(-1)
-              .sparkApplicationManifest(sparkAppManifestYaml)
-              .ingestionJobStartTimeParam(startEndTimeParams.getLeft())
-              .ingestionJobEndTimeParam(startEndTimeParams.getRight())
-              .build();
-
-      return record;
+      String recordId =
+          sparkApp
+              .getMetadata()
+              .getLabels()
+              .getOrDefault(RECORD_JOB_LABEL, UUID.randomUUID().toString());
+      // check if SparkApplication is created from a scheduledSparkApplication
+      // if it is, set recordId to uuid-(sparkAppName suffix)
+      if (sparkApp
+          .getMetadata()
+          .getLabels()
+          .containsKey("sparkoperator.k8s.io/scheduled-app-name")) {
+        // get sparkapplication name suffix
+        String[] tmp = sparkApp.getMetadata().getName().split("-");
+        String recordIDSuffix = tmp[tmp.length - 1];
+        recordId = recordId + "-" + recordIDSuffix;
+      }
+      return BatchJobRecord.builder()
+          .id(recordId)
+          .ingestionJobId(job.getId())
+          .jobType(job.getType())
+          .project(job.getProject())
+          .featureTable(table)
+          .status(job.getStatus().toString())
+          .jobStartTime(jobStartTime)
+          .jobEndTime(-1)
+          .sparkApplicationManifest(sparkAppManifestYaml)
+          .ingestionJobStartTimeParam(startEndTimeParams.getLeft())
+          .ingestionJobEndTimeParam(startEndTimeParams.getRight())
+          .build();
     }
     return null;
   }
@@ -637,6 +650,17 @@ public class JobService {
               eventType,
               sparkApplication.getMetadata().getName());
           String recordId = sparkApplication.getMetadata().getLabels().get(RECORD_JOB_LABEL);
+          // check if SparkApplication is created from a scheduledSparkApplication
+          // if it is, set recordId to uuid-(sparkAppName suffix)
+          if (sparkApplication
+              .getMetadata()
+              .getLabels()
+              .containsKey("sparkoperator.k8s.io/scheduled-app-name")) {
+            // get sparkapplication name suffix
+            String[] tmp = sparkApplication.getMetadata().getName().split("-");
+            String recordIDSuffix = tmp[tmp.length - 1];
+            recordId = recordId + "-" + recordIDSuffix;
+          }
           switch (eventType) {
             case "ADDED":
             case "MODIFIED":
