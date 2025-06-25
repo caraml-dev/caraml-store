@@ -451,7 +451,7 @@ class Client:
         request = UnscheduleJobRequest(job_id=job_id)
         self._job_service.UnscheduleJob(request)
 
-    def list_batch_job_records(self,  project: str, table_name: str, start_utc: datetime = None, end_utc: datetime = None, job_type: JobType = BATCH_INGESTION_JOB,):
+    def list_batch_job_records(self,  project: str, table_name: str, start_utc: datetime = None, end_utc: datetime = None, job_type: JobType = BATCH_INGESTION_JOB):
         if start_utc is None:
             start_utc = datetime.now(timezone.utc) - timedelta(days=7)
         if end_utc is None:
