@@ -104,8 +104,8 @@ public class BatchJobRecord {
         // For example, if ingestionTimespan is "1d", we can set startTime to 1 day ago
         // and endTime to now.
         long currentTimeMillis = System.currentTimeMillis();
-        long oneDayInMillis = 24 * 60 * 60 * 1000; // 1 day in milliseconds
-        startTime = new Timestamp(currentTimeMillis - oneDayInMillis).toString();
+        long ingestionTimespanMillis = 24 * 60 * 60 * Long.parseLong(ingestionTimespan); // integerTimespan in milliseconds
+        startTime = new Timestamp(currentTimeMillis - ingestionTimespanMillis).toString();
         endTime = new Timestamp(currentTimeMillis).toString();
       } else {
         throw new IllegalArgumentException("Start and end time parameters are missing.");
