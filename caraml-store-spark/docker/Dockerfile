@@ -15,6 +15,7 @@ ADD https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aliyun/${HADOOP_ALIY
 ADD https://repo1.maven.org/maven2/com/aliyun/oss/aliyun-sdk-oss/${ALIYUN_SDK_OSS_VERSION}/aliyun-sdk-oss-${ALIYUN_SDK_OSS_VERSION}.jar /opt/spark/jars
 ADD https://repo1.maven.org/maven2/org/jdom/jdom/${JDOM_VERSION}/jdom-${JDOM_VERSION}.jar /opt/spark/jars
 ADD https://repo1.maven.org/maven2/org/apache/hadoop/thirdparty/hadoop-shaded-guava/1.1.1/hadoop-shaded-guava-1.1.1.jar /opt/spark/jars
+ADD https://repo1.maven.org/maven2/org/jdom/jdom2/2.0.6/jdom2-2.0.6.jar /opt/spark/jars
 
 RUN pip install Jinja2==3.1.2
 # For logging to /dev/termination-log
