@@ -11,14 +11,16 @@ USER root
 ADD https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop2-${GCS_CONNECTOR_VERSION}.jar /opt/spark/jars
 ADD https://repo1.maven.org/maven2/com/google/cloud/spark/spark-bigquery-with-dependencies_2.12/${BQ_CONNECTOR_VERSION}/spark-bigquery-with-dependencies_2.12-${BQ_CONNECTOR_VERSION}.jar /opt/spark/jars
 ADD https://github.com/aliyun/aliyun-odps-jdbc/releases/download/v${ODPS_JDBC_CONNECTOR}/odps-jdbc-${ODPS_JDBC_CONNECTOR}-jar-with-dependencies.jar /opt/spark/jars
-ADD https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aliyun/${HADOOP_ALIYUN_VERSION}/hadoop-aliyun-${HADOOP_ALIYUN_VERSION}.jar /opt/spark/jars
-ADD https://repo1.maven.org/maven2/com/aliyun/oss/aliyun-sdk-oss/${ALIYUN_SDK_OSS_VERSION}/aliyun-sdk-oss-${ALIYUN_SDK_OSS_VERSION}.jar /opt/spark/jars
 ADD https://repo1.maven.org/maven2/org/jdom/jdom/${JDOM_VERSION}/jdom-${JDOM_VERSION}.jar /opt/spark/jars
-ADD https://repo1.maven.org/maven2/org/apache/hadoop/thirdparty/hadoop-shaded-guava/1.1.1/hadoop-shaded-guava-1.1.1.jar /opt/spark/jars
+# ADD https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aliyun/${HADOOP_ALIYUN_VERSION}/hadoop-aliyun-${HADOOP_ALIYUN_VERSION}.jar /opt/spark/jars
+# ADD https://repo1.maven.org/maven2/com/aliyun/oss/aliyun-sdk-oss/${ALIYUN_SDK_OSS_VERSION}/aliyun-sdk-oss-${ALIYUN_SDK_OSS_VERSION}.jar /opt/spark/jars
+
+ADD https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aliyun/3.2.4/hadoop-aliyun-3.2.4.jar /opt/spark/jars
+ADD https://repo1.maven.org/maven2/com/aliyun/oss/aliyun-sdk-oss/3.13.2/aliyun-sdk-oss-3.13.2.jar /opt/spark/jars
 ADD https://repo1.maven.org/maven2/org/jdom/jdom2/2.0.6/jdom2-2.0.6.jar /opt/spark/jars
 
 RUN pip install Jinja2==3.1.2
-# For logging to /dev/termination-log
+# For logging to /dev/terminationI -log
 RUN mkdir -p /dev
 
 ADD caraml-spark-application-with-dependencies.jar /opt/spark/jars
