@@ -17,6 +17,37 @@ JOB_STATUS_RUNNING: JobStatus
 RETRIEVAL_JOB: JobType
 STREAM_INGESTION_JOB: JobType
 
+class BatchJobRecord(_message.Message):
+    __slots__ = ["batch_ingestion", "id", "job_end_time", "job_id", "job_start_time", "spark_app_manifest", "status", "type"]
+    class OfflineToOnlineMeta(_message.Message):
+        __slots__ = ["end_time_param", "project", "start_time_param", "table_name"]
+        END_TIME_PARAM_FIELD_NUMBER: _ClassVar[int]
+        PROJECT_FIELD_NUMBER: _ClassVar[int]
+        START_TIME_PARAM_FIELD_NUMBER: _ClassVar[int]
+        TABLE_NAME_FIELD_NUMBER: _ClassVar[int]
+        end_time_param: _timestamp_pb2.Timestamp
+        project: str
+        start_time_param: _timestamp_pb2.Timestamp
+        table_name: str
+        def __init__(self, table_name: _Optional[str] = ..., project: _Optional[str] = ..., start_time_param: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., end_time_param: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    BATCH_INGESTION_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    JOB_END_TIME_FIELD_NUMBER: _ClassVar[int]
+    JOB_ID_FIELD_NUMBER: _ClassVar[int]
+    JOB_START_TIME_FIELD_NUMBER: _ClassVar[int]
+    SPARK_APP_MANIFEST_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    TYPE_FIELD_NUMBER: _ClassVar[int]
+    batch_ingestion: BatchJobRecord.OfflineToOnlineMeta
+    id: str
+    job_end_time: _timestamp_pb2.Timestamp
+    job_id: str
+    job_start_time: _timestamp_pb2.Timestamp
+    spark_app_manifest: str
+    status: JobStatus
+    type: JobType
+    def __init__(self, id: _Optional[str] = ..., job_id: _Optional[str] = ..., type: _Optional[_Union[JobType, str]] = ..., status: _Optional[_Union[JobStatus, str]] = ..., job_start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., job_end_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., batch_ingestion: _Optional[_Union[BatchJobRecord.OfflineToOnlineMeta, _Mapping]] = ..., spark_app_manifest: _Optional[str] = ...) -> None: ...
+
 class CancelJobRequest(_message.Message):
     __slots__ = ["job_id"]
     JOB_ID_FIELD_NUMBER: _ClassVar[int]
@@ -121,6 +152,26 @@ class Job(_message.Message):
     stream_ingestion: Job.StreamToOnlineMeta
     type: JobType
     def __init__(self, id: _Optional[str] = ..., type: _Optional[_Union[JobType, str]] = ..., status: _Optional[_Union[JobStatus, str]] = ..., hash: _Optional[str] = ..., start_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., retrieval: _Optional[_Union[Job.RetrievalJobMeta, _Mapping]] = ..., batch_ingestion: _Optional[_Union[Job.OfflineToOnlineMeta, _Mapping]] = ..., stream_ingestion: _Optional[_Union[Job.StreamToOnlineMeta, _Mapping]] = ..., log_uri: _Optional[str] = ..., error_message: _Optional[str] = ..., project: _Optional[str] = ...) -> None: ...
+
+class ListBatchJobRecordsRequest(_message.Message):
+    __slots__ = ["end", "project", "start", "table_name", "type"]
+    END_FIELD_NUMBER: _ClassVar[int]
+    PROJECT_FIELD_NUMBER: _ClassVar[int]
+    START_FIELD_NUMBER: _ClassVar[int]
+    TABLE_NAME_FIELD_NUMBER: _ClassVar[int]
+    TYPE_FIELD_NUMBER: _ClassVar[int]
+    end: _timestamp_pb2.Timestamp
+    project: str
+    start: _timestamp_pb2.Timestamp
+    table_name: str
+    type: JobType
+    def __init__(self, project: _Optional[str] = ..., table_name: _Optional[str] = ..., type: _Optional[_Union[JobType, str]] = ..., end: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., start: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+
+class ListBatchJobRecordsResponse(_message.Message):
+    __slots__ = ["records"]
+    RECORDS_FIELD_NUMBER: _ClassVar[int]
+    records: _containers.RepeatedCompositeFieldContainer[BatchJobRecord]
+    def __init__(self, records: _Optional[_Iterable[_Union[BatchJobRecord, _Mapping]]] = ...) -> None: ...
 
 class ListJobsRequest(_message.Message):
     __slots__ = ["include_terminated", "project", "table_name", "type"]
