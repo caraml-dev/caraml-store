@@ -253,6 +253,7 @@ class MaxComputeSource(Source):
         self.interactive_mode = os.environ.get("CARAML_SPARK_MAXCOMPUTE_INTERACTIVE_MODE", "true")
         self.fetch_size = os.environ.get("CARAML_SPARK_MAXCOMPUTE_FETCH_SIZE", "0")
         self.auto_select_limit = os.environ.get("CARAML_SPARK_MAXCOMPUTE_AUTO_SELECT_LIMIT", "1000000000")
+        self.execute_project = os.environ.get("CARAML_SPARK_MAXCOMPUTE_EXECUTE_PROJECT", self.project)
 
         if not self.project:
             raise ValueError("project field is empty")
@@ -286,7 +287,8 @@ class MaxComputeSource(Source):
                 f"odpsNamespaceSchema=true&"
                 f"schema={self.schema}&"
                 f"enableLimit=false&"
-                f"autoSelectLimit={self.auto_select_limit}")
+                f"autoSelectLimit={self.auto_select_limit}&"
+                f"executeProject={self.execute_project}")
 
     def load(self, spark_session: SparkSession) -> DataFrame:
         from py4j.java_gateway import java_import
