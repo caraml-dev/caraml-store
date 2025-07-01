@@ -3,7 +3,8 @@ import org.apache.spark.sql.jdbc.JdbcDialect
 import org.apache.spark.sql.jdbc.JdbcType
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.sql.types._
-import org.apache.hbase.thirdparty.org.eclipse.jetty.util.ajax.JSON
+import org.apache.spark.sql.types.AtomicType
+import org.apache.spark.sql.execution.datasources.jdbc.JdbcUtils
 
 class CustomDialect extends JdbcDialect {
   override def canHandle(url: String): Boolean = {
@@ -12,6 +13,13 @@ class CustomDialect extends JdbcDialect {
 
   override def quoteIdentifier(colName: String): String = {
     s"$colName"
+  }
+
+  def isSupportedAtomicType(dt: DataType): Boolean = dt match {
+    case IntegerType | LongType | DoubleType | FloatType |
+         ShortType | ByteType | BooleanType | StringType |
+         BinaryType | TimestampType | DateType | _: DecimalType | _: VarcharType => true
+    case _ => false
   }
 
   override def getJDBCType(dt: DataType): Option[JdbcType] = {
@@ -37,7 +45,10 @@ class CustomDialect extends JdbcDialect {
           )
         )
       case VarcharType(length) => Option(JdbcType(s"VARCHAR($length)", java.sql.Types.VARCHAR))
-      // NOTE: Update when necessary
+      case ArrayType(et, _) if isSupportedAtomicType(et) || et.isInstanceOf[ArrayType] =>
+        getJDBCType(et).map(_.databaseTypeDefinition)
+          .orElse(JdbcUtils.getCommonJDBCType(et).map(_.databaseTypeDefinition))
+          .map(typeName => JdbcType(s"ARRAY<$typeName>", java.sql.Types.ARRAY))      // NOTE: Update when necessary
       case _ => None
     }
   }
