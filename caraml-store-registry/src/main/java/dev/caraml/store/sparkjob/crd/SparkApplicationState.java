@@ -1,9 +1,10 @@
 package dev.caraml.store.sparkjob.crd;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class SparkApplicationState {
-
-  private final String state;
+  private String state;
 }
