@@ -36,6 +36,7 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
   @Autowired
   public JobGrpcServiceImpl(JobService jobService) {
     this.jobService = jobService;
+    this.jobService.startWatcher();
   }
 
   @Override
@@ -156,6 +157,23 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
       UnscheduleJobRequest request, StreamObserver<UnscheduleJobResponse> responseObserver) {
     jobService.unscheduleJob(request.getJobId());
     responseObserver.onNext(UnscheduleJobResponse.getDefaultInstance());
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void listBatchJobRecords(
+      JobServiceProto.ListBatchJobRecordsRequest request,
+      StreamObserver<JobServiceProto.ListBatchJobRecordsResponse> responseObserver) {
+    List<JobServiceProto.BatchJobRecord> records =
+        jobService.listBatchJobRecords(
+            request.getProject(),
+            request.getType(),
+            request.getTableName(),
+            request.getStart().getSeconds(),
+            request.getEnd().getSeconds());
+    JobServiceProto.ListBatchJobRecordsResponse response =
+        JobServiceProto.ListBatchJobRecordsResponse.newBuilder().addAllRecords(records).build();
+    responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 }

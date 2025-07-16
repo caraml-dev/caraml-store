@@ -30,6 +30,7 @@ const (
 	JobService_UnscheduleJob_FullMethodName                         = "/feast_spark.api.JobService/UnscheduleJob"
 	JobService_GetJob_FullMethodName                                = "/feast_spark.api.JobService/GetJob"
 	JobService_GetHealthMetrics_FullMethodName                      = "/feast_spark.api.JobService/GetHealthMetrics"
+	JobService_ListBatchJobRecords_FullMethodName                   = "/feast_spark.api.JobService/ListBatchJobRecords"
 )
 
 // JobServiceClient is the client API for JobService service.
@@ -58,6 +59,8 @@ type JobServiceClient interface {
 	GetJob(ctx context.Context, in *GetJobRequest, opts ...grpc.CallOption) (*GetJobResponse, error)
 	// Get ingestion health metrics for a Feature Table
 	GetHealthMetrics(ctx context.Context, in *GetHealthMetricsRequest, opts ...grpc.CallOption) (*GetHealthMetricsResponse, error)
+	// List batch ingestion job record for a Feature Table
+	ListBatchJobRecords(ctx context.Context, in *ListBatchJobRecordsRequest, opts ...grpc.CallOption) (*ListBatchJobRecordsResponse, error)
 }
 
 type jobServiceClient struct {
@@ -167,6 +170,15 @@ func (c *jobServiceClient) GetHealthMetrics(ctx context.Context, in *GetHealthMe
 	return out, nil
 }
 
+func (c *jobServiceClient) ListBatchJobRecords(ctx context.Context, in *ListBatchJobRecordsRequest, opts ...grpc.CallOption) (*ListBatchJobRecordsResponse, error) {
+	out := new(ListBatchJobRecordsResponse)
+	err := c.cc.Invoke(ctx, JobService_ListBatchJobRecords_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // JobServiceServer is the server API for JobService service.
 // All implementations should embed UnimplementedJobServiceServer
 // for forward compatibility
@@ -193,6 +205,8 @@ type JobServiceServer interface {
 	GetJob(context.Context, *GetJobRequest) (*GetJobResponse, error)
 	// Get ingestion health metrics for a Feature Table
 	GetHealthMetrics(context.Context, *GetHealthMetricsRequest) (*GetHealthMetricsResponse, error)
+	// List batch ingestion job record for a Feature Table
+	ListBatchJobRecords(context.Context, *ListBatchJobRecordsRequest) (*ListBatchJobRecordsResponse, error)
 }
 
 // UnimplementedJobServiceServer should be embedded to have forward compatible implementations.
@@ -231,6 +245,9 @@ func (UnimplementedJobServiceServer) GetJob(context.Context, *GetJobRequest) (*G
 }
 func (UnimplementedJobServiceServer) GetHealthMetrics(context.Context, *GetHealthMetricsRequest) (*GetHealthMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetHealthMetrics not implemented")
+}
+func (UnimplementedJobServiceServer) ListBatchJobRecords(context.Context, *ListBatchJobRecordsRequest) (*ListBatchJobRecordsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListBatchJobRecords not implemented")
 }
 
 // UnsafeJobServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -442,6 +459,24 @@ func _JobService_GetHealthMetrics_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _JobService_ListBatchJobRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListBatchJobRecordsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobServiceServer).ListBatchJobRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobService_ListBatchJobRecords_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobServiceServer).ListBatchJobRecords(ctx, req.(*ListBatchJobRecordsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // JobService_ServiceDesc is the grpc.ServiceDesc for JobService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -492,6 +527,10 @@ var JobService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetHealthMetrics",
 			Handler:    _JobService_GetHealthMetrics_Handler,
+		},
+		{
+			MethodName: "ListBatchJobRecords",
+			Handler:    _JobService_ListBatchJobRecords_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
