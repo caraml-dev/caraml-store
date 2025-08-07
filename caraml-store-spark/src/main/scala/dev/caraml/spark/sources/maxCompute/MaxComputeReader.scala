@@ -18,17 +18,19 @@ object MaxComputeReader {
   ): DataFrame = {
     val maxComputeAccessID  = sys.env("CARAML_SPARK_MAXCOMPUTE_ACCESS_ID")
     val maxComputeAccessKey = sys.env("CARAML_SPARK_MAXCOMPUTE_ACCESS_KEY")
+    val maxComputeExecuteProject = sys.env("CARAML_SPARK_MAXCOMPUTE_EXECUTE_PROJECT")
 
     val config = maxComputeConfig.getOrElse(MaxComputeConfig())
 
     val maxComputeJDBCConnectionURL =
-      "jdbc:odps:%s/?project=%s&interactiveMode=%s&enableLimit=%s&autoSelectLimit=%s&enableOdpsLogger=true&alwaysFallback=true"
+      "jdbc:odps:%s/?project=%s&interactiveMode=%s&enableLimit=%s&autoSelectLimit=%s&enableOdpsLogger=true&alwaysFallback=true&executeProject=%s"
         .format(
           config.endpoint,
           source.project,
           config.interactiveMode,
           config.enableLimit,
-          config.autoSelectLimit
+          config.autoSelectLimit,
+          maxComputeExecuteProject
         )
 
     val sqlQuery =
