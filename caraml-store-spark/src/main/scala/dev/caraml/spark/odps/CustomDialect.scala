@@ -27,13 +27,13 @@ class CustomDialect extends JdbcDialect {
    */
   private def getCommonCatalystType(typeName: String): Option[DataType] = {
     typeName.toUpperCase() match {
-      case "TINYINT" => Option(ByteType)
+      case "TINYINT"  => Option(ByteType)
       case "SMALLINT" => Option(ShortType)
-      case "INT" => Option(IntegerType)
-      case "BIGINT" => Option(LongType)
-      case "BINARY" => Option(BinaryType)
-      case "FLOAT" => Option(FloatType)
-      case "DOUBLE" => Option(DoubleType)
+      case "INT"      => Option(IntegerType)
+      case "BIGINT"   => Option(LongType)
+      case "BINARY"   => Option(BinaryType)
+      case "FLOAT"    => Option(FloatType)
+      case "DOUBLE"   => Option(DoubleType)
 //      case s if s.startsWith("DECIMAL") =>
 //        val mdat = s.stripPrefix("DECIMAL(").stripSuffix(")").split(",")
 //        if (mdat.length == 2) {
@@ -46,8 +46,8 @@ class CustomDialect extends JdbcDialect {
 //      case s if s.startsWith("VARCHAR") => Option(VarcharType(s.stripPrefix("VARCHAR(").stripSuffix(")").toInt))
 //      case s if s.startsWith("CHAR") => Option(CharType(s.stripPrefix("CHAR(").stripSuffix(")").toInt))
       case s if s.startsWith("VARCHAR") => Option(StringType)
-      case s if s.startsWith("CHAR") => Option(StringType)
-      case "STRING" => Option(StringType)
+      case s if s.startsWith("CHAR")    => Option(StringType)
+      case "STRING"                     => Option(StringType)
 //      case "DATE" => Option(DateType)
 //      case "DATETIME" => Option(TimestampType)
 //      case "TIMESTAMP" => Option(TimestampType)
@@ -58,20 +58,29 @@ class CustomDialect extends JdbcDialect {
     }
   }
 
-  override def getCatalystType(sqlType: Int, typeName: String, size: Int, md: MetadataBuilder): Option[DataType] = {
+  override def getCatalystType(
+      sqlType: Int,
+      typeName: String,
+      size: Int,
+      md: MetadataBuilder
+  ): Option[DataType] = {
     sqlType match {
       case java.sql.Types.ARRAY =>
         val elementTypeName = typeName.toUpperCase().stripPrefix("ARRAY<").stripSuffix(">")
-        val elementType = getCommonCatalystType(elementTypeName).map(ArrayType(_))
+        val elementType     = getCommonCatalystType(elementTypeName).map(ArrayType(_))
 
         if (elementType.isEmpty) {
           throw new SQLException(s"Unsupported type $typeName")
         }
-        logDebug(s"CustomDialect sqlType: $sqlType md: ${md.build().toString()} size: $size typeName: $typeName elementType: ${elementType.getOrElse(ArrayType(NullType)).elementType}")
+        logDebug(
+          s"CustomDialect sqlType: $sqlType md: ${md.build().toString()} size: $size typeName: $typeName elementType: ${elementType.getOrElse(ArrayType(NullType)).elementType}"
+        )
         elementType
       case _ =>
         val dataType = getCommonCatalystType(typeName.toUpperCase())
-        logDebug(s"CustomDialect sqlType: $sqlType md: ${md.build().toString()} size: $size typeName: $typeName dataType: $dataType")
+        logDebug(
+          s"CustomDialect sqlType: $sqlType md: ${md.build().toString()} size: $size typeName: $typeName dataType: $dataType"
+        )
         dataType
     }
   }
