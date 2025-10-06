@@ -60,7 +60,7 @@ dependencies {
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.26.3'
     testImplementation "com.dimafeng:testcontainers-scala-kafka_$scalaVersion:0.40.12"
     testRuntimeOnly 'com.vladsch.flexmark:flexmark-all:0.35.10'
-    compileOnly('com.aliyun.odps:odps-jdbc:3.10.0') {
+    compileOnly('com.aliyun.odps:odps-jdbc:3.10.1') {
         exclude group: 'org.antlr', module: 'antlr4-runtime'
     }
 
