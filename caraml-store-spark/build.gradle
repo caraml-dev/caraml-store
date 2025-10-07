@@ -64,6 +64,10 @@ dependencies {
         exclude group: 'org.antlr', module: 'antlr4-runtime'
     }
 
+    // to fix error in unit test.
+    // last time it was successful because aliyun-odps-jdbc 3.8.2 depends on odps-sdk-core 0.51.5.
+    // then odps-sdk-core depends on jackson-databind 2.15.2.
+    testImplementation "com.fasterxml.jackson.core:jackson-databind:2.15.2"
 }
 application {
     mainClassName = 'dev.caraml.spark.IngestionJob'
