@@ -60,11 +60,14 @@ dependencies {
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.26.3'
     testImplementation "com.dimafeng:testcontainers-scala-kafka_$scalaVersion:0.40.12"
     testRuntimeOnly 'com.vladsch.flexmark:flexmark-all:0.35.10'
-    implementation files('./prebuilt-jars/custom-dialect.jar')
-    compileOnly('com.aliyun.odps:odps-jdbc:3.8.2') {
+    compileOnly('com.aliyun.odps:odps-jdbc:3.10.1') {
         exclude group: 'org.antlr', module: 'antlr4-runtime'
     }
 
+    // to fix error in unit test.
+    // last time it was successful because aliyun-odps-jdbc 3.8.2 depends on odps-sdk-core 0.51.5.
+    // then odps-sdk-core depends on jackson-databind 2.15.2.
+    testImplementation "com.fasterxml.jackson.core:jackson-databind:2.15.2"
 }
 application {
     mainClassName = 'dev.caraml.spark.IngestionJob'
@@ -87,7 +90,7 @@ def containerRegistry = System.getenv('DOCKER_REGISTRY')
 docker {
     dependsOn shadowJar
     dockerfile file('docker/Dockerfile')
-    files shadowJar.outputs, "$rootDir/caraml-store-pyspark/scripts", "$rootDir/caraml-store-spark/prebuilt-jars/custom-dialect.jar"
+    files shadowJar.outputs, "$rootDir/caraml-store-pyspark/scripts"
     copySpec.with {
         from("$rootDir/caraml-store-pyspark") {
             include 'templates/**'

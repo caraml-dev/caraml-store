@@ -1,10 +1,10 @@
 package dev.caraml.spark.sources.maxCompute
 
-import dev.caraml.spark.{MaxComputeSource, MaxComputeConfig}
+import dev.caraml.spark.{MaxComputeConfig, MaxComputeSource}
 import org.joda.time.DateTime
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.jdbc.JdbcDialects
-import com.caraml.odps.CustomDialect
+import dev.caraml.spark.odps.CustomDialect
 import org.apache.log4j.Logger
 
 object MaxComputeReader {

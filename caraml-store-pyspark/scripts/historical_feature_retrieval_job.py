@@ -358,29 +358,6 @@ class Field(NamedTuple):
     name: str
     type: str
 
-    @property
-    def spark_type(self):
-        """
-        Returns Spark data type that corresponds to the field's Feast type
-        """
-        feast_to_spark_type_mapping = {
-            "bytes": "binary",
-            "string": "string",
-            "int32": "int",
-            "int64": "bigint",
-            "double": "double",
-            "float": "float",
-            "bool": "boolean",
-            "bytes_list": "array<binary>",
-            "string_list": "array<string>",
-            "int32_list": "array<int>",
-            "int64_list": "array<bigint>",
-            "double_list": "array<double>",
-            "float_list": "array<float>",
-            "bool_list": "array<boolean>",
-        }
-        return feast_to_spark_type_mapping[self.type.lower()]
-
 
 class FeatureTable(NamedTuple):
     """
@@ -461,6 +438,43 @@ class BigQueryFeatureView:
     @property
     def entity_selections(self):
         return [f"{self.field_mapping.get(entity, entity)} as {entity}" for entity in self.entities]
+
+
+def _spark_type(field: Field, source: Source) -> str:
+    if isinstance(source, MaxComputeSource):
+        return {
+            "bytes": "tinyint",
+            "string": "string",
+            "int32": "int",
+            "int64": "bigint",
+            "double": "double",
+            "float": "float",
+            "bool": "boolean",
+            "bytes_list": "array<tinyint>",
+            "string_list": "array<string>",
+            "int32_list": "array<int>",
+            "int64_list": "array<bigint>",
+            "double_list": "array<double>",
+            "float_list": "array<float>",
+            "bool_list": "array<boolean>",
+        }[field.type.lower()]
+    else:
+        return {
+            "bytes": "binary",
+            "string": "string",
+            "int32": "int",
+            "int64": "bigint",
+            "double": "double",
+            "float": "float",
+            "bool": "boolean",
+            "bytes_list": "array<binary>",
+            "string_list": "array<string>",
+            "int32_list": "array<int>",
+            "int64_list": "array<bigint>",
+            "double_list": "array<double>",
+            "float_list": "array<float>",
+            "bool_list": "array<boolean>",
+        }[field.type.lower()]
 
 
 def _map_column(df: DataFrame, col_mapping: Dict[str, str]):
@@ -820,15 +834,16 @@ def _read_and_verify_feature_table_df_from_source(
     feature_table_dtypes = dict(mapped_source_df.dtypes)
     for field in feature_table.entities + feature_table.features:
         column_type = feature_table_dtypes.get(field.name)
+        spark_type = _spark_type(field, source)
 
-        if column_type != field.spark_type:
-            if _type_casting_allowed(field.spark_type, column_type):
+        if column_type != spark_type:
+            if _type_casting_allowed(spark_type, column_type):
                 mapped_source_df = mapped_source_df.withColumn(
-                    field.name, col(field.name).cast(field.spark_type)
+                    field.name, col(field.name).cast(spark_type)
                 )
             else:
                 raise SchemaError(
-                    f"{field.name} should be of {field.spark_type} type, but is {column_type} instead"
+                    f"{field.name} should be of {spark_type} type, but is {column_type} instead"
                 )
 
     for timestamp_column in [
@@ -916,15 +931,16 @@ def retrieve_historical_features(
         for feature_table, source in zip(feature_tables, feature_tables_sources)
     ]
 
-    expected_entities = []
+    expected_entities: List[Field] = []
     for feature_table in feature_tables:
         expected_entities.extend(feature_table.entities)
 
     entity_dtypes = dict(entity_df.dtypes)
     for expected_entity in expected_entities:
-        if entity_dtypes.get(expected_entity.name) != expected_entity.spark_type:
+        spark_type = _spark_type(expected_entity, entity_source)
+        if entity_dtypes.get(expected_entity.name) != spark_type:
             raise SchemaError(
-                f"{expected_entity.name} ({expected_entity.spark_type}) is not present in the entity dataframe."
+                f"{expected_entity.name} ({spark_type}) is not present in the entity dataframe."
             )
 
     entity_df.cache()
