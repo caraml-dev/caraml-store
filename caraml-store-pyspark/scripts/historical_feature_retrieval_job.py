@@ -1082,6 +1082,7 @@ def feature_table_from_dict(dct: Dict[str, Any]) -> FeatureTable:
 
 if __name__ == "__main__":
     log_level = os.environ.get("SPARK_LOG_LEVEL")
+    app_id = os.environ.get("SPARK_APPLICATION_ID")
     args = _get_args()
     feature_tables_conf = json.loads(args.feature_tables)
     feature_tables_sources_conf = json.loads(args.feature_tables_sources)
@@ -1104,6 +1105,7 @@ if __name__ == "__main__":
         if log_level:
             spark.sparkContext.setLogLevel(log_level)
         if checkpoint:
+            checkpoint = checkpoint.rstrip("/") + f"/{app_id}"
             spark.sparkContext.setCheckpointDir(checkpoint)
 
         start_job(
