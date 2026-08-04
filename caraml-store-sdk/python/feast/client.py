@@ -349,6 +349,7 @@ class Client:
         output_location: str,
         project: str,
         output_format: str = "parquet",
+        cluster: str = "",
     ) -> GetHistoricalFeaturesResponse:
         """
         Launch a historical feature retrieval job.
@@ -364,6 +365,8 @@ class Client:
             output_location: Specifies the directory in a GCS bucket to write the exported feature data files
             project: Feast project name
             output_format: Spark output format
+            cluster: Optional name of the compute cluster to submit the retrieval
+                job to. When empty, the server's default cluster is used.
 
         Returns:
                 Returns a retrieval job object that can be used to monitor retrieval
@@ -378,6 +381,7 @@ class Client:
                 project=project,
                 output_format=output_format,
                 output_location=output_location,
+                cluster=cluster,
             ),
         )
 

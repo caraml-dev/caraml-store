@@ -44,18 +44,20 @@ class GetHealthMetricsResponse(_message.Message):
     def __init__(self, passed: _Optional[_Iterable[str]] = ..., failed: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class GetHistoricalFeaturesRequest(_message.Message):
-    __slots__ = ["entity_source", "feature_refs", "output_format", "output_location", "project"]
+    __slots__ = ["cluster", "entity_source", "feature_refs", "output_format", "output_location", "project"]
+    CLUSTER_FIELD_NUMBER: _ClassVar[int]
     ENTITY_SOURCE_FIELD_NUMBER: _ClassVar[int]
     FEATURE_REFS_FIELD_NUMBER: _ClassVar[int]
     OUTPUT_FORMAT_FIELD_NUMBER: _ClassVar[int]
     OUTPUT_LOCATION_FIELD_NUMBER: _ClassVar[int]
     PROJECT_FIELD_NUMBER: _ClassVar[int]
+    cluster: str
     entity_source: _DataSource_pb2.DataSource
     feature_refs: _containers.RepeatedScalarFieldContainer[str]
     output_format: str
     output_location: str
     project: str
-    def __init__(self, feature_refs: _Optional[_Iterable[str]] = ..., entity_source: _Optional[_Union[_DataSource_pb2.DataSource, _Mapping]] = ..., project: _Optional[str] = ..., output_location: _Optional[str] = ..., output_format: _Optional[str] = ...) -> None: ...
+    def __init__(self, feature_refs: _Optional[_Iterable[str]] = ..., entity_source: _Optional[_Union[_DataSource_pb2.DataSource, _Mapping]] = ..., project: _Optional[str] = ..., output_location: _Optional[str] = ..., output_format: _Optional[str] = ..., cluster: _Optional[str] = ...) -> None: ...
 
 class GetHistoricalFeaturesResponse(_message.Message):
     __slots__ = ["id", "job_start_time", "log_uri", "output_file_uri"]
