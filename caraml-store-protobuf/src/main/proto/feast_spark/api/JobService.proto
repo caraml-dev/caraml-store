@@ -203,6 +203,10 @@ message GetHistoricalFeaturesRequest {
 
   // Specify format name for output, eg. parquet
   string output_format = 5;
+
+  // Optional name of the compute cluster to submit the retrieval job to.
+  // When empty, the server's default cluster is used.
+  string cluster = 6;
 }
 
 message GetHistoricalFeaturesResponse {

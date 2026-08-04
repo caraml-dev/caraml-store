@@ -97,7 +97,8 @@ public class JobGrpcServiceImpl extends JobServiceGrpc.JobServiceImplBase {
             request.getFeatureRefsList(),
             request.getEntitySource(),
             request.getOutputFormat(),
-            request.getOutputLocation());
+            request.getOutputLocation(),
+            request.getCluster());
     GetHistoricalFeaturesResponse response =
         GetHistoricalFeaturesResponse.newBuilder()
             .setId(job.getId())

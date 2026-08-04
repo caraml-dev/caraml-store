@@ -31,7 +31,25 @@ caraml:
 
   kubernetes:
     # Whether to use in-cluster Kubernetes configuration or default kube config.
+    # Legacy single-cluster setting: used only when `clusters` below is not set,
+    # in which case a single "default" cluster is synthesised from this flag and
+    # the caraml.jobService.namespace value.
     inCluster: false
+
+    # Multi-cluster configuration for feature retrieval jobs. When set, retrieval
+    # requests may specify a target cluster by name (GetHistoricalFeaturesRequest.cluster);
+    # an empty value routes to `defaultCluster`. Ingestion jobs always use the default cluster.
+    #
+    # defaultCluster: primary
+    # clusters:
+    #   primary:
+    #     inCluster: false
+    #     context: primary-ctx      # kubeconfig context; omit for default client resolution
+    #     namespace: spark-operator  # omit to fall back to caraml.jobService.namespace
+    #   secondary:
+    #     inCluster: false
+    #     context: secondary-ctx
+    #     namespace: spark-operator
 
   monitoring:
     # Configure the behaviour of the timer metrics

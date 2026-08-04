@@ -6,30 +6,29 @@ import dev.caraml.store.sparkjob.crd.SparkApplication;
 import dev.caraml.store.sparkjob.crd.SparkApplicationList;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
-import io.kubernetes.client.openapi.Configuration;
 import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.Config;
+import io.kubernetes.client.util.KubeConfig;
 import io.kubernetes.client.util.generic.GenericKubernetesApi;
 import io.kubernetes.client.util.generic.KubernetesApiResponse;
 import io.kubernetes.client.util.generic.options.ListOptions;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-@Service
 public class SparkOperatorApiImpl implements SparkOperatorApi {
 
   private final GenericKubernetesApi<SparkApplication, SparkApplicationList> sparkApplicationApi;
   private final GenericKubernetesApi<ScheduledSparkApplication, ScheduledSparkApplicationList>
       scheduledSparkApplicationApi;
 
-  @Autowired
-  public SparkOperatorApiImpl(ClusterConfig cluster) throws IOException {
-    ApiClient client =
-        cluster.getInCluster() ? ClientBuilder.cluster().build() : Config.defaultClient();
-    Configuration.setDefaultApiClient(client);
+  public SparkOperatorApiImpl(ClusterConfig.Cluster cluster) throws IOException {
+    // Note: intentionally does NOT call Configuration.setDefaultApiClient so that
+    // multiple clusters can hold independent clients simultaneously.
+    ApiClient client = buildClient(cluster);
     this.sparkApplicationApi =
         new GenericKubernetesApi<>(
             SparkApplication.class,
@@ -46,6 +45,35 @@ public class SparkOperatorApiImpl implements SparkOperatorApi {
             "v1beta2",
             "scheduledsparkapplications",
             client);
+  }
+
+  private static ApiClient buildClient(ClusterConfig.Cluster cluster) throws IOException {
+    if (Boolean.TRUE.equals(cluster.getInCluster())) {
+      return ClientBuilder.cluster().build();
+    }
+    String context = cluster.getContext();
+    if (context != null && !context.isEmpty()) {
+      File configFile = kubeConfigFile();
+      try (Reader reader = new FileReader(configFile)) {
+        KubeConfig kubeConfig = KubeConfig.loadKubeConfig(reader);
+        if (!kubeConfig.setContext(context)) {
+          throw new IOException(String.format("kubeconfig context '%s' not found", context));
+        }
+        // Ensure relative certificate/key paths in the kubeconfig resolve correctly.
+        kubeConfig.setFile(configFile);
+        return ClientBuilder.kubeconfig(kubeConfig).build();
+      }
+    }
+    return Config.defaultClient();
+  }
+
+  private static File kubeConfigFile() {
+    String kubeConfigEnv = System.getenv(KubeConfig.KUBECONFIG);
+    if (kubeConfigEnv != null && !kubeConfigEnv.isEmpty()) {
+      // KUBECONFIG may contain multiple paths; use the first entry.
+      return new File(kubeConfigEnv.split(File.pathSeparator)[0]);
+    }
+    return new File(new File(System.getProperty("user.home"), ".kube"), "config");
   }
 
   @Override
