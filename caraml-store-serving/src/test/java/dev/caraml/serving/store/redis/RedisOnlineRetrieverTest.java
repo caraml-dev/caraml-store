@@ -18,6 +18,8 @@ import io.lettuce.core.codec.ByteArrayCodec;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.jupiter.api.BeforeAll;
@@ -112,11 +114,20 @@ public class RedisOnlineRetrieverTest {
     assertEquals(1, featuresForRows.size());
     List<Feature> features = featuresForRows.get(0);
     assertEquals(2, features.size());
+    // The retriever does not guarantee feature ordering, so index by reference.
+    Map<FeatureReference, Feature> featuresByReference =
+        features.stream().collect(Collectors.toMap(Feature::getFeatureReference, f -> f));
     assertEquals(
-        5L, features.get(0).getFeatureValue(ValueProto.ValueType.Enum.INT64).getInt64Val());
-    assertEquals(featureReferences.get(0), features.get(0).getFeatureReference());
+        5L,
+        featuresByReference
+            .get(featureReferences.get(0))
+            .getFeatureValue(ValueProto.ValueType.Enum.INT64)
+            .getInt64Val());
     assertEquals(
-        3.5, features.get(1).getFeatureValue(ValueProto.ValueType.Enum.DOUBLE).getDoubleVal());
-    assertEquals(featureReferences.get(1), features.get(1).getFeatureReference());
+        3.5,
+        featuresByReference
+            .get(featureReferences.get(1))
+            .getFeatureValue(ValueProto.ValueType.Enum.DOUBLE)
+            .getDoubleVal());
   }
 }
