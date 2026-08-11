@@ -73,15 +73,22 @@ caraml:
     common:
       sparkImage: "ghcr.io/caraml-dev/caraml-store-spark:latest"
 
+    # Each job template may set `defaultCluster` (a name from caraml.kubernetes.clusters) to pick
+    # the target cluster for that job type. Cluster precedence, most specific first:
+    #   request argument (retrieval only) > job-type defaultCluster > caraml.kubernetes.defaultCluster
+    # Leave defaultCluster unset to use the root default cluster.
     streamIngestion:
       - store: default-store
+        # defaultCluster: primary
         # Stream ingestion spark application spec
         # sparkApplicationSpec:
     batchIngestion:
       - store: default-store
+        # defaultCluster: primary
         # Batch ingestion spark application spec
         # sparkApplicationSpec:
     historicalRetrieval:
+      # defaultCluster: secondary
       # Historical retrieval job spark application spec
        sparkApplicationSpec:
          driver:

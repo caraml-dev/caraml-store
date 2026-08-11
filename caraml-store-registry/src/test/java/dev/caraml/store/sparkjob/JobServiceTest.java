@@ -79,7 +79,7 @@ public class JobServiceTest {
     properties.setDefaultStore(new DefaultStore("store", "store"));
     properties.setDeltaIngestionDataset(new DeltaIngestionDataset("bq-project", "bq-dataset"));
     IngestionJobTemplate batchJobProperty =
-        new IngestionJobTemplate("store", new SparkApplicationSpec());
+        new IngestionJobTemplate("store", null, new SparkApplicationSpec());
     jobs.add(batchJobProperty);
     JobService jobservice =
         new JobService(
@@ -177,7 +177,7 @@ public class JobServiceTest {
     templateSparkApplicationSpec.setDriver(templateDriverSpec);
     templateSparkApplicationSpec.setExecutor(templateExecutorSpec);
     IngestionJobTemplate streamJobProperty =
-        new IngestionJobTemplate("store", templateSparkApplicationSpec);
+        new IngestionJobTemplate("store", null, templateSparkApplicationSpec);
     jobs.add(streamJobProperty);
     JobService jobservice =
         new JobService(

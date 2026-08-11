@@ -97,6 +97,22 @@ public class JobService {
     return "caraml-" + RandomStringUtils.randomAlphanumeric(JOB_ID_LENGTH).toLowerCase();
   }
 
+  /**
+   * Resolves the effective cluster name using precedence: request argument &gt; job-type default
+   * &gt; root default. Returns "" when neither the request nor the job template specifies one,
+   * which the registry resolves to the root default cluster (caraml.kubernetes.defaultCluster).
+   * Package-private for testing.
+   */
+  static String effectiveCluster(String requestCluster, String templateDefaultCluster) {
+    if (requestCluster != null && !requestCluster.isEmpty()) {
+      return requestCluster;
+    }
+    if (templateDefaultCluster != null && !templateDefaultCluster.isEmpty()) {
+      return templateDefaultCluster;
+    }
+    return "";
+  }
+
   private Job sparkApplicationToJob(SparkApplication app) {
     Map<String, String> labels = app.getMetadata().getLabels();
     Timestamp startTime =
@@ -276,9 +292,10 @@ public class JobService {
           String.format("Job template not found for store name: %s", onlineStoreName));
     }
 
-    // Ingestion jobs are always submitted to the default cluster.
-    SparkOperatorApi sparkOperatorApi = sparkOperatorApiRegistry.defaultApi();
-    String namespace = sparkOperatorApiRegistry.defaultNamespace();
+    // Cluster precedence: job-type default > root default (ingestion has no request argument).
+    String targetCluster = effectiveCluster(null, batchIngestionJobTemplate.defaultCluster());
+    SparkOperatorApi sparkOperatorApi = sparkOperatorApiRegistry.get(targetCluster);
+    String namespace = sparkOperatorApiRegistry.namespace(targetCluster);
     String ingestionJobId =
         getIngestionJobId(JobType.BATCH_INGESTION_JOB, project, featureTableSpec);
     Optional<ScheduledSparkApplication> existingScheduledApplication =
@@ -362,9 +379,10 @@ public class JobService {
           String.format("Job template not found for store name: %s", onlineStoreName));
     }
 
-    // Ingestion jobs are always submitted to the default cluster.
-    SparkOperatorApi sparkOperatorApi = sparkOperatorApiRegistry.defaultApi();
-    String namespace = sparkOperatorApiRegistry.defaultNamespace();
+    // Cluster precedence: job-type default > root default (ingestion has no request argument).
+    String targetCluster = effectiveCluster(null, jobTemplate.defaultCluster());
+    SparkOperatorApi sparkOperatorApi = sparkOperatorApiRegistry.get(targetCluster);
+    String namespace = sparkOperatorApiRegistry.namespace(targetCluster);
     String ingestionJobId = getIngestionJobId(jobType, project, spec);
     Optional<SparkApplication> existingApplication =
         sparkOperatorApi.getSparkApplication(namespace, ingestionJobId);
@@ -476,10 +494,11 @@ public class JobService {
                 })
             .toList();
 
-    // Route to the caller-selected cluster (empty => default cluster).
-    SparkOperatorApi sparkOperatorApi = sparkOperatorApiRegistry.get(cluster);
-    String namespace = sparkOperatorApiRegistry.namespace(cluster);
-    String resolvedCluster = sparkOperatorApiRegistry.resolve(cluster);
+    // Cluster precedence: request argument > job-type default > root default.
+    String targetCluster = effectiveCluster(cluster, retrievalJobTemplate.defaultCluster());
+    SparkOperatorApi sparkOperatorApi = sparkOperatorApiRegistry.get(targetCluster);
+    String namespace = sparkOperatorApiRegistry.namespace(targetCluster);
+    String resolvedCluster = sparkOperatorApiRegistry.resolve(targetCluster);
 
     SparkApplication app = new SparkApplication();
     app.setMetadata(new V1ObjectMeta());
