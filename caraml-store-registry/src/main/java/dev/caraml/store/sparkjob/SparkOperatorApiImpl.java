@@ -9,6 +9,7 @@ import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.Configuration;
 import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.Config;
+import io.kubernetes.client.util.Watchable;
 import io.kubernetes.client.util.generic.GenericKubernetesApi;
 import io.kubernetes.client.util.generic.KubernetesApiResponse;
 import io.kubernetes.client.util.generic.options.ListOptions;
@@ -158,6 +159,21 @@ public class SparkOperatorApiImpl implements SparkOperatorApi {
       throws SparkOperatorApiException {
     try {
       scheduledSparkApplicationApi.delete(namespace, name).throwsApiException();
+    } catch (ApiException e) {
+      throw new SparkOperatorApiException(e.getMessage());
+    }
+  }
+
+  @Override
+  public Watchable<SparkApplication> watch(String namespace, String labelSelector)
+      throws SparkOperatorApiException {
+    ListOptions options = new ListOptions();
+    if (!labelSelector.isEmpty()) {
+      options.setLabelSelector(labelSelector);
+    }
+    try {
+      Watchable<SparkApplication> watchable = sparkApplicationApi.watch(namespace, options);
+      return watchable;
     } catch (ApiException e) {
       throw new SparkOperatorApiException(e.getMessage());
     }

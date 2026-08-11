@@ -7,6 +7,7 @@ import dev.caraml.store.protobuf.core.DataSourceProto;
 import dev.caraml.store.protobuf.core.FeatureProto;
 import dev.caraml.store.protobuf.core.FeatureTableProto;
 import dev.caraml.store.protobuf.core.FeatureTableProto.FeatureTableSpec;
+import dev.caraml.store.sparkjob.BatchJobRecord;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -110,6 +111,9 @@ public class FeatureTable extends AbstractTimestampEntity {
   @ManyToOne(optional = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "online_store_name")
   private OnlineStore onlineStore;
+
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "featureTable")
+  private Set<BatchJobRecord> batchJobRecords;
 
   public FeatureTable() {}
 

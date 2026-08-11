@@ -42,6 +42,9 @@ service JobService {
 
     // Get ingestion health metrics for a Feature Table
     rpc GetHealthMetrics (GetHealthMetricsRequest) returns (GetHealthMetricsResponse);
+
+    // List batch ingestion job record for a Feature Table
+    rpc ListBatchJobRecords(ListBatchJobRecordsRequest) returns (ListBatchJobRecordsResponse);
 }
 
 
@@ -114,6 +117,29 @@ message Job {
 
   // Project
   string project = 11;
+}
+
+message BatchJobRecord {
+  string id = 1;
+  string job_id = 2;
+  // Type of the Job
+  JobType type = 3;
+  // Current job status
+  JobStatus status = 4;
+  google.protobuf.Timestamp job_start_time = 5;
+  google.protobuf.Timestamp job_end_time = 6;
+  message OfflineToOnlineMeta {
+    string table_name = 1;
+    string project = 2;
+    google.protobuf.Timestamp start_time_param = 3;
+    google.protobuf.Timestamp end_time_param = 4;
+  }
+  // JobType specific metadata on the job
+  oneof meta {
+    OfflineToOnlineMeta batch_ingestion = 7;
+    // TODO: add RetrievalJobMeta
+  }
+  string spark_app_manifest = 8;
 }
 
 // Ingest data from offline store into online store
@@ -268,4 +294,25 @@ message GetHealthMetricsRequest {
 message GetHealthMetricsResponse {
   repeated string passed = 1;
   repeated string failed = 2;
+}
+
+message ListBatchJobRecordsRequest {
+  // Project name
+  string project = 1;
+
+  // Feature table name, required for JOB_TYPE=BATCH_INGESTION_JOB
+  string table_name = 2;
+
+  // optional field
+  JobType type = 3;
+
+  // Optional, Time range for the records to be listed. Defaults to preconfigured range
+  google.protobuf.Timestamp end = 4;
+
+  // Optional, defaults to current time
+  google.protobuf.Timestamp start = 5;
+}
+
+message ListBatchJobRecordsResponse {
+  repeated BatchJobRecord records = 1;
 }

@@ -69,6 +69,11 @@ class JobServiceStub(object):
                 request_serializer=feast__spark_dot_api_dot_JobService__pb2.GetHealthMetricsRequest.SerializeToString,
                 response_deserializer=feast__spark_dot_api_dot_JobService__pb2.GetHealthMetricsResponse.FromString,
                 )
+        self.ListBatchJobRecords = channel.unary_unary(
+                '/feast_spark.api.JobService/ListBatchJobRecords',
+                request_serializer=feast__spark_dot_api_dot_JobService__pb2.ListBatchJobRecordsRequest.SerializeToString,
+                response_deserializer=feast__spark_dot_api_dot_JobService__pb2.ListBatchJobRecordsResponse.FromString,
+                )
 
 
 class JobServiceServicer(object):
@@ -151,6 +156,13 @@ class JobServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListBatchJobRecords(self, request, context):
+        """List batch ingestion job record for a Feature Table
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_JobServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -208,6 +220,11 @@ def add_JobServiceServicer_to_server(servicer, server):
                     servicer.GetHealthMetrics,
                     request_deserializer=feast__spark_dot_api_dot_JobService__pb2.GetHealthMetricsRequest.FromString,
                     response_serializer=feast__spark_dot_api_dot_JobService__pb2.GetHealthMetricsResponse.SerializeToString,
+            ),
+            'ListBatchJobRecords': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListBatchJobRecords,
+                    request_deserializer=feast__spark_dot_api_dot_JobService__pb2.ListBatchJobRecordsRequest.FromString,
+                    response_serializer=feast__spark_dot_api_dot_JobService__pb2.ListBatchJobRecordsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -403,5 +420,22 @@ class JobService(object):
         return grpc.experimental.unary_unary(request, target, '/feast_spark.api.JobService/GetHealthMetrics',
             feast__spark_dot_api_dot_JobService__pb2.GetHealthMetricsRequest.SerializeToString,
             feast__spark_dot_api_dot_JobService__pb2.GetHealthMetricsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListBatchJobRecords(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/feast_spark.api.JobService/ListBatchJobRecords',
+            feast__spark_dot_api_dot_JobService__pb2.ListBatchJobRecordsRequest.SerializeToString,
+            feast__spark_dot_api_dot_JobService__pb2.ListBatchJobRecordsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
