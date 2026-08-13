@@ -1,35 +1,53 @@
 package dev.caraml.store.sparkjob;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class SparkOperatorApiImplTest {
 
   @Test
-  public void shouldUseKubeconfigEnvWhenSet() {
+  public void shouldUseKubeconfigEnvWhenFileExists(@TempDir Path tmp) throws IOException {
+    Path config = Files.createFile(tmp.resolve("kubeconfig"));
     File resolved =
-        SparkOperatorApiImpl.resolveKubeConfigFile("/etc/tker-i-models-01/kubeconfig", "/root");
-    assertEquals(new File("/etc/tker-i-models-01/kubeconfig"), resolved);
+        SparkOperatorApiImpl.resolveKubeConfigFile(config.toString(), "/nonexistent-home");
+    assertEquals(config.toFile(), resolved);
   }
 
   @Test
-  public void shouldUseFirstEntryWhenKubeconfigEnvHasMultiplePaths() {
-    String env = "/etc/first/kubeconfig" + File.pathSeparator + "/etc/second/kubeconfig";
-    File resolved = SparkOperatorApiImpl.resolveKubeConfigFile(env, "/root");
-    assertEquals(new File("/etc/first/kubeconfig"), resolved);
+  public void shouldUseFirstEntryWhenKubeconfigEnvHasMultiplePaths(@TempDir Path tmp)
+      throws IOException {
+    Path first = Files.createFile(tmp.resolve("first"));
+    Path second = Files.createFile(tmp.resolve("second"));
+    String env = first + File.pathSeparator + second;
+    assertEquals(first.toFile(), SparkOperatorApiImpl.resolveKubeConfigFile(env, "/nonexistent"));
   }
 
   @Test
-  public void shouldFallBackToHomeDirWhenKubeconfigEnvNull() {
-    File resolved = SparkOperatorApiImpl.resolveKubeConfigFile(null, "/home/caraml");
-    assertEquals(new File("/home/caraml/.kube/config"), resolved);
+  public void shouldFallBackToHomeWhenKubeconfigEnvFileMissing(@TempDir Path tmp)
+      throws IOException {
+    Path config = Files.createFile(Files.createDirectories(tmp.resolve(".kube")).resolve("config"));
+    File resolved = SparkOperatorApiImpl.resolveKubeConfigFile("/does/not/exist", tmp.toString());
+    assertEquals(config.toFile(), resolved);
   }
 
   @Test
-  public void shouldFallBackToHomeDirWhenKubeconfigEnvEmpty() {
-    File resolved = SparkOperatorApiImpl.resolveKubeConfigFile("", "/home/caraml");
-    assertEquals(new File("/home/caraml/.kube/config"), resolved);
+  public void shouldFallBackToHomeWhenKubeconfigEnvNull(@TempDir Path tmp) throws IOException {
+    Path config = Files.createFile(Files.createDirectories(tmp.resolve(".kube")).resolve("config"));
+    assertEquals(config.toFile(), SparkOperatorApiImpl.resolveKubeConfigFile(null, tmp.toString()));
+  }
+
+  @Test
+  public void shouldReturnNullWhenNothingExists(@TempDir Path tmp) {
+    File resolved =
+        SparkOperatorApiImpl.resolveKubeConfigFile(
+            "/does/not/exist", tmp.resolve("empty-home").toString());
+    assertNull(resolved);
   }
 }

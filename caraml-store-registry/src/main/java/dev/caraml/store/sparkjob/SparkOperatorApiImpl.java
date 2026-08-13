@@ -54,6 +54,12 @@ public class SparkOperatorApiImpl implements SparkOperatorApi {
     String context = cluster.getContext();
     if (context != null && !context.isEmpty()) {
       File configFile = kubeConfigFile();
+      if (configFile == null) {
+        throw new IOException(
+            String.format(
+                "No kubeconfig found ($KUBECONFIG or ~/.kube/config) to resolve context '%s'",
+                context));
+      }
       try (Reader reader = new FileReader(configFile)) {
         KubeConfig kubeConfig = KubeConfig.loadKubeConfig(reader);
         if (!kubeConfig.setContext(context)) {
@@ -72,20 +78,39 @@ public class SparkOperatorApiImpl implements SparkOperatorApi {
   private static final String KUBECONFIG_ENV = "KUBECONFIG";
 
   private static File kubeConfigFile() {
-    return resolveKubeConfigFile(System.getenv(KUBECONFIG_ENV), System.getProperty("user.home"));
+    return resolveKubeConfigFile(System.getenv(KUBECONFIG_ENV), homeDir());
+  }
+
+  // Resolve the home directory the same way io.kubernetes.client.util.ClientBuilder does:
+  // prefer $HOME, then the user.home system property.
+  private static String homeDir() {
+    String home = System.getenv("HOME");
+    if (home != null && !home.isEmpty()) {
+      return home;
+    }
+    return System.getProperty("user.home");
   }
 
   /**
-   * Resolves the kubeconfig file location. When {@code kubeConfigEnv} (the value of the KUBECONFIG
-   * environment variable) is set, its first path entry wins; otherwise falls back to {@code
-   * <userHome>/.kube/config}. Package-private for testing.
+   * Locates the kubeconfig file, mirroring {@code io.kubernetes.client.util.ClientBuilder}: the
+   * first path listed in {@code $KUBECONFIG} if it exists, otherwise {@code <home>/.kube/config} if
+   * it exists, otherwise {@code null}. Package-private for testing.
    */
-  static File resolveKubeConfigFile(String kubeConfigEnv, String userHome) {
+  static File resolveKubeConfigFile(String kubeConfigEnv, String homeDir) {
     if (kubeConfigEnv != null && !kubeConfigEnv.isEmpty()) {
-      // KUBECONFIG may contain multiple paths; use the first entry.
-      return new File(kubeConfigEnv.split(File.pathSeparator)[0]);
+      // $KUBECONFIG may list multiple files; the client library uses the first entry.
+      File fromEnv = new File(kubeConfigEnv.split(File.pathSeparator)[0]);
+      if (fromEnv.exists()) {
+        return fromEnv;
+      }
     }
-    return new File(new File(userHome, KubeConfig.KUBEDIR), KubeConfig.KUBECONFIG);
+    if (homeDir != null && !homeDir.isEmpty()) {
+      File fromHome = new File(new File(homeDir, KubeConfig.KUBEDIR), KubeConfig.KUBECONFIG);
+      if (fromHome.exists()) {
+        return fromHome;
+      }
+    }
+    return null;
   }
 
   @Override
