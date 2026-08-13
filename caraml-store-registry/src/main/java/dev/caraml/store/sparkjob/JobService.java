@@ -40,7 +40,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class JobService {
 
-  private final String namespace;
   private final String sparkImage;
   private final DefaultStore defaultStore;
   private final Map<JobType, Map<String, IngestionJobTemplate>>
@@ -49,7 +48,7 @@ public class JobService {
   private final DeltaIngestionDataset deltaIngestionDataset;
   private final EntityRepository entityRepository;
   private final FeatureTableRepository tableRepository;
-  private final SparkOperatorApi sparkOperatorApi;
+  private final SparkOperatorApiRegistry sparkOperatorApiRegistry;
   private final ProjectContextProvider projectContextProvider;
 
   @Autowired
@@ -57,9 +56,8 @@ public class JobService {
       JobServiceConfig config,
       EntityRepository entityRepository,
       FeatureTableRepository tableRepository,
-      SparkOperatorApi sparkOperatorApi,
+      SparkOperatorApiRegistry sparkOperatorApiRegistry,
       ProjectContextProvider projectContextProvider) {
-    namespace = config.getNamespace();
     sparkImage = config.getCommon().sparkImage();
     defaultStore = config.getDefaultStore();
     ingestionJobTemplateByTypeAndStoreName.put(
@@ -74,7 +72,7 @@ public class JobService {
     deltaIngestionDataset = config.getDeltaIngestionDataset();
     this.entityRepository = entityRepository;
     this.tableRepository = tableRepository;
-    this.sparkOperatorApi = sparkOperatorApi;
+    this.sparkOperatorApiRegistry = sparkOperatorApiRegistry;
     this.projectContextProvider = projectContextProvider;
   }
 
@@ -84,6 +82,7 @@ public class JobService {
   static final String FEATURE_TABLE_LABEL = LABEL_PREFIX + "table";
   static final String FEATURE_TABLE_HASH_LABEL = LABEL_PREFIX + "hash";
   static final String PROJECT_LABEL = LABEL_PREFIX + "project";
+  static final String CLUSTER_LABEL = LABEL_PREFIX + "cluster";
 
   static final Integer JOB_ID_LENGTH = 16;
   static final Integer LABEL_CHARACTERS_LIMIT = 63;
@@ -96,6 +95,22 @@ public class JobService {
 
   private String getRetrievalJobId() {
     return "caraml-" + RandomStringUtils.randomAlphanumeric(JOB_ID_LENGTH).toLowerCase();
+  }
+
+  /**
+   * Resolves the effective cluster name using precedence: request argument &gt; job-type default
+   * &gt; root default. Returns "" when neither the request nor the job template specifies one,
+   * which the registry resolves to the root default cluster (caraml.kubernetes.defaultCluster).
+   * Package-private for testing.
+   */
+  static String effectiveCluster(String requestCluster, String templateDefaultCluster) {
+    if (requestCluster != null && !requestCluster.isEmpty()) {
+      return requestCluster;
+    }
+    if (templateDefaultCluster != null && !templateDefaultCluster.isEmpty()) {
+      return templateDefaultCluster;
+    }
+    return "";
   }
 
   private Job sparkApplicationToJob(SparkApplication app) {
@@ -277,6 +292,10 @@ public class JobService {
           String.format("Job template not found for store name: %s", onlineStoreName));
     }
 
+    // Cluster precedence: job-type default > root default (ingestion has no request argument).
+    String targetCluster = effectiveCluster(null, batchIngestionJobTemplate.defaultCluster());
+    SparkOperatorApi sparkOperatorApi = sparkOperatorApiRegistry.get(targetCluster);
+    String namespace = sparkOperatorApiRegistry.namespace(targetCluster);
     String ingestionJobId =
         getIngestionJobId(JobType.BATCH_INGESTION_JOB, project, featureTableSpec);
     Optional<ScheduledSparkApplication> existingScheduledApplication =
@@ -360,6 +379,10 @@ public class JobService {
           String.format("Job template not found for store name: %s", onlineStoreName));
     }
 
+    // Cluster precedence: job-type default > root default (ingestion has no request argument).
+    String targetCluster = effectiveCluster(null, jobTemplate.defaultCluster());
+    SparkOperatorApi sparkOperatorApi = sparkOperatorApiRegistry.get(targetCluster);
+    String namespace = sparkOperatorApiRegistry.namespace(targetCluster);
     String ingestionJobId = getIngestionJobId(jobType, project, spec);
     Optional<SparkApplication> existingApplication =
         sparkOperatorApi.getSparkApplication(namespace, ingestionJobId);
@@ -435,7 +458,8 @@ public class JobService {
       List<String> featureRefs,
       DataSource entitySource,
       String outputFormat,
-      String outputUri) {
+      String outputUri,
+      String cluster) {
     if (retrievalJobTemplate == null || retrievalJobTemplate.sparkApplicationSpec() == null) {
       throw new IllegalArgumentException(
           "Historical retrieval job properties have not been configured");
@@ -470,11 +494,24 @@ public class JobService {
                 })
             .toList();
 
+    // Cluster precedence: request argument > job-type default > root default.
+    String targetCluster = effectiveCluster(cluster, retrievalJobTemplate.defaultCluster());
+    SparkOperatorApi sparkOperatorApi = sparkOperatorApiRegistry.get(targetCluster);
+    String namespace = sparkOperatorApiRegistry.namespace(targetCluster);
+    String resolvedCluster = sparkOperatorApiRegistry.resolve(targetCluster);
+
     SparkApplication app = new SparkApplication();
     app.setMetadata(new V1ObjectMeta());
     app.getMetadata().setName(getRetrievalJobId());
     app.getMetadata().setNamespace(namespace);
-    app.addLabels(Map.of(JOB_TYPE_LABEL, JobType.RETRIEVAL_JOB.toString(), PROJECT_LABEL, project));
+    app.addLabels(
+        Map.of(
+            JOB_TYPE_LABEL,
+            JobType.RETRIEVAL_JOB.toString(),
+            PROJECT_LABEL,
+            project,
+            CLUSTER_LABEL,
+            resolvedCluster));
     JobTemplateRenderer renderer = new JobTemplateRenderer();
     SparkApplicationSpec newSparkApplicationSpec =
         renderer.render(
@@ -507,8 +544,16 @@ public class JobService {
         selectorMap.entrySet().stream()
             .map(es -> String.format("%s=%s", es.getKey(), es.getValue()))
             .collect(Collectors.joining(","));
+    // Fan out across all clusters so jobs submitted to a non-default cluster are included.
     Stream<Job> jobStream =
-        sparkOperatorApi.list(namespace, labelSelectors).stream().map(this::sparkApplicationToJob);
+        sparkOperatorApiRegistry.clusterNames().stream()
+            .flatMap(
+                cluster ->
+                    sparkOperatorApiRegistry
+                        .get(cluster)
+                        .list(sparkOperatorApiRegistry.namespace(cluster), labelSelectors)
+                        .stream())
+            .map(this::sparkApplicationToJob);
     if (!includeTerminated) {
       jobStream = jobStream.filter(job -> job.getStatus() == JobStatus.JOB_STATUS_RUNNING);
     }
@@ -527,21 +572,55 @@ public class JobService {
         selectorMap.entrySet().stream()
             .map(es -> String.format("%s=%s", es.getKey(), es.getValue()))
             .collect(Collectors.joining(","));
-    return sparkOperatorApi.listScheduled(namespace, labelSelectors).stream()
+    // Fan out across all clusters.
+    return sparkOperatorApiRegistry.clusterNames().stream()
+        .flatMap(
+            cluster ->
+                sparkOperatorApiRegistry
+                    .get(cluster)
+                    .listScheduled(sparkOperatorApiRegistry.namespace(cluster), labelSelectors)
+                    .stream())
         .map(this::scheduledSparkApplicationToScheduledJob)
         .toList();
   }
 
   public Optional<Job> getJob(String id) {
-    return sparkOperatorApi.getSparkApplication(namespace, id).map(this::sparkApplicationToJob);
+    // Job ids are unique across clusters; return the first match found.
+    for (String cluster : sparkOperatorApiRegistry.clusterNames()) {
+      Optional<Job> job =
+          sparkOperatorApiRegistry
+              .get(cluster)
+              .getSparkApplication(sparkOperatorApiRegistry.namespace(cluster), id)
+              .map(this::sparkApplicationToJob);
+      if (job.isPresent()) {
+        return job;
+      }
+    }
+    return Optional.empty();
   }
 
   public void cancelJob(String id) {
-    sparkOperatorApi.deleteSparkApplication(namespace, id);
+    for (String cluster : sparkOperatorApiRegistry.clusterNames()) {
+      SparkOperatorApi sparkOperatorApi = sparkOperatorApiRegistry.get(cluster);
+      String namespace = sparkOperatorApiRegistry.namespace(cluster);
+      if (sparkOperatorApi.getSparkApplication(namespace, id).isPresent()) {
+        sparkOperatorApi.deleteSparkApplication(namespace, id);
+        return;
+      }
+    }
+    throw new JobNotFoundException(id);
   }
 
   public void unscheduleJob(String id) {
-    sparkOperatorApi.deleteScheduledSparkApplication(namespace, id);
+    for (String cluster : sparkOperatorApiRegistry.clusterNames()) {
+      SparkOperatorApi sparkOperatorApi = sparkOperatorApiRegistry.get(cluster);
+      String namespace = sparkOperatorApiRegistry.namespace(cluster);
+      if (sparkOperatorApi.getScheduledSparkApplication(namespace, id).isPresent()) {
+        sparkOperatorApi.deleteScheduledSparkApplication(namespace, id);
+        return;
+      }
+    }
+    throw new JobNotFoundException(id);
   }
 
   private String generateProjectTableHash(String project, String tableName) {

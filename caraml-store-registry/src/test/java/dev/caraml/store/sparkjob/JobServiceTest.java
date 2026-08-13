@@ -39,12 +39,16 @@ public class JobServiceTest {
   @Mock private FeatureTableRepository tableRepository;
   @Mock private SparkOperatorApi api;
   @Mock private ProjectContextProvider projectContextProvider;
+  private SparkOperatorApiRegistry registry;
 
   @BeforeEach
   public void setUp() {
     MockitoAnnotations.openMocks(this);
     entityRepository = mock(EntityRepository.class);
     api = mock(SparkOperatorApi.class);
+    registry =
+        new SparkOperatorApiRegistry(
+            Map.of("default", api), Map.of("default", "spark-operator"), "default");
     when(api.create(any(SparkApplication.class)))
         .thenAnswer(
             invocation -> {
@@ -75,10 +79,11 @@ public class JobServiceTest {
     properties.setDefaultStore(new DefaultStore("store", "store"));
     properties.setDeltaIngestionDataset(new DeltaIngestionDataset("bq-project", "bq-dataset"));
     IngestionJobTemplate batchJobProperty =
-        new IngestionJobTemplate("store", new SparkApplicationSpec());
+        new IngestionJobTemplate("store", null, new SparkApplicationSpec());
     jobs.add(batchJobProperty);
     JobService jobservice =
-        new JobService(properties, entityRepository, tableRepository, api, projectContextProvider);
+        new JobService(
+            properties, entityRepository, tableRepository, registry, projectContextProvider);
     FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder();
     String project = "project";
     String jsonString;
@@ -172,10 +177,11 @@ public class JobServiceTest {
     templateSparkApplicationSpec.setDriver(templateDriverSpec);
     templateSparkApplicationSpec.setExecutor(templateExecutorSpec);
     IngestionJobTemplate streamJobProperty =
-        new IngestionJobTemplate("store", templateSparkApplicationSpec);
+        new IngestionJobTemplate("store", null, templateSparkApplicationSpec);
     jobs.add(streamJobProperty);
     JobService jobservice =
-        new JobService(properties, entityRepository, tableRepository, api, projectContextProvider);
+        new JobService(
+            properties, entityRepository, tableRepository, registry, projectContextProvider);
     FeatureTableSpec.Builder builder = FeatureTableSpec.newBuilder();
     String project = "project";
     String jsonString;

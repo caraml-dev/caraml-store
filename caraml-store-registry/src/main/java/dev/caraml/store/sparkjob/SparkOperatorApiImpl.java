@@ -6,30 +6,29 @@ import dev.caraml.store.sparkjob.crd.SparkApplication;
 import dev.caraml.store.sparkjob.crd.SparkApplicationList;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
-import io.kubernetes.client.openapi.Configuration;
 import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.Config;
+import io.kubernetes.client.util.KubeConfig;
 import io.kubernetes.client.util.generic.GenericKubernetesApi;
 import io.kubernetes.client.util.generic.KubernetesApiResponse;
 import io.kubernetes.client.util.generic.options.ListOptions;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-@Service
 public class SparkOperatorApiImpl implements SparkOperatorApi {
 
   private final GenericKubernetesApi<SparkApplication, SparkApplicationList> sparkApplicationApi;
   private final GenericKubernetesApi<ScheduledSparkApplication, ScheduledSparkApplicationList>
       scheduledSparkApplicationApi;
 
-  @Autowired
-  public SparkOperatorApiImpl(ClusterConfig cluster) throws IOException {
-    ApiClient client =
-        cluster.getInCluster() ? ClientBuilder.cluster().build() : Config.defaultClient();
-    Configuration.setDefaultApiClient(client);
+  public SparkOperatorApiImpl(ClusterConfig.Cluster cluster) throws IOException {
+    // Note: intentionally does NOT call Configuration.setDefaultApiClient so that
+    // multiple clusters can hold independent clients simultaneously.
+    ApiClient client = buildClient(cluster);
     this.sparkApplicationApi =
         new GenericKubernetesApi<>(
             SparkApplication.class,
@@ -46,6 +45,70 @@ public class SparkOperatorApiImpl implements SparkOperatorApi {
             "v1beta2",
             "scheduledsparkapplications",
             client);
+  }
+
+  private static ApiClient buildClient(ClusterConfig.Cluster cluster) throws IOException {
+    if (Boolean.TRUE.equals(cluster.getInCluster())) {
+      return ClientBuilder.cluster().build();
+    }
+    String context = cluster.getContext();
+    if (context != null && !context.isEmpty()) {
+      File configFile = kubeConfigFile();
+      if (configFile == null) {
+        throw new IOException(
+            String.format(
+                "No kubeconfig found ($KUBECONFIG or ~/.kube/config) to resolve context '%s'",
+                context));
+      }
+      try (Reader reader = new FileReader(configFile)) {
+        KubeConfig kubeConfig = KubeConfig.loadKubeConfig(reader);
+        if (!kubeConfig.setContext(context)) {
+          throw new IOException(String.format("kubeconfig context '%s' not found", context));
+        }
+        // Ensure relative certificate/key paths in the kubeconfig resolve correctly.
+        kubeConfig.setFile(configFile);
+        return ClientBuilder.kubeconfig(kubeConfig).build();
+      }
+    }
+    return Config.defaultClient();
+  }
+
+  private static File kubeConfigFile() {
+    // NB: Config.ENV_KUBECONFIG is the env var name ("KUBECONFIG"); KubeConfig.KUBECONFIG is the
+    // config *filename* ("config"). Reuse the library constant to avoid confusing the two.
+    return resolveKubeConfigFile(System.getenv(Config.ENV_KUBECONFIG), homeDir());
+  }
+
+  // Resolve the home directory the same way io.kubernetes.client.util.ClientBuilder does:
+  // prefer $HOME, then the user.home system property.
+  private static String homeDir() {
+    String home = System.getenv("HOME");
+    if (home != null && !home.isEmpty()) {
+      return home;
+    }
+    return System.getProperty("user.home");
+  }
+
+  /**
+   * Locates the kubeconfig file, mirroring {@code io.kubernetes.client.util.ClientBuilder}: the
+   * first path listed in {@code $KUBECONFIG} if it exists, otherwise {@code <home>/.kube/config} if
+   * it exists, otherwise {@code null}. Package-private for testing.
+   */
+  static File resolveKubeConfigFile(String kubeConfigEnv, String homeDir) {
+    if (kubeConfigEnv != null && !kubeConfigEnv.isEmpty()) {
+      // $KUBECONFIG may list multiple files; the client library uses the first entry.
+      File fromEnv = new File(kubeConfigEnv.split(File.pathSeparator)[0]);
+      if (fromEnv.exists()) {
+        return fromEnv;
+      }
+    }
+    if (homeDir != null && !homeDir.isEmpty()) {
+      File fromHome = new File(new File(homeDir, KubeConfig.KUBEDIR), KubeConfig.KUBECONFIG);
+      if (fromHome.exists()) {
+        return fromHome;
+      }
+    }
+    return null;
   }
 
   @Override

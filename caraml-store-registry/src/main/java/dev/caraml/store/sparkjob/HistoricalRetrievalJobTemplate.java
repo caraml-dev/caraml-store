@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.caraml.store.sparkjob.crd.SparkApplicationSpec;
 import java.util.Map;
 
-public record HistoricalRetrievalJobTemplate(SparkApplicationSpec sparkApplicationSpec) {
+public record HistoricalRetrievalJobTemplate(
+    String defaultCluster, SparkApplicationSpec sparkApplicationSpec) {
 
   public SparkApplicationSpec render(
       String project, ProjectContextProvider projectContextProvider) {
