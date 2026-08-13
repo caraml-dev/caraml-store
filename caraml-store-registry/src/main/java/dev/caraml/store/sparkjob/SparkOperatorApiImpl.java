@@ -73,12 +73,10 @@ public class SparkOperatorApiImpl implements SparkOperatorApi {
     return Config.defaultClient();
   }
 
-  // Name of the environment variable pointing at the kubeconfig file(s).
-  // NB: KubeConfig.KUBECONFIG is the config *filename* ("config"), not this env var name.
-  private static final String KUBECONFIG_ENV = "KUBECONFIG";
-
   private static File kubeConfigFile() {
-    return resolveKubeConfigFile(System.getenv(KUBECONFIG_ENV), homeDir());
+    // NB: Config.ENV_KUBECONFIG is the env var name ("KUBECONFIG"); KubeConfig.KUBECONFIG is the
+    // config *filename* ("config"). Reuse the library constant to avoid confusing the two.
+    return resolveKubeConfigFile(System.getenv(Config.ENV_KUBECONFIG), homeDir());
   }
 
   // Resolve the home directory the same way io.kubernetes.client.util.ClientBuilder does:
